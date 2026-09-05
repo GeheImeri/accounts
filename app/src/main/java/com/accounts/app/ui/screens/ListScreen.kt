@@ -152,7 +152,7 @@ fun ListScreen(vm: AppViewModel) {
                     DayHeader(date = date, rows = rows)
                 }
                 items(rows, key = { it.id }) { t ->
-                    TransactionRow(t, catMap[t.categoryId], accMap[t.accountId]) { editing = t }
+                    TransactionRow(t, catMap[t.categoryId], accMap[t.accountId]?.name) { editing = t }
                 }
             }
             if (grouped.isEmpty()) {
@@ -289,8 +289,8 @@ private fun EditRecordDialog(
                     onValueChange = { amountText = it.filter { c -> c.isDigit() || c == '.' } },
                     textStyle = MaterialTheme.typography.titleLarge.copy(color = Ink),
                     singleLine = true,
-                    keyboardOptions = androidx.compose.ui.text.input.KeyboardOptions(
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.foundation.text.KeyboardType.Decimal
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )

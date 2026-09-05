@@ -71,9 +71,12 @@ fun Segment(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit, 
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .background(
-                        if (i == selectedIndex) MistCta else Color.Transparent,
-                        RoundedCornerShape(999.dp)
+                    .then(
+                        if (i == selectedIndex) {
+                            Modifier.background(MistCta, RoundedCornerShape(999.dp))
+                        } else {
+                            Modifier
+                        }
                     )
                     .clickable { onSelect(i) }
                     .padding(vertical = 8.dp),

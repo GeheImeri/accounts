@@ -45,7 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -228,12 +228,19 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
 
 // ================= 主题选择 =================
 
+private data class ThemeOpt(
+    val mode: Int,
+    val icon: ImageVector,
+    val name: String,
+    val desc: String
+)
+
 @Composable
 fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Unit) {
     val options = listOf(
-        Triple(0, Icons.Outlined.BrightnessAuto, "跟随系统", "随手机系统自动切换亮暗（推荐）"),
-        Triple(1, Icons.Outlined.LightMode, "浅色", "始终使用亮色外观"),
-        Triple(2, Icons.Outlined.DarkMode, "深色", "始终使用暗色 · 夜间护眼")
+        ThemeOpt(0, Icons.Outlined.BrightnessAuto, "跟随系统", "随手机系统自动切换亮暗（推荐）"),
+        ThemeOpt(1, Icons.Outlined.LightMode, "浅色", "始终使用亮色外观"),
+        ThemeOpt(2, Icons.Outlined.DarkMode, "深色", "始终使用暗色 · 夜间护眼")
     )
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
         SettingsHeader("主题", onBack)
@@ -373,7 +380,7 @@ private fun AddCategoryDialog(
 ) {
     var kind by remember { mutableStateOf(initialKind) }
     var name by remember { mutableStateOf("") }
-    var color by remember { mutableStateOf(ExpensePalette.first()) }
+    var color by remember { mutableStateOf(colorFromHex(ExpensePalette.first())) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新增分类", fontWeight = FontWeight.Bold) },
@@ -383,7 +390,8 @@ private fun AddCategoryDialog(
                     selectedIndex = if (kind == "expense") 0 else 1,
                     onSelect = {
                         kind = if (it == 0) "expense" else "income"
-                        color = if (kind == "expense") ExpensePalette.first() else IncomePalette.first()
+                        color = if (kind == "expense") colorFromHex(ExpensePalette.first())
+                        else colorFromHex(IncomePalette.first())
                     })
                 Spacer(Modifier.height(10.dp))
                 BasicTextField(
@@ -517,7 +525,7 @@ private fun TransferDialog(
                     onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.foundation.text.KeyboardType.Decimal),
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))

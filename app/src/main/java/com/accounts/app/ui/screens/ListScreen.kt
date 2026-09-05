@@ -17,8 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.KeyboardArrowLeft
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,7 +93,7 @@ fun ListScreen(vm: AppViewModel) {
             Spacer(Modifier.weight(1f))
             // 月份：两侧 ‹› 快切，中间可点 -> 年/月/日选择器
             IconButton(onClick = { month = month.minusMonths(1) }) {
-                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "上月")
+                Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "上月")
             }
             Text(
                 "${month.year}年${month.monthValue}月",
@@ -106,7 +106,7 @@ fun ListScreen(vm: AppViewModel) {
                 fontWeight = FontWeight.Bold, fontSize = 13.sp
             )
             IconButton(onClick = { month = month.plusMonths(1) }) {
-                Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = "下月")
+                Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "下月")
             }
         }
 
@@ -229,12 +229,12 @@ private fun MonthYearPicker(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { year-- }) {
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "前一年")
+                        Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "前一年")
                     }
                     Text("$year 年", Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         fontWeight = FontWeight.Bold)
                     IconButton(onClick = { year++ }) {
-                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, contentDescription = "后一年")
+                        Icon(Icons.Outlined.KeyboardArrowRight, contentDescription = "后一年")
                     }
                 }
                 listOf(1..6, 7..12).forEach { range ->

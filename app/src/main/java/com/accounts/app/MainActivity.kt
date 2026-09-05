@@ -18,9 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -140,7 +140,7 @@ private fun JianjiRoot(vm: AppViewModel) {
 private fun BottomDock(current: String, onSelect: (String) -> Unit) {
     val items = listOf(
         Triple(TAB_RECORD, Icons.Filled.Add, "记一笔"),
-        Triple(TAB_LIST, Icons.AutoMirrored.Outlined.List, "明细"),
+        Triple(TAB_LIST, Icons.Outlined.FormatListBulleted, "明细"),
         Triple(TAB_STATS, Icons.Outlined.BarChart, "统计")
     )
     Row(

@@ -21,9 +21,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.KeyboardArrowLeft
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
@@ -268,7 +268,7 @@ fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Uni
 private fun SettingsHeader(title: String, onBack: () -> Unit, onAdd: (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, contentDescription = "返回")
+            Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "返回")
         }
         Text(title, fontSize = 17.sp, color = Ink, fontWeight = FontWeight.Bold)
         Spacer(Modifier.weight(1f))

@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.accounts.app.ui.AppViewModel
+import com.accounts.app.ui.comps.noRippleClickable
 import com.accounts.app.ui.screens.AccountManageScreen
 import com.accounts.app.ui.screens.CategoryManageScreen
 import com.accounts.app.ui.screens.ListScreen
@@ -164,7 +165,7 @@ private fun BottomDock(current: String, onSelect: (String) -> Unit) {
                 Modifier
                     .size(46.dp)
                     .background(bg, CircleShape)
-                    .clickable { onSelect(id) },
+                    .noRippleClickable { onSelect(id) },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

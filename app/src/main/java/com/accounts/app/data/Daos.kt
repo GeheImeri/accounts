@@ -30,6 +30,9 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE id = :id LIMIT 1")
     suspend fun findByIdOnce(id: Long): Category?
+
+    @Query("SELECT * FROM categories WHERE kind = :kind AND enabled = 1 ORDER BY sortOrder")
+    suspend fun listByKindOnce(kind: String): List<Category>
 }
 
 @Dao
@@ -69,4 +72,19 @@ interface TransferDao {
 
     @Insert
     suspend fun insert(transfer: Transfer): Long
+}
+
+@Dao
+interface TemplateDao {
+    @Query("SELECT * FROM templates ORDER BY sortOrder, id")
+    fun observeAll(): Flow<List<Template>>
+
+    @Query("SELECT COUNT(*) FROM templates")
+    suspend fun countOnce(): Int
+
+    @Insert
+    suspend fun insert(template: Template): Long
+
+    @Delete
+    suspend fun delete(template: Template)
 }

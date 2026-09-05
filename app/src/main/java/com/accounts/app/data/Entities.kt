@@ -70,3 +70,14 @@ data class Transfer(
     val occurredAtMillis: Long,
     val note: String = ""
 )
+
+/** 快捷模板（我的模板）：点一下即记一笔；支持 ＋新增 与 长按删除 */
+@Entity(tableName = "templates")
+data class Template(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val amountCents: Long,
+    val categoryId: Long,
+    val kind: String,          // expense / income
+    val sortOrder: Int = 0
+)

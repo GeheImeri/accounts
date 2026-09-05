@@ -57,6 +57,7 @@ import com.accounts.app.ui.comps.Footnote
 import com.accounts.app.ui.comps.GlassCard
 import com.accounts.app.ui.comps.Hairline
 import com.accounts.app.ui.comps.Segment
+import com.accounts.app.ui.comps.noRippleClickable
 import com.accounts.app.ui.theme.Ink
 import com.accounts.app.ui.theme.Ink2
 import com.accounts.app.util.Money
@@ -73,10 +74,13 @@ fun SettingsScreen(
     onOpenTheme: () -> Unit
 ) {
     val accounts by vm.accounts.collectAsState()
+    val defaultAccId by vm.defaultAccountId.collectAsState()
     var continuous by remember { mutableStateOf(true) }
+    var accountMenu by remember { mutableStateOf(false) }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SettingsHeader("设置", onBack)
 
@@ -86,10 +90,38 @@ fun SettingsScreen(
         }
         GlassCard(Modifier.fillMaxWidth()) {
             SetRow("主题", right = themeLabel, chevron = true, onClick = onOpenTheme)
-            SetRow("默认支出账户", right = accounts.firstOrNull()?.name ?: "—")
+            Box {
+                Row(
+                    Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                        .noRippleClickable { accountMenu = true },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("默认支出账户", fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold)
+                    Spacer(Modifier.weight(1f))
+                    Text(accounts.firstOrNull { it.id == defaultAccId }?.name
+                        ?: accounts.firstOrNull()?.name ?: "—",
+                        fontSize = 12.5.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("▾", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                DropdownMenu(expanded = accountMenu,
+                    onDismissRequest = { accountMenu = false }) {
+                    accounts.forEach { a ->
+                        DropdownMenuItem(
+                            text = { Text(a.name) },
+                            onClick = {
+                                vm.setDefaultAccount(a.id)
+                                accountMenu = false
+                            }
+                        )
+                    }
+                }
+            }
             Row(Modifier.fillMaxWidth().padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically) {
-                Text("连续记账", fontSize = 14.sp, color = Ink, fontWeight = FontWeight.SemiBold)
+                Text("连续记账", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))
                 Toggle(checked = continuous, onClick = { continuous = !continuous })
             }
@@ -122,22 +154,40 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     val pinnedCount = list.count { it.pinned }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SettingsHeader("分类管理", onBack, onAdd = { addOpen = true })
 
         Segment(options = listOf("支出", "收入"),
             selectedIndex = if (kind == "expense") 0 else 1,
-            onSelect = { kind = if (it == 0) "expense" else "income" },
-            modifier = Modifier.padding(vertical = 8.dp))
+            onSelect = { kind = if (it == 0) "expense" else "income" })
 
         GlassCard(Modifier.fillMaxWidth()) {
-            list.forEach { cat ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 10.dp),
+            list.forEachIndexed { index, cat ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(20.dp).background(chip(cat.color), RoundedCornerShape(8.dp)))
                     Text(cat.name, Modifier.padding(start = 10.dp).weight(1f),
-                        fontSize = 13.5.sp, color = Ink, fontWeight = FontWeight.SemiBold)
+                        fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold)
+                    // 上移 / 下移（简化拖拽排序）
+                    Text("▲", fontSize = 10.sp,
+                        color = if (index > 0) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f),
+                        modifier = Modifier
+                            .padding(horizontal = 3.dp)
+                            .noRippleClickable {
+                                if (index > 0) move(list, index, index - 1, kind, vm)
+                            })
+                    Text("▼", fontSize = 10.sp,
+                        color = if (index < list.lastIndex) MaterialTheme.colorScheme.onSurfaceVariant
+                        else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f),
+                        modifier = Modifier
+                            .padding(horizontal = 3.dp)
+                            .noRippleClickable {
+                                if (index < list.lastIndex) move(list, index, index + 1, kind, vm)
+                            })
                     Text(
                         if (cat.pinned) "首页" else "仅统计",
                         Modifier
@@ -146,19 +196,20 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
                                 else MaterialTheme.colorScheme.surfaceVariant,
                                 RoundedCornerShape(999.dp)
                             )
-                            .clickable { vm.togglePinned(cat) }
+                            .noRippleClickable { vm.togglePinned(cat) }
                             .padding(horizontal = 10.dp, vertical = 3.dp),
                         fontSize = 10.sp,
-                        color = if (cat.pinned) MaterialTheme.colorScheme.primary else Ink2,
+                        color = if (cat.pinned) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Bold
                     )
                 }
                 if (cat != list.last()) Hairline()
             }
         }
-        Text("首页固定 8 个（当前 $pinnedCount / 8）· 点标签切换；长按拖动排序在正式版支持",
-            Modifier.fillMaxWidth().padding(vertical = 8.dp), fontSize = 11.sp,
-            color = Ink2, textAlign = TextAlign.Center)
+        Text("首页固定 8 个（当前 $pinnedCount / 8）· 点「首页/仅统计」切换 · ▲▼ 调整顺序",
+            Modifier.fillMaxWidth(), fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         Spacer(Modifier.height(20.dp))
     }
 
@@ -176,6 +227,14 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
 
 // ================= 账户管理 =================
 
+/** 上移/下移分类并持久化排序 */
+private fun move(list: List<Category>, from: Int, to: Int, kind: String, vm: AppViewModel) {
+    val ids = list.map { it.id }.toMutableList()
+    val item = ids.removeAt(from)
+    ids.add(to, item)
+    vm.reorderCategories(kind, ids)
+}
+
 @Composable
 fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     val accounts by vm.accounts.collectAsState()
@@ -185,7 +244,8 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     var transferOpen by remember { mutableStateOf(false) }
 
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SettingsHeader("账户管理", onBack, onAdd = { addOpen = true })
 
@@ -195,19 +255,19 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(20.dp).background(chip(a.color), RoundedCornerShape(8.dp)))
                     Text(a.name, Modifier.padding(start = 10.dp).weight(1f),
-                        fontSize = 13.5.sp, color = Ink, fontWeight = FontWeight.SemiBold)
+                        fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                     Text("¥${Money.format(balanceOf(a, transactions, transfers))}",
-                        fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = Ink)
+                        fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
                 if (a != accounts.last()) Hairline()
             }
         }
-        GlassCard(Modifier.fillMaxWidth().clickable { transferOpen = true }) {
+        GlassCard(Modifier.fillMaxWidth().noRippleClickable { transferOpen = true }) {
             Row(Modifier.fillMaxWidth().padding(vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically) {
-                Text("账户转账", fontSize = 14.sp, color = Ink, fontWeight = FontWeight.SemiBold)
+                Text("账户转账", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.weight(1f))
-                Text("转账不计收支", fontSize = 11.sp, color = Ink2)
+                Text("转账不计收支", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Footnote("余额 = 初始 + 收入 − 支出 + 转入 − 转出", Modifier.padding(top = 6.dp))
@@ -242,14 +302,16 @@ fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Uni
         ThemeOpt(1, Icons.Outlined.LightMode, "浅色", "始终使用亮色外观"),
         ThemeOpt(2, Icons.Outlined.DarkMode, "深色", "始终使用暗色 · 夜间护眼")
     )
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         SettingsHeader("主题", onBack)
         Text("外观", style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(vertical = 8.dp))
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         GlassCard(Modifier.fillMaxWidth()) {
             options.forEach { (mode, icon, name, desc) ->
-                Row(Modifier.fillMaxWidth().clickable { onSelect(mode) }.padding(vertical = 12.dp),
+                Row(Modifier.fillMaxWidth().noRippleClickable { onSelect(mode) }.padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(40.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp)),
@@ -258,8 +320,8 @@ fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Uni
                             tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(21.dp))
                     }
                     Column(Modifier.padding(start = 12.dp).weight(1f)) {
-                        Text(name, fontSize = 14.sp, color = Ink, fontWeight = FontWeight.Bold)
-                        Text(desc, fontSize = 10.5.sp, color = Ink2)
+                        Text(name, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+                        Text(desc, fontSize = 10.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     RadioDot(selected = themeMode == mode)
                 }
@@ -277,13 +339,13 @@ private fun SettingsHeader(title: String, onBack: () -> Unit, onAdd: (() -> Unit
         IconButton(onClick = onBack) {
             Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "返回")
         }
-        Text(title, fontSize = 17.sp, color = Ink, fontWeight = FontWeight.Bold)
+        Text(title, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
         Spacer(Modifier.weight(1f))
         if (onAdd != null) {
             Box(
                 Modifier.size(34.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
-                    .clickable(onClick = onAdd),
+                    .noRippleClickable(onClick = onAdd),
                 contentAlignment = Alignment.Center
             ) {
                 Text("＋", color = MaterialTheme.colorScheme.primary,
@@ -302,14 +364,14 @@ private fun SetRow(
 ) {
     Row(
         Modifier.fillMaxWidth()
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
+            .let { if (onClick != null) it.noRippleClickable(onClick = onClick) else it }
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 14.sp, color = Ink, fontWeight = FontWeight.SemiBold)
+        Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
-        if (right != null) Text(right, fontSize = 12.5.sp, color = Ink2)
-        if (chevron) Text("›", color = Ink2, fontSize = 15.sp, modifier = Modifier.padding(start = 6.dp))
+        if (right != null) Text(right, fontSize = 12.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (chevron) Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp, modifier = Modifier.padding(start = 6.dp))
     }
 }
 
@@ -321,7 +383,7 @@ private fun Toggle(checked: Boolean, onClick: () -> Unit) {
                 if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                 CircleShape
             )
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick = onClick)
             .padding(3.dp),
         contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart
     ) {
@@ -365,10 +427,17 @@ private fun balanceOf(
 
 // ================= 对话框 =================
 
-private val ExpensePalette = listOf("#FF9F68", "#63A9FF", "#F07BAF", "#8B7CF6",
-    "#6FCF97", "#FFB15F", "#62C6C0", "#FF8FA3", "#FFC857", "#9FB4FF")
-private val IncomePalette = listOf("#2FC98A", "#FFB15F", "#63A9FF", "#62C6C0",
-    "#FF8FA3", "#9A9DB3")
+private val ExpensePalette = listOf(
+    "#FF9F68", "#F97316", "#EF4444", "#F43F5E", "#EC4899", "#A855F7",
+    "#8B7CF6", "#6366F1", "#3B82F6", "#0EA5E9", "#14B8A6", "#10B981",
+    "#22C55E", "#84CC16", "#EAB308", "#F59E0B", "#F07BAF", "#62C6C0",
+    "#FFC857", "#9FB4FF", "#64748B", "#78716C"
+)
+private val IncomePalette = listOf(
+    "#2FC98A", "#22C55E", "#10B981", "#14B8A6", "#63A9FF", "#3B82F6",
+    "#8B7CF6", "#A855F7", "#EC4899", "#F43F5E", "#FF8FA3", "#F59E0B",
+    "#FFB15F", "#EAB308", "#84CC16", "#9A9DB3"
+)
 
 private fun colorFromHex(hex: String): Long = ("FF" + hex.removePrefix("#")).toLong(16)
 
@@ -397,13 +466,13 @@ private fun AddCategoryDialog(
                 BasicTextField(
                     value = name,
                     onValueChange = { name = it.take(6) },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     singleLine = true,
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
                             .padding(12.dp)) {
-                            if (name.isEmpty()) Text("分类名称（6 字内）", color = Ink2, fontSize = 13.sp)
+                            if (name.isEmpty()) Text("分类名称（6 字内）", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                             inner()
                         }
                     },
@@ -411,18 +480,20 @@ private fun AddCategoryDialog(
                 )
                 Spacer(Modifier.height(10.dp))
                 val palette = if (kind == "expense") ExpensePalette else IncomePalette
-                palette.chunked(5).forEach { rowColors ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        rowColors.forEach { hex ->
-                            Box(
-                                Modifier.weight(1f).size(34.dp)
-                                    .background(chip(colorFromHex(hex)), RoundedCornerShape(10.dp))
-                                    .border(if (colorFromHex(hex) == color) 2.dp else 0.dp,
-                                        MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
-                                    .clickable { color = colorFromHex(hex) }
-                            )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    palette.chunked(6).forEach { rowColors ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            rowColors.forEach { hex ->
+                                Box(
+                                    Modifier.weight(1f).height(30.dp)
+                                        .background(chip(colorFromHex(hex)), RoundedCornerShape(9.dp))
+                                        .border(if (colorFromHex(hex) == color) 2.dp else 0.dp,
+                                            MaterialTheme.colorScheme.primary, RoundedCornerShape(9.dp))
+                                        .noRippleClickable { color = colorFromHex(hex) }
+                                )
+                            }
+                            repeat(6 - rowColors.size) { Spacer(Modifier.weight(1f)) }
                         }
-                        repeat(5 - rowColors.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
@@ -451,13 +522,13 @@ private fun AddAccountDialog(onDismiss: () -> Unit, onAdd: (String, Long, String
                 BasicTextField(
                     value = name,
                     onValueChange = { name = it.take(8) },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     singleLine = true,
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
                             .padding(12.dp)) {
-                            if (name.isEmpty()) Text("账户名称", color = Ink2, fontSize = 13.sp)
+                            if (name.isEmpty()) Text("账户名称", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                             inner()
                         }
                     },
@@ -473,7 +544,7 @@ private fun AddAccountDialog(onDismiss: () -> Unit, onAdd: (String, Long, String
                                     else MaterialTheme.colorScheme.surfaceVariant,
                                     RoundedCornerShape(999.dp)
                                 )
-                                .clickable { kind = k }
+                                .noRippleClickable { kind = k }
                                 .padding(horizontal = 12.dp, vertical = 6.dp),
                             color = if (kind == k) Color.White else Ink2,
                             fontSize = 12.sp, fontWeight = if (kind == k) FontWeight.Bold else FontWeight.Normal)
@@ -487,7 +558,7 @@ private fun AddAccountDialog(onDismiss: () -> Unit, onAdd: (String, Long, String
                                 .background(chip(colorFromHex(hex)), RoundedCornerShape(10.dp))
                                 .border(if (colorFromHex(hex) == color) 2.dp else 0.dp,
                                     MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
-                                .clickable { color = colorFromHex(hex) }
+                                .noRippleClickable { color = colorFromHex(hex) }
                         )
                     }
                 }
@@ -520,23 +591,25 @@ private fun TransferDialog(
                 Spacer(Modifier.height(6.dp))
                 AccountChips("到", accounts, toId) { toId = it }
                 Spacer(Modifier.height(10.dp))
+                Text("金额（元）", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
                 BasicTextField(
                     value = amount,
                     onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
                             .padding(12.dp)) {
-                            if (amount.isEmpty()) Text("金额", color = Ink2)
+                            if (amount.isEmpty()) Text("金额", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             inner()
                         }
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("转账不计收支，仅影响两个账户的余额", fontSize = 10.5.sp, color = Ink2,
+                Text("转账不计收支，仅影响两个账户的余额", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp))
             }
         },
@@ -552,7 +625,7 @@ private fun TransferDialog(
 private fun AccountChips(label: String, accounts: List<Account>, selectedId: Long,
                          onSelect: (Long) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
-        Text("$label：", color = Ink2, fontSize = 12.sp)
+        Text("$label：", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
                 .padding(vertical = 4.dp),
@@ -566,7 +639,7 @@ private fun AccountChips(label: String, accounts: List<Account>, selectedId: Lon
                             else MaterialTheme.colorScheme.surfaceVariant,
                             RoundedCornerShape(999.dp)
                         )
-                        .clickable { onSelect(a.id) }
+                        .noRippleClickable { onSelect(a.id) }
                         .padding(horizontal = 13.dp, vertical = 6.dp),
                     color = if (a.id == selectedId) Color.White else Ink2,
                     fontSize = 12.sp,

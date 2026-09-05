@@ -10,6 +10,7 @@ class Repository(private val db: AppDatabase) {
     val accounts: Flow<List<Account>> = db.accountDao().observeAll()
     val transactions: Flow<List<Transaction>> = db.transactionDao().observeAll()
     val transfers: Flow<List<Transfer>> = db.transferDao().observeAll()
+    val templates: Flow<List<Template>> = db.templateDao().observeAll()
 
     suspend fun addTransaction(type: String, amountCents: Long, categoryId: Long,
                                accountId: Long, occurredAtMillis: Long, note: String): Long {
@@ -52,6 +53,27 @@ class Repository(private val db: AppDatabase) {
             Transfer(fromAccountId = fromId, toAccountId = toId,
                      amountCents = amountCents, occurredAtMillis = System.currentTimeMillis(), note = note)
         )
+    }
+
+    // ===== 模板 =====
+    suspend fun addTemplate(name: String, amountCents: Long, categoryId: Long, kind: String) {
+        db.templateDao().insert(
+            Template(name = name, amountCents = amountCents, categoryId = categoryId,
+                     kind = kind, sortOrder = (db.templateDao().countOnce() + 1))
+        )
+    }
+
+    suspend fun deleteTemplate(template: Template) = db.templateDao().delete(template)
+
+    // ===== 分类排序（长按拖动排序的简化实现：上移/下移） =====
+    suspend fun reorderCategories(kind: String, ids: List<Long>) {
+        val current = db.categoryDao().listByKindOnce(kind).associateBy { it.id }
+        ids.forEachIndexed { index, id ->
+            val cat = current[id] ?: return@forEachIndexed
+            if (cat.sortOrder != index + 1) {
+                db.categoryDao().update(cat.copy(sortOrder = index + 1))
+            }
+        }
     }
 
     companion object {

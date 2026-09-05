@@ -1,0 +1,44 @@
+# Accounts · 云端自动构建 APK
+# 触发：push 到 main，或手动 workflow_dispatch
+# 说明：
+#   1) 不配签名 Secret 时，release 构建会回退到 debug 签名（首次装可，但覆盖升级会提示签名不一致）。
+#   2) 要覆盖升级不丢数据：在仓库 Settings -> Secrets -> Actions 添加：
+#        ANDROID_KEYSTORE_B64   (keytool 生成的 keystore，base64 编码，单行)
+#        ANDROID_KEYSTORE_PASS / ANDROID_KEY_ALIAS / ANDROID_KEY_PASS
+#     详见 docs/04-构建与签名指南.md
+#   3) 通过 java + gradle-wrapper.jar 直接调用 wrapper（无需 gradlew 脚本）
+name: build-apk
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Show wrapper version
+        run: java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --version
+
+      - name: Build release APK
+        run: java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain :app:assembleRelease
+        env:
+          ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jianji-apk
+          path: app/build/outputs/apk/release/*.apk

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>「Accounts」界面风格对比总览</title>
+<style>
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:#EEF0F3; color:#1A1B1E; padding:30px 16px 70px;}
+  h1{font-size:24px; text-align:center;}
+  .sub{text-align:center; color:#6B7280; font-size:13.5px; margin:10px auto 28px; max-width:780px; line-height:1.8;}
+  .sec-title{max-width:1180px; margin:30px auto 14px; font-size:15px; font-weight:800; letter-spacing:1px;}
+  .sec-title small{font-weight:400; color:#8A9099; font-size:12px; margin-left:8px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:18px; max-width:1180px; margin:0 auto;}
+  .card{background:#fff; border-radius:18px; padding:18px; box-shadow:0 4px 14px rgba(20,25,40,.08); display:flex; flex-direction:column; gap:10px;}
+  .card.hot{border:2px solid #1A1B1E;}
+  .badge{align-self:flex-start; font-size:10.5px; font-weight:800; letter-spacing:1px; padding:3px 10px; border-radius:999px;}
+  .b-new{background:#1A1B1E; color:#fff;}
+  .b-old{background:#EFF0F3; color:#6B7280;}
+  .card .name{font-size:17px; font-weight:800;}
+  .card .memo{font-size:12.5px; color:#6B7280; line-height:1.7; flex:1;}
+  .pal{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .pal .sw{width:24px; height:24px; border-radius:8px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);}
+  .pal .lbl{font-size:10px; color:#9AA0A8;}
+  .tag{display:inline-block; font-size:11px; background:#F1F2F6; border-radius:999px; padding:3px 10px; margin:2px 4px 0 0; color:#454A52;}
+  .tag.hl{background:#FFF3D6; color:#9A6B00;}
+  .open{display:inline-block; text-align:center; background:#1A1D21; color:#fff; border-radius:12px;
+        padding:10px 0; font-size:13.5px; font-weight:700; text-decoration:none;}
+  .open.d{background:linear-gradient(135deg,#2E5BFF,#4D8DFF);}
+  .open.e{background:linear-gradient(135deg,#8B7CF6,#5FB4FF);}
+  .open.f{background:#16181D;}
+  .open.plain{background:#E9EBEF; color:#3A3F47;}
+  .note{max-width:1180px; margin:30px auto 0; font-size:12.5px; color:#6B7280; line-height:1.85;
+        background:#fff; border-radius:14px; padding:14px 18px;}
+  .note b{color:#1A1B1E;}
+  .note .dims{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
+  .note .dims span{background:#F5F6FA; border-radius:8px; padding:3px 10px; font-size:11.5px; color:#454A52;}
+</style>
+</head>
+<body>
+<h1>「Accounts」记账 App · 界面风格对比</h1>
+<p class="sub">第二轮：三版新风格 —— 从<b>图标系统 / 底部导航形态 / 风格语言 / 配色</b>四个维度做差异化的完整 Demo（每版含记一笔 / 明细 / 统计三屏）。</p>
+
+<div class="sec-title">第二轮 · 三版新风格 <small>（本页 Demo 与功能均一致，仅视觉不同）</small></div>
+<div class="grid">
+
+  <div class="card hot">
+    <span class="badge b-new">图标 · 汉字徽章</span>
+    <div class="name">D · 多巴胺（高饱和撞色）</div>
+    <div class="pal"><span class="sw" style="background:#2E5BFF"></span><span class="sw" style="background:#FF5A5F"></span><span class="sw" style="background:#00C48C"></span><span class="sw" style="background:#FF7A45"></span></div>
+    <div class="memo">分类用<b>汉字徽章</b>（餐/行/购/居…）白字实色块替代 emoji；底部为<b>悬浮胶囊 Dock</b>（当前页整块高亮滑块）。高饱和撞色 + 粗体大金额，醒目有力。</div>
+    <div><span class="tag hl">汉字徽章图标</span><span class="tag hl">悬浮胶囊导航</span><span class="tag">高饱和撞色</span><span class="tag">粗体大金额</span></div>
+    <a class="open d" href="style-d-dopamine.html">打开 D · 多巴胺 Demo</a>
+  </div>
+
+  <div class="card hot">
+    <span class="badge b-new">图标 · 色片（无图案）</span>
+    <div class="name">E · 晨雾（浅色玻璃拟态）<span style="font-size:11px;color:#E8833A;font-weight:700;"> · 持续细调中 ✓</span></div>
+    <div class="pal"><span class="sw" style="background:#8B7CF6"></span><span class="sw" style="background:#5FB4FF"></span><span class="sw" style="background:#FF8FA3"></span><span class="sw" style="background:#2FC98A"></span></div>
+    <div class="memo">最新一轮：① 首页<b>零文字提示</b>（功能靠手势 + 设置实现）；② <b>设置入口（滑杆图标，已避免日/夜模式歧义）位于统计页顶部"本月"左侧</b>；③ 纵向留白加大、不挤在中上；④ 明细点击月份「11月 ▾」可<b>选年份/月份/日期跳转</b>；⑤ 底栏纯圆<b>间距加大</b>、无文字；⑥ 共 <b>7 屏</b>：记一笔 / 明细 / 统计 / 设置 + <b>分类管理 / 账户管理 / 主题</b> 三个子页。</div>
+    <div><span class="tag hl">首页零文字提示</span><span class="tag hl">设置=滑杆图标（非日/夜）</span><span class="tag hl">月份点按跳年/月/日</span><span class="tag hl">纯圆底栏·间距加大</span><span class="tag">纵向舒展</span></div>
+    <a class="open e" href="style-e-mist.html">打开 E · 晨雾（最新细调）Demo</a>
+  </div>
+
+  <div class="card hot">
+    <span class="badge b-new">图标 · 编号 01–08</span>
+    <div class="name">F · 印刻（瑞士编辑排版）</div>
+    <div class="pal"><span class="sw" style="background:#FAFAF7"></span><span class="sw" style="background:#16181D"></span><span class="sw" style="background:#E5484D"></span><span class="sw" style="background:#1F7A5C"></span></div>
+    <div class="memo">分类以<b>"01–08"编号</b>代替一切图案；导航是<b>纯文字 + 朱红下划线</b>（无图标）。纸白底 + 炭黑大字 + 单一朱红，靠排版说话的财务刊物感。</div>
+    <div><span class="tag hl">分类编号制</span><span class="tag hl">文字下划线导航</span><span class="tag">大字编辑排版</span><span class="tag">单一朱红强调</span></div>
+    <a class="open f" href="style-f-editorial.html">打开 F · 印刻 Demo</a>
+  </div>
+
+</div>
+
+<div class="sec-title">第一轮 · 回顾 <small>（如仍喜欢其中某一方向也可继续参考）</small></div>
+<div class="grid">
+  <div class="card">
+    <span class="badge b-old">emoji 图标</span>
+    <div class="name">现方案 v0 · 蓝白</div>
+    <div class="memo">清爽蓝白 Material 初稿（功能演示基线）。</div>
+    <div><span class="tag">emoji</span><span class="tag">三格底栏</span><span class="tag">蓝色系</span></div>
+    <a class="open plain" href="../index.html">打开初稿</a>
+  </div>
+  <div class="card">
+    <span class="badge b-old">emoji 灰度</span>
+    <div class="name">A · 简寂（黑白极简）</div>
+    <div class="memo">黑白灰 + 灰度化 emoji 的冷静工具风。</div>
+    <div><span class="tag">emoji 灰度</span><span class="tag">黑白单色</span></div>
+    <a class="open plain" href="style-a-clean.html">打开 A</a>
+  </div>
+  <div class="card">
+    <span class="badge b-old">emoji</span>
+    <div class="name">B · 暖帐（奶油手账）</div>
+    <div class="memo">奶油底 + 马卡龙分类的温暖手账风。</div>
+    <div><span class="tag">马卡龙色</span><span class="tag">暖调圆润</span></div>
+    <a class="open plain" href="style-b-warm.html">打开 B</a>
+  </div>
+  <div class="card">
+    <span class="badge b-old">emoji</span>
+    <div class="name">C · 曜夜（深色数据）</div>
+    <div class="memo">深色玻璃拟态 + 渐变高亮的科技夜用风。</div>
+    <div><span class="tag">深色</span><span class="tag">玻璃拟态</span></div>
+    <a class="open plain" href="style-c-midnight.html">打开 C</a>
+  </div>
+</div>
+
+<div class="note">
+  <b>四维差异速览</b>
+  <div class="dims">
+    <span>图标：emoji → 汉字徽章(D) / 色片(E) / 编号(F)</span>
+    <span>底栏：普通三格 → 悬浮胶囊(D) / 泡泡悬浮(E) / 文字下划线(F)</span>
+    <span>风格：扁平撞色 / 玻璃拟态 / 编辑排版</span>
+    <span>配色：电光蓝×撞色 / 晨雾紫蓝粉 / 纸白×炭黑×朱红</span>
+  </div>
+  <br>
+  <b>选择建议：</b>记账是每天高频操作——第一看<b>底栏与分类块在你手指下是否顺手好认</b>（汉字徽章最快扫读、色片最安静、编号最克制）；第二看<b>盯 10 秒是否舒服</b>；第三考虑夜间使用。若相中某版或想混搭（如"E 的底栏 + D 的图标"），告诉我即可，按最终选择实现正式版 Compose 主题。
+</div>
+</body>
+</html>

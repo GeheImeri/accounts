@@ -1,0 +1,381 @@
+# -*- coding: utf-8 -*-
+"""
+「Accounts」三套风格 Demo 生成器
+同一套界面结构（记一笔/明细/统计），三套 CSS 主题皮肤。
+运行: python make_styles.py   -> 生成 style-a-clean.html / style-b-warm.html / style-c-midnight.html
+"""
+import os
+
+BASE_CSS = r'''
+*{box-sizing:border-box; margin:0; padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+     background:var(--page); color:var(--ink); padding:30px 16px 64px;}
+h1{font-size:23px; text-align:center; font-weight:800; letter-spacing:.5px;}
+.sub{text-align:center; font-size:13px; color:var(--ink2); margin:8px auto 4px; max-width:820px; line-height:1.7;}
+.palette{display:flex; justify-content:center; align-items:center; gap:8px; margin:12px auto 2px; flex-wrap:wrap;}
+.palette .sw{width:22px; height:22px; border-radius:7px; display:inline-block; box-shadow:inset 0 0 0 1px rgba(128,128,128,.25);}
+.palette .swtxt{font-size:11px; color:var(--ink2); font-variant-numeric:tabular-nums;}
+.traits{list-style:none; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px auto 0; max-width:860px;}
+.traits li{font-size:12px; color:var(--ink); background:var(--accent-soft); border:1px solid var(--line);
+           padding:4px 12px; border-radius:999px;}
+.back{text-align:center; margin-top:12px; font-size:12.5px;}
+.back a{color:var(--accent); text-decoration:none; font-weight:600;}
+.stage{display:flex; flex-wrap:wrap; gap:34px; justify-content:center; align-items:flex-start; margin-top:26px;}
+.col{display:flex; flex-direction:column; align-items:center; gap:12px;}
+.caption{max-width:340px; font-size:12.5px; color:#555; line-height:1.65; background:var(--card);
+         border:1px solid var(--card-border); border-radius:12px; padding:10px 12px;}
+.caption b{color:var(--ink);}
+.phone{width:340px; background:var(--frame); border-radius:46px; padding:10px; box-shadow:0 12px 34px rgba(10,15,25,.25);}
+.screen{background:var(--screen); border-radius:36px; overflow:hidden; height:700px; display:flex; flex-direction:column;}
+.statusbar{display:flex; justify-content:space-between; align-items:center; padding:10px 22px 6px; font-size:11px;
+           background:var(--screen); color:var(--ink2);}
+.content{flex:1; overflow:hidden; display:flex; flex-direction:column;}
+.scroll{flex:1; overflow:hidden; padding:2px 14px 0;}
+.nav{display:flex; border-top:1px solid var(--line); background:var(--screen); padding:6px 0 10px;}
+.nav .item{flex:1; text-align:center; font-size:10px; color:var(--ink2);}
+.nav .item .ic{font-size:19px; display:block; margin-bottom:1px;}
+.nav .item.on{color:var(--accent); font-weight:700;}
+.seg{display:flex; gap:0; background:var(--accent-soft); border-radius:12px; margin:10px 16px 2px; padding:3px;}
+.seg span{flex:1; text-align:center; padding:7px 0; border-radius:9px; font-size:13px; color:var(--ink2);}
+.seg span.on{background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#fff; font-weight:700;}
+.amount{text-align:center; font-size:44px; font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:1px;
+        padding:12px 0 2px; color:var(--ink);}
+.amount small{font-size:22px; font-weight:500; color:var(--ink2); margin-right:6px;}
+.noteinput{text-align:center; color:var(--ink2); font-size:13px; padding:4px 0 10px; opacity:.7;}
+.sec{font-size:11.5px; color:var(--ink2); padding:12px 4px 8px; letter-spacing:.5px;}
+.catgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+.cat{display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 0 7px;
+     border:1px solid var(--line); border-radius:14px; font-size:10.5px; background:var(--card); color:var(--ink);}
+.cat .e{font-size:20px; line-height:1;}
+.meta{display:flex; justify-content:space-between; font-size:12px; padding:12px 4px 0; color:var(--ink);}
+.meta .sub{color:var(--ink2); font-size:12px;}
+.chips{display:flex; gap:6px; flex-wrap:wrap; padding:8px 0 2px;}
+.chip{font-size:12px; padding:5px 12px; border-radius:999px; border:1px solid var(--line); background:var(--card); color:var(--ink);}
+.chip.star{background:#FFF7E6; border-color:#F0D59A;}
+.save{margin:12px 0 14px; background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#fff;
+      text-align:center; padding:13px 0; border-radius:14px; font-size:15px; font-weight:700;}
+.barhead{display:flex; align-items:center; justify-content:space-between; padding:4px 16px 2px;}
+.barhead h2{font-size:17px; color:var(--ink);}
+.month{font-size:13px; color:var(--accent); font-weight:700; letter-spacing:2px;}
+.agg{display:flex; gap:8px; padding:8px 16px 6px;}
+.agg .box{flex:1; background:var(--card); border:1px solid var(--card-border); border-radius:12px; padding:8px 10px;}
+.agg .box .t{font-size:10.5px; color:var(--ink2);}
+.agg .box .v{font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; margin-top:2px; color:var(--ink);}
+.search{margin:8px 16px 4px; background:var(--accent-soft); border-radius:10px; padding:8px 12px;
+        font-size:12.5px; color:var(--ink2);}
+.day{display:flex; justify-content:space-between; font-size:11px; color:var(--ink2);
+     padding:10px 6px 6px; border-top:1px solid var(--line); margin-top:8px;}
+.day .s{color:var(--ink); font-weight:700;}
+.row{display:flex; align-items:center; gap:10px; padding:7px 6px;}
+.tile{width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+      font-size:18px; flex:none; background:var(--accent-soft);}
+.txt{flex:1; min-width:0;}
+.txt .n{font-size:13.5px; color:var(--ink);}
+.txt .d{font-size:11px; color:var(--ink2); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.amt{font-size:14px; font-weight:700; font-variant-numeric:tabular-nums;}
+.amt.minus{color:var(--expense);}
+.amt.plus{color:var(--income);}
+.topline{display:flex; justify-content:space-between; align-items:center; padding:4px 16px 2px;}
+.topline h2{font-size:17px; color:var(--ink);}
+.pill{font-size:12.5px; color:var(--accent); border:1px solid var(--accent); border-radius:999px; padding:4px 12px;}
+.cards{display:flex; gap:8px; padding:10px 16px 4px;}
+.card{flex:1; background:var(--card); border:1px solid var(--card-border); border-radius:14px; padding:10px 12px;}
+.card .t{font-size:11px; color:var(--ink2);}
+.card .v{font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; margin-top:3px; color:var(--ink);}
+.card .d{font-size:11px; margin-top:2px;}
+.down{color:var(--expense);} .up{color:var(--income);}
+.ringwrap{display:flex; align-items:center; gap:16px; padding:12px 18px 6px;}
+.donut{width:118px; height:118px; border-radius:50%; flex:none; position:relative;
+  background:conic-gradient(var(--c-food) 0 35%, var(--c-rent) 35% 86%, var(--c-shop) 86% 94%, var(--c-travel) 94% 100%);}
+.donut::after{content:""; position:absolute; inset:26px; background:var(--screen); border-radius:50%;}
+.donut .ct{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center;
+           justify-content:center; z-index:1;}
+.donut .ct .a{font-size:15px; font-weight:800; color:var(--ink);}
+.donut .ct .b{font-size:10px; color:var(--ink2);}
+.legend{flex:1; font-size:12px; display:flex; flex-direction:column; gap:6px; color:var(--ink);}
+.legend div{display:flex; align-items:center; gap:6px;}
+.dot{width:9px; height:9px; border-radius:3px; flex:none;}
+.legend .pct{margin-left:auto; color:var(--ink2); font-variant-numeric:tabular-nums;}
+.rank{padding:4px 18px 6px;}
+.rank .r{display:flex; align-items:center; gap:8px; padding:6px 0;}
+.rank .rn{width:26px; font-size:11.5px; color:var(--ink);}
+.rank .rt{width:24px; text-align:center;}
+.track{flex:1; height:14px; background:var(--accent-soft); border-radius:7px; overflow:hidden;}
+.fill{height:100%; border-radius:7px;}
+.rank .rv{width:74px; text-align:right; font-size:12px; font-variant-numeric:tabular-nums; font-weight:700; color:var(--ink);}
+.rank .rp{width:36px; text-align:right; font-size:11px; color:var(--ink2);}
+.trendhead{font-size:11.5px; color:var(--ink2); padding:12px 18px 6px;}
+.bars{display:flex; align-items:flex-end; gap:10px; height:86px; padding:0 18px 2px;}
+.bars .b{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end;}
+.bars .v{width:100%; border-radius:6px 6px 0 0; background:var(--accent);}
+.bars .l{font-size:10px; color:var(--ink2);}
+'''
+
+PHONE = r'''
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>12:30</span><span>&#128246; &#128267; 89%</span></div>
+        <div class="content">
+          <div class="seg"><span class="on">支出</span><span>收入</span></div>
+          <div class="amount"><small>¥</small>0.00</div>
+          <div class="noteinput">备注（可选）</div>
+          <div class="scroll">
+            <div class="sec">选个分类 · 点选即记好</div>
+            <div class="catgrid">
+              <div class="cat hot" style="background:color-mix(in srgb, var(--c-food) 16%, #ffffff)"><span class="e">🍜</span>餐饮</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-travel) 16%, #ffffff)"><span class="e">🚇</span>交通</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-shop) 16%, #ffffff)"><span class="e">🛒</span>购物</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-rent) 16%, #ffffff)"><span class="e">🏠</span>居住</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-food) 16%, #ffffff)"><span class="e">🧻</span>日用</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-shop) 16%, #ffffff)"><span class="e">🎮</span>娱乐</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-rent) 16%, #ffffff)"><span class="e">💊</span>医疗</div>
+              <div class="cat" style="background:color-mix(in srgb, var(--c-travel) 16%, #ffffff)"><span class="e">🎁</span>人情</div>
+            </div>
+            <div class="meta"><span>💼 钱包：<span class="sub">现金 ▾</span></span><span>🕐 今天 12:30 ▾</span></div>
+            <div class="sec">最近金额</div>
+            <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+            <div class="sec">我的模板</div>
+            <div class="chips"><span class="chip star">⭐ 早餐 ¥8</span><span class="chip star">⭐ 地铁 ¥6</span><span class="chip">＋ 新增</span></div>
+            <div class="save">保 存</div>
+          </div>
+        </div>
+        <div class="nav"><div class="item on"><span class="ic">➕</span>记一笔</div><div class="item"><span class="ic">📋</span>明细</div><div class="item"><span class="ic">📊</span>统计</div></div>
+      </div></div>
+'''
+
+PHONE2 = r'''
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>12:31</span><span>&#128246; &#128267; 89%</span></div>
+        <div class="content">
+          <div class="barhead"><h2>明细</h2><span class="month">‹ 11月 ›</span></div>
+          <div class="agg">
+            <div class="box"><div class="t">本月支出</div><div class="v">¥2,345.00</div></div>
+            <div class="box"><div class="t">本月收入</div><div class="v" style="color:var(--income)">¥9,000.00</div></div>
+          </div>
+          <div class="search">🔍 搜索备注…　　[筛选 ▾]</div>
+          <div class="scroll">
+            <div class="day"><span>11月12日 周二</span><span>支出 <span class="s">¥47.50</span></span></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-food) 18%, var(--screen))">🍜</div><div class="txt"><div class="n">午餐</div><div class="d">餐饮 · 现金 · 和同事</div></div><div class="amt minus">−23.50</div></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-food) 18%, var(--screen))">☕</div><div class="txt"><div class="n">咖啡</div><div class="d">餐饮 · 现金</div></div><div class="amt minus">−18.00</div></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-travel) 18%, var(--screen))">🚇</div><div class="txt"><div class="n">地铁</div><div class="d">交通 · 微信零钱</div></div><div class="amt minus">−6.00</div></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-income) 18%, var(--screen))">🎁</div><div class="txt"><div class="n">红包</div><div class="d">收入 · 微信零钱</div></div><div class="amt plus">＋200.00</div></div>
+            <div class="day"><span>11月11日 周一</span><span>支出 <span class="s">¥1,200.00</span></span></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-rent) 18%, var(--screen))">🏠</div><div class="txt"><div class="n">房租</div><div class="d">居住 · 储蓄卡 · 11月房租</div></div><div class="amt minus">−1,200.00</div></div>
+            <div class="row"><div class="tile" style="background:color-mix(in srgb, var(--c-shop) 18%, var(--screen))">🛒</div><div class="txt"><div class="n">超市</div><div class="d">购物 · 支付宝</div></div><div class="amt minus">−56.80</div></div>
+          </div>
+        </div>
+        <div class="nav"><div class="item"><span class="ic">➕</span>记一笔</div><div class="item on"><span class="ic">📋</span>明细</div><div class="item"><span class="ic">📊</span>统计</div></div>
+      </div></div>
+'''
+
+PHONE3 = r'''
+      <div class="phone"><div class="screen">
+        <div class="statusbar"><span>12:32</span><span>&#128246; &#128267; 89%</span></div>
+        <div class="content">
+          <div class="topline"><h2>统计</h2><span class="pill">本月 ▾</span></div>
+          <div class="cards">
+            <div class="card"><div class="t">支出</div><div class="v">¥2,345.00</div><div class="d down">▼ 8% 比上月</div></div>
+            <div class="card"><div class="t">收入</div><div class="v" style="color:var(--income)">¥9,000.00</div><div class="d up">▲ 12% 比上月</div></div>
+            <div class="card"><div class="t">结余</div><div class="v">¥6,655.00</div><div class="d" style="color:var(--ink2)">收入−支出</div></div>
+          </div>
+          <div class="ringwrap">
+            <div class="donut"><div class="ct"><div class="a">35%</div><div class="b">餐饮</div></div></div>
+            <div class="legend">
+              <div><span class="dot" style="background:var(--c-food)"></span>餐饮 <span class="pct">35%</span></div>
+              <div><span class="dot" style="background:var(--c-rent)"></span>居住 <span class="pct">51%</span></div>
+              <div><span class="dot" style="background:var(--c-shop)"></span>购物 <span class="pct">8%</span></div>
+              <div><span class="dot" style="background:var(--c-travel)"></span>交通 <span class="pct">6%</span></div>
+            </div>
+          </div>
+          <div class="sec" style="padding-left:18px">分类排行（支出）· 点击下钻</div>
+          <div class="rank">
+            <div class="r"><span class="rt">🏠</span><span class="rn">居住</span><div class="track"><div class="fill" style="width:51%;background:var(--c-rent)"></div></div><span class="rv">¥1,200.00</span><span class="rp">51%</span></div>
+            <div class="r"><span class="rt">🍜</span><span class="rn">餐饮</span><div class="track"><div class="fill" style="width:35%;background:var(--c-food)"></div></div><span class="rv">¥820.00</span><span class="rp">35%</span></div>
+            <div class="r"><span class="rt">🛒</span><span class="rn">购物</span><div class="track"><div class="fill" style="width:8%;background:var(--c-shop)"></div></div><span class="rv">¥180.00</span><span class="rp">8%</span></div>
+            <div class="r"><span class="rt">🚇</span><span class="rn">交通</span><div class="track"><div class="fill" style="width:6%;background:var(--c-travel)"></div></div><span class="rv">¥145.00</span><span class="rp">6%</span></div>
+          </div>
+          <div class="trendhead">近 6 个月支出趋势（柱）</div>
+          <div class="bars">
+            <div class="b lo"><div class="v" style="height:36%"></div><div class="l">6月</div></div>
+            <div class="b lo"><div class="v" style="height:52%"></div><div class="l">7月</div></div>
+            <div class="b lo"><div class="v" style="height:44%"></div><div class="l">8月</div></div>
+            <div class="b lo"><div class="v" style="height:62%"></div><div class="l">9月</div></div>
+            <div class="b lo"><div class="v" style="height:55%"></div><div class="l">10月</div></div>
+            <div class="b hi"><div class="v" style="height:80%"></div><div class="l">11月</div></div>
+          </div>
+        </div>
+        <div class="nav"><div class="item"><span class="ic">➕</span>记一笔</div><div class="item"><span class="ic">📋</span>明细</div><div class="item on"><span class="ic">📊</span>统计</div></div>
+      </div></div>
+'''
+
+CAPTION1 = '<div class="caption"><b>记一笔（默认首页）</b><br>打开即记账：输金额 → 点分类即保存；连续记账连录小票；⭐模板一键记账。'
+CAPTION2 = '<div class="caption"><b>明细</b><br>按日分组 + 当日小计；点一笔可编辑/删除/<b>再次记账</b>；收入绿色＋号；支持搜索筛选。'
+CAPTION3 = '<div class="caption"><b>统计（默认本月）</b><br>支出/收入/结余 + 环比；环形图 + 分类排行（点分类下钻）；近 6 月趋势。数字由明细实时聚合。'
+
+THEMES = [
+dict(
+  file='style-a-clean.html',
+  name='A · 简寂（黑白极简）',
+  sub='以黑白灰为骨、留白为肌理。图标统一做单色处理，去掉彩色噪音；细线分割 + 大号轻量金额，像一本冷静的工作台账——适合每天大量记账、怕花哨的人。',
+  palette=[('#F5F6F7','背景'),('#1A1D21','主文字/按钮'),('#71767D','次要'),('#15803D','仅收入')],
+  traits=['黑白灰单色系','分类图标灰度化','大留白 / 细分割线','粗体大金额','无卡片阴影'],
+  css=r'''
+:root{
+  --page:#ECEEF1; --frame:#D7DBE0; --screen:#FFFFFF;
+  --ink:#1A1D21; --ink2:#71767D; --line:#E7E9ED;
+  --accent:#1A1D21; --accent2:#1A1D21; --accent-soft:#F1F2F4;
+  --income:#15803D; --expense:#1A1D21;
+  --card:#FFFFFF; --card-border:#E7E9ED;
+  --c-food:#6B7280; --c-rent:#374151; --c-shop:#9CA3AF; --c-travel:#D1D5DB; --c-income:#15803D;
+}
+.amount{font-weight:300; font-size:47px; letter-spacing:.5px;}
+.cat{background:#FFFFFF!important; border:1px solid var(--line)!important; border-radius:10px;}
+.cat .e{filter:grayscale(1);}
+.cat.hot{background:#1A1D21!important; border-color:#1A1D21!important; color:#fff!important;}
+.cat.hot .e{filter:grayscale(1) contrast(1.2);}
+.tile{border:1px solid var(--line); border-radius:10px;}
+.tile{filter:grayscale(1);}
+.save{border-radius:10px; font-weight:600;}
+.seg span.on{background:#1A1D21;}
+.pill{color:var(--ink); border-color:var(--ink);}
+.chip.star{background:#fff; border-color:var(--line);}
+.month{color:var(--ink);}
+'''
+),
+dict(
+  file='style-b-warm.html',
+  name='B · 暖帐（奶油手账风）',
+  sub='奶油底色 + 焦糖橘点缀，分类块用马卡龙色系、大圆角与柔和光影，像一本随手涂写的温暖手账——记账的心情轻松一点，适合日常碎片化记录。',
+  palette=[('#FBF4E6','奶油底'),('#4A3A2C','暖棕文字'),('#E8833A','主色焦糖橘'),('#2E7D5B','收入抹茶绿')],
+  traits=['奶油暖底 + 暖棕文字','马卡龙色分类块','大圆角 / 柔和阴影','焦糖橘主操作','收入用抹茶绿'],
+  css=r'''
+:root{
+  --page:#F2E8D7; --frame:#E2D3BA; --screen:#FFFCF5;
+  --ink:#4A3A2C; --ink2:#A08A70; --line:#F0E3CE;
+  --accent:#E8833A; --accent2:#F2A65A; --accent-soft:#F9EBD9;
+  --income:#2E7D5B; --expense:#B3542E;
+  --card:#FFF9EE; --card-border:#F1E2C8;
+  --c-food:#F4A340; --c-rent:#E8833A; --c-shop:#5FA07C; --c-travel:#7A8FB5; --c-income:#2E7D5B;
+}
+body{background:
+  radial-gradient(900px 480px at 85% -8%, rgba(232,131,58,.10), transparent 60%),
+  radial-gradient(700px 420px at -10% 30%, rgba(95,160,124,.08), transparent 60%),
+  var(--page);}
+.phone{box-shadow:0 14px 30px rgba(110,80,40,.22);}
+.amount{font-weight:800;}
+.cat{border:none!important; border-radius:22px; font-weight:600;
+     box-shadow:inset 0 0 0 1px rgba(255,255,255,.65), 0 2px 5px rgba(120,80,30,.07);}
+.cat .e{font-size:22px;}
+.cat.hot{box-shadow:0 0 0 2px var(--accent), inset 0 0 0 1px rgba(255,255,255,.65);}
+.save{border-radius:999px; font-weight:800; box-shadow:0 6px 14px rgba(232,131,58,.32);}
+.chip.star{background:#FBEBCC; border-color:#EFD3A0;}
+.tile{border:none;}
+.caption{box-shadow:0 4px 10px rgba(120,80,30,.08);}
+'''
+),
+dict(
+  file='style-c-midnight.html',
+  name='C · 曜夜（深色数据风）',
+  sub='深色玻璃质感 + 青紫渐变高亮，金额与图表带一点微光，像一块夜间的数据面板——护眼、沉浸、有科技感，适合晚上记账或喜欢深色系的人。',
+  palette=[('#0D1117','曜夜底'),('#E6EDF5','亮文字'),('#6D5DF6→#38BDF8','青紫渐变'),('#34D399','收入')],
+  traits=['深色玻璃拟态卡片','青紫渐变主色','图表/按钮微光','夜间护眼','亮色收入绿 / 支出红'],
+  css=r'''
+:root{
+  --page:#07090E; --frame:#000000; --screen:#0E1219;
+  --ink:#E9EDF3; --ink2:#8B93A3; --line:#212A3A;
+  --accent:#6D5DF6; --accent2:#38BDF8; --accent-soft:#1A2130;
+  --income:#34D399; --expense:#F87171;
+  --card:#141A24; --card-border:#253041;
+  --c-food:#38BDF8; --c-rent:#818CF8; --c-shop:#F472B6; --c-travel:#FBBF24; --c-income:#34D399;
+}
+body{background:
+  radial-gradient(1100px 520px at 12% -12%, rgba(109,93,246,.20), transparent 60%),
+  radial-gradient(800px 460px at 100% 8%, rgba(56,189,248,.10), transparent 55%),
+  var(--page);}
+.phone{box-shadow:0 20px 46px rgba(0,0,0,.65);}
+.caption{background:var(--card); color:#A9B1BF;}
+.caption b{color:#fff;}
+.cat,.tile{background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.02))!important;
+           border:1px solid rgba(255,255,255,.10)!important;}
+.cat.hot{border-color:var(--accent2)!important; box-shadow:0 0 16px rgba(56,189,248,.28);}
+.save{box-shadow:0 8px 20px rgba(109,93,246,.35);}
+.donut{box-shadow:0 0 24px rgba(109,93,246,.35);}
+.donut::after{background:var(--screen);}
+.bars .v{background:linear-gradient(180deg,#38BDF8,#6D5DF6);}
+.bars .b.lo .v{background:#28303F;}
+.bars .b.hi .v{box-shadow:0 0 12px rgba(56,189,248,.45);}
+.track{background:#1B2230;}
+.chip{background:#161D29;}
+.chip.star{background:rgba(56,189,248,.13); border-color:rgba(56,189,248,.45);}
+.seg span.on{background:linear-gradient(90deg,#6D5DF6,#38BDF8);}
+'''
+),
+]
+
+PAGE_HEAD = r'''<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>「Accounts」界面 Demo · __NAME__</title>
+<style>
+__CSS__
+</style>
+</head>
+<body>
+<h1>「Accounts」记账 App · 界面风格 Demo</h1>
+<p class="sub">风格 <b>__NAME__</b> —— __SUB__</p>
+<div class="palette">__PALETTE__</div>
+<ul class="traits">__TRAITS__</ul>
+<p class="back"><a href="index.html">← 返回三版风格对比总览</a></p>
+<div class="stage">
+  <div class="col">
+__PHONE1__
+    __CAP1__
+  </div>
+  <div class="col">
+__PHONE2__
+    __CAP2__
+  </div>
+  <div class="col">
+__PHONE3__
+    __CAP3__
+  </div>
+</div>
+<footer style="margin-top:40px; text-align:center; font-size:12px; color:var(--ink2);">
+  结构与功能完全相同，仅视觉语言不同 · 正式版用 Jetpack Compose 实现该风格主题
+</footer>
+</body>
+</html>
+'''
+
+def build(theme):
+    palette_html = ' '.join(
+        '<span class="sw" style="background:%s" title="%s"></span><span class="swtxt">%s</span>' % (h, h, label)
+        for h, label in theme['palette'])
+    traits_html = ''.join('<li>%s</li>' % t for t in theme['traits'])
+    css = BASE_CSS + theme['css']
+    page = (PAGE_HEAD
+            .replace('__NAME__', theme['name'])
+            .replace('__SUB__', theme['sub'])
+            .replace('__PALETTE__', palette_html)
+            .replace('__TRAITS__', traits_html)
+            .replace('__CSS__', css)
+            .replace('__PHONE1__', PHONE)
+            .replace('__CAP1__', CAPTION1)
+            .replace('__PHONE2__', PHONE2)
+            .replace('__CAP2__', CAPTION2)
+            .replace('__PHONE3__', PHONE3)
+            .replace('__CAP3__', CAPTION3))
+    return page
+
+def main():
+    here = os.path.dirname(os.path.abspath(__file__))
+    for theme in THEMES:
+        out = os.path.join(here, theme['file'])
+        with open(out, 'w', encoding='utf-8') as f:
+            f.write(build(theme))
+        print('written', theme['file'], os.path.getsize(out), 'bytes')
+
+if __name__ == '__main__':
+    main()

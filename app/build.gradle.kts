@@ -20,13 +20,12 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // 签名：CI 提供了 Secret 时用固定 release 签名；否则回退 debug 签名，保证首次构建总能通过
-            signingConfig = if (System.getenv("ANDROID_KEYSTORE_B64") != null) {
+            // 签名：CI 提供了 keystore 文件路径时用固定 release 签名（文件由 workflow 从 Secret 解码生成）；
+            // 否则回退 debug 签名，保证首次构建总能通过
+            val ksFile = System.getenv("ANDROID_KEYSTORE_FILE")
+            signingConfig = if (ksFile != null && File(ksFile).exists()) {
                 signingConfigs.create("release") {
-                    val b64 = System.getenv("ANDROID_KEYSTORE_B64")!!
-                    val file = File.createTempFile("jianji", ".jks")
-                    file.writeBytes(java.util.Base64.getDecoder().decode(b64))
-                    storeFile = file
+                    storeFile = File(ksFile)
                     storePassword = System.getenv("ANDROID_KEYSTORE_PASS") ?: ""
                     keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: ""
                     keyPassword = System.getenv("ANDROID_KEY_PASS") ?: ""

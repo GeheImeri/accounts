@@ -92,6 +92,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     val balance = cur.income - cur.expense
 
     val totalExpense = cur.expense
+    val fallbackColor = MaterialTheme.colorScheme.onSurfaceVariant
     val ranks = remember(monthTx, catMap) {
         monthTx.filter { it.type == "expense" }
             .groupBy { it.categoryId }
@@ -100,8 +101,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                 Rank(
                     categoryId = cid,
                     name = cat?.name ?: "未分类",
-                    color = if (cat != null) Color(cat.color)
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (cat != null) Color(cat.color) else fallbackColor,
                     amount = list.sumOf { it.amountCents },
                     pct = 0f
                 )

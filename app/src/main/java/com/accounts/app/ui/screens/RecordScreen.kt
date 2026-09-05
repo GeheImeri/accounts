@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDialog
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -409,8 +408,10 @@ private fun DateTimePickerDialog(initial: Long, onPick: (Long) -> Unit, onDismis
             initialMinute = initialTime.minute,
             is24Hour = true
         )
-        TimePickerDialog(
+        AlertDialog(
             onDismissRequest = { step = 0 },
+            title = { Text("选择时间") },
+            text = { TimePicker(state = timeState) },
             confirmButton = {
                 TextButton(onClick = {
                     val ldt = LocalDateTime.of(
@@ -421,9 +422,7 @@ private fun DateTimePickerDialog(initial: Long, onPick: (Long) -> Unit, onDismis
                 }) { Text("确定") }
             },
             dismissButton = { TextButton(onClick = { step = 0 }) { Text("上一步") } }
-        ) {
-            TimePicker(state = timeState)
-        }
+        )
     }
 }
 

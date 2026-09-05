@@ -1,5 +1,7 @@
 package com.accounts.app.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -77,6 +79,9 @@ fun SettingsScreen(
     val defaultAccId by vm.defaultAccountId.collectAsState()
     var continuous by remember { mutableStateOf(true) }
     var accountMenu by remember { mutableStateOf(false) }
+    val restoreLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) vm.restoreBackup(uri) }
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
@@ -127,9 +132,11 @@ fun SettingsScreen(
             }
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("导出 CSV / JSON", right = "迭代中")
-            SetRow("备份到文件", right = "迭代中")
-            SetRow("从备份恢复", right = "迭代中")
+            SetRow("导出 CSV（Excel/WPS 可开）", chevron = true, onClick = { vm.exportCsv() })
+            SetRow("备份到文件（JSON）", chevron = true, onClick = { vm.exportBackup() })
+            SetRow("从备份恢复", chevron = true, onClick = {
+                restoreLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
+            })
         }
         GlassCard(Modifier.fillMaxWidth()) {
             SetRow("关于 · 版本 v0.1.0", right = "仅存本机 · 无网络")

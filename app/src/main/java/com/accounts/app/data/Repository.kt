@@ -1,6 +1,8 @@
 package com.accounts.app.data
 
 import android.content.Context
+import androidx.room.withTransaction
+import com.accounts.app.util.DataIO
 import kotlinx.coroutines.flow.Flow
 
 /** 数据访问门面：UI 只依赖本类，不直接触碰 DAO */
@@ -74,6 +76,29 @@ class Repository(private val db: AppDatabase) {
                 db.categoryDao().update(cat.copy(sortOrder = index + 1))
             }
         }
+    }
+
+    // ===== 数据快照 / 导出 / 恢复 =====
+    suspend fun snapshot(): DataIO.Snapshot = DataIO.Snapshot(
+        categories = db.categoryDao().allOnce(),
+        accounts = db.accountDao().allOnce(),
+        transactions = db.transactionDao().allOnce(),
+        transfers = db.transferDao().allOnce(),
+        templates = db.templateDao().allOnce()
+    )
+
+    /** 恢复：清空后按备份重建（保留原 id，保证分类/账户外键一致） */
+    suspend fun restore(s: DataIO.Snapshot) = db.withTransaction {
+        db.transactionDao().deleteAll()
+        db.transferDao().deleteAll()
+        db.templateDao().deleteAll()
+        db.categoryDao().deleteAll()
+        db.accountDao().deleteAll()
+        s.categories.forEach { db.categoryDao().insert(it) }
+        s.accounts.forEach { db.accountDao().insert(it) }
+        s.transfers.forEach { db.transferDao().insert(it) }
+        s.templates.forEach { db.templateDao().insert(it) }
+        s.transactions.forEach { db.transactionDao().insert(it) }
     }
 
     companion object {

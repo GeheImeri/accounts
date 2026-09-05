@@ -2,6 +2,7 @@ package com.accounts.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -63,10 +65,11 @@ fun ListScreen(vm: AppViewModel) {
     var calOpen by remember { mutableStateOf(false) }
     var filterOpen by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<Transaction?>(null) }
+    var query by remember { mutableStateOf("") }
 
     var typeFilter by remember { mutableStateOf<String?>(null) }
-    var categoryFilter by remember { mutableStateOf<Long?>(null) }
-    var accountFilter by remember { mutableStateOf<Long?>(null) }
+    var catFilters by remember { mutableStateOf(emptySet<Long>()) }
+    var accFilters by remember { mutableStateOf(emptySet<Long>()) }
 
     val catMap = remember(categories) { categories.associateBy { it.id } }
     val accMap = remember(accounts) { accounts.associateBy { it.id } }
@@ -77,11 +80,13 @@ fun ListScreen(vm: AppViewModel) {
     val monthTx = remember(transactions, start, end) {
         transactions.filter { it.occurredAtMillis in start until end }
     }
-    val visible = remember(monthTx, typeFilter, categoryFilter, accountFilter) {
+    val visible = remember(monthTx, query, typeFilter, catFilters, accFilters) {
+        val q = query.trim()
         monthTx.filter { t ->
             (typeFilter == null || t.type == typeFilter) &&
-                (categoryFilter == null || t.categoryId == categoryFilter) &&
-                (accountFilter == null || t.accountId == accountFilter)
+                (catFilters.isEmpty() || t.categoryId in catFilters) &&
+                (accFilters.isEmpty() || t.accountId in accFilters) &&
+                (q.isEmpty() || t.note.contains(q, ignoreCase = true))
         }
     }
     val totals = remember(visible) {
@@ -94,7 +99,7 @@ fun ListScreen(vm: AppViewModel) {
             .toSortedMap(compareByDescending { it })
             .toList()
     }
-    val filterActive = typeFilter != null || categoryFilter != null || accountFilter != null
+    val filterActive = typeFilter != null || catFilters.isNotEmpty() || accFilters.isNotEmpty()
 
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         Spacer(Modifier.height(8.dp))
@@ -135,15 +140,14 @@ fun ListScreen(vm: AppViewModel) {
         }
         Spacer(Modifier.height(10.dp))
 
-        // 搜索占位 + 筛选按钮（筛选在搜索框右侧）
+        // 搜索（按备注过滤）+ 筛选按钮
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicTextField(
-                value = "",
-                onValueChange = {},
+                value = query,
+                onValueChange = { query = it },
                 textStyle = MaterialTheme.typography.bodyMedium
                     .copy(color = MaterialTheme.colorScheme.onSurface),
                 singleLine = true,
-                readOnly = true,
                 decorationBox = { inner ->
                     Box(
                         Modifier
@@ -152,11 +156,14 @@ fun ListScreen(vm: AppViewModel) {
                                 RoundedCornerShape(12.dp))
                             .padding(horizontal = 14.dp, vertical = 10.dp)
                     ) {
-                        Text("搜索备注（迭代中）", color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 12.5.sp)
+                        if (query.isEmpty()) {
+                            Text("搜索备注…", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 12.5.sp)
+                        }
                         inner()
                     }
-                }
+                },
+                modifier = Modifier.weight(1f)
             )
             Spacer(Modifier.width(10.dp))
             Text(
@@ -182,7 +189,7 @@ fun ListScreen(vm: AppViewModel) {
                 }
             }
             if (grouped.isEmpty()) {
-                item { Footnote("这个月还没有记录", Modifier.padding(top = 40.dp)) }
+                item { Footnote("没有匹配的记录", Modifier.padding(top = 40.dp)) }
             }
             item { Spacer(Modifier.height(16.dp)) }
         }
@@ -203,14 +210,14 @@ fun ListScreen(vm: AppViewModel) {
             categories = categories,
             accounts = accounts,
             typeFilter = typeFilter,
-            categoryFilter = categoryFilter,
-            accountFilter = accountFilter,
-            onApply = { t, c, a ->
-                typeFilter = t; categoryFilter = c; accountFilter = a
+            catFilters = catFilters,
+            accFilters = accFilters,
+            onApply = { t, cs, as_ ->
+                typeFilter = t; catFilters = cs; accFilters = as_
                 filterOpen = false
             },
             onClear = {
-                typeFilter = null; categoryFilter = null; accountFilter = null
+                typeFilter = null; catFilters = emptySet(); accFilters = emptySet()
                 filterOpen = false
             },
             onDismiss = { filterOpen = false }
@@ -273,7 +280,7 @@ private fun TransactionRow(
     }
 }
 
-// ===== 日历：年份/月份切换 + 具体日期选择 =====
+// ===== 日历 =====
 
 @Composable
 private fun CalendarDialog(
@@ -285,7 +292,7 @@ private fun CalendarDialog(
     var monthNo by remember { mutableStateOf(initial.monthValue) }
     val ym = YearMonth.of(year, monthNo)
     val daysInMonth = ym.lengthOfMonth()
-    val firstWeekday = ym.atDay(1).dayOfWeek.value   // 周一=1
+    val firstWeekday = ym.atDay(1).dayOfWeek.value
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -353,10 +360,6 @@ private fun CalendarDialog(
                         }
                     }
                 }
-                Text("上方 ‹ › 切换月份，点日期即跳转查看当天所在的月份流水",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 6.dp))
             }
         },
         confirmButton = {},
@@ -364,59 +367,116 @@ private fun CalendarDialog(
     )
 }
 
-// ===== 筛选弹窗 =====
+// ===== 筛选（类型联动分类 + 分类/账户多选 + 横向滑动）=====
 
 @Composable
 private fun FilterDialog(
     categories: List<Category>,
     accounts: List<com.accounts.app.data.Account>,
     typeFilter: String?,
-    categoryFilter: Long?,
-    accountFilter: Long?,
-    onApply: (String?, Long?, Long?) -> Unit,
+    catFilters: Set<Long>,
+    accFilters: Set<Long>,
+    onApply: (String?, Set<Long>, Set<Long>) -> Unit,
     onClear: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var type by remember { mutableStateOf(typeFilter) }
-    var category by remember { mutableStateOf(categoryFilter) }
-    var account by remember { mutableStateOf(accountFilter) }
+    var cats by remember { mutableStateOf(catFilters) }
+    var accs by remember { mutableStateOf(accFilters) }
 
+    // 类型联动：选择支出/收入后，分类列表只显示对应分类
     val enabledCats = remember(categories) {
         categories.filter { it.enabled }
             .sortedWith(compareBy({ it.kind }, { it.sortOrder }))
     }
+    val shownCats = when (type) {
+        "expense" -> enabledCats.filter { it.kind == "expense" }
+        "income" -> enabledCats.filter { it.kind == "income" }
+        else -> enabledCats
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("筛选", fontWeight = FontWeight.Bold) },
+        title = { Text("筛选（可多选）", fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Text("类型", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ChipItem("全部", type == null) { type = null }
-                    ChipItem("支出", type == "expense") { type = "expense" }
-                    ChipItem("收入", type == "income") { type = "income" }
-                }
-                Spacer(Modifier.height(12.dp))
-                Text("分类", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(4.dp))
-                CategoryChipRows(options = enabledCats, selected = category) { category = it }
-                Spacer(Modifier.height(12.dp))
-                Text("账户", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(4.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ChipItem("全部", account == null) { account = null }
-                    accounts.forEach { a ->
-                        ChipItem(a.name, account == a.id) { account = a.id }
+                    ChipItem("全部", type == null) {
+                        type = null
+                        cats = emptySet()
+                    }
+                    ChipItem("支出", type == "expense") {
+                        type = "expense"; cats = emptySet()
+                    }
+                    ChipItem("收入", type == "income") {
+                        type = "income"; cats = emptySet()
                     }
                 }
+                Spacer(Modifier.height(12.dp))
+                Text("分类（可多选）", fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    shownCats.forEach { cat ->
+                        val selected = cat.id in cats
+                        Text(cat.name, Modifier
+                            .background(
+                                if (selected) Color(cat.color)
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(999.dp)
+                            )
+                            .noRippleClickable {
+                                cats = if (selected) cats - cat.id else cats + cat.id
+                            }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            fontSize = 12.sp,
+                            color = if (selected) Color.White
+                            else MaterialTheme.colorScheme.onSurface,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("账户（可多选）", fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    accounts.forEach { a ->
+                        val selected = a.id in accs
+                        Text(a.name, Modifier
+                            .background(
+                                if (selected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(999.dp)
+                            )
+                            .noRippleClickable {
+                                accs = if (selected) accs - a.id else accs + a.id
+                            }
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                            fontSize = 12.sp,
+                            color = if (selected) Color.White
+                            else MaterialTheme.colorScheme.onSurface,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                    }
+                }
+                Text("左右滑动可查看更多分类/账户", fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp))
             }
         },
         confirmButton = {
-            TextButton(onClick = { onApply(type, category, account) }) { Text("应用") }
+            TextButton(onClick = { onApply(type, cats, accs) }) { Text("应用") }
         },
-        dismissButton = { TextButton(onClick = onClear) { Text("清空") } }
+        dismissButton = {
+            TextButton(onClick = onClear) { Text("清空") }
+        }
     )
 }
 
@@ -429,20 +489,6 @@ private fun ChipItem(label: String, selected: Boolean, onClick: () -> Unit) {
         .padding(horizontal = 12.dp, vertical = 6.dp),
         fontSize = 12.sp,
         color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface)
-}
-
-@Composable
-private fun CategoryChipRows(options: List<Category>, selected: Long?, onSelect: (Long?) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        options.chunked(6).forEach { rowCats ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                ChipItem("全部", selected == null) { onSelect(null) }
-                rowCats.forEach { cat ->
-                    ChipItem(cat.name, selected == cat.id) { onSelect(cat.id) }
-                }
-            }
-        }
-    }
 }
 
 // ===== 编辑记录（含修改分类）=====

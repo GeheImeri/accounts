@@ -1,6 +1,8 @@
 package com.accounts.app.ui
 
 import android.app.Application
+import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.accounts.app.data.Account
@@ -9,6 +11,7 @@ import com.accounts.app.data.Repository
 import com.accounts.app.data.Template
 import com.accounts.app.data.Transaction
 import com.accounts.app.data.Transfer
+import com.accounts.app.util.DataIO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -92,5 +95,53 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setDefaultAccount(id: Long) {
         defaultAccountId.value = id
+    }
+
+    // ===== 数据导出 / 备份 / 恢复 =====
+    fun exportCsv() {
+        viewModelScope.launch {
+            val snap = repo.snapshot()
+            val ok = DataIO.share(
+                getApplication(), "accounts_export.csv", "text/csv",
+                DataIO.buildCsv(snap.transactions, snap.categories, snap.accounts)
+            )
+            toast(if (ok) "CSV 已生成，选择保存位置" else "导出失败")
+        }
+    }
+
+    fun exportBackup() {
+        viewModelScope.launch {
+            val ok = DataIO.share(
+                getApplication(), "accounts_backup.json", "application/json",
+                DataIO.buildBackupJson(repo.snapshot())
+            )
+            toast(if (ok) "备份文件已生成，请妥善保存" else "备份失败")
+        }
+    }
+
+    fun restoreBackup(uri: Uri) {
+        viewModelScope.launch {
+            val content = try {
+                getApplication<Application>().contentResolver
+                    .openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+            } catch (e: Exception) {
+                null
+            }
+            if (content == null) {
+                toast("读取文件失败")
+                return@launch
+            }
+            val snap = DataIO.parseBackup(content)
+            if (snap == null) {
+                toast("备份文件格式不正确")
+                return@launch
+            }
+            repo.restore(snap)
+            toast("恢复成功（已覆盖当前数据）")
+        }
+    }
+
+    private fun toast(msg: String) {
+        Toast.makeText(getApplication(), msg, Toast.LENGTH_SHORT).show()
     }
 }

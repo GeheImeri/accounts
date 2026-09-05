@@ -250,12 +250,15 @@ fun RecordScreen(vm: AppViewModel) {
                             .padding(horizontal = 14.dp, vertical = 7.dp),
                         fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                     if (recentDeleteMode) {
-                        Text("✕", fontSize = 9.sp, color = Color.White,
-                            modifier = Modifier
+                        Box(
+                            Modifier
                                 .align(Alignment.TopEnd)
-                                .size(15.dp)
+                                .size(16.dp)
                                 .background(MaterialTheme.colorScheme.error, CircleShape),
-                            textAlign = TextAlign.Center)
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("✕", fontSize = 9.sp, color = Color.White)
+                        }
                     }
                 }
             }
@@ -297,21 +300,28 @@ fun RecordScreen(vm: AppViewModel) {
                         color = if (cat != null) Color(cat.color) else MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold)
                     if (templateDeleteMode) {
-                        Text("✕", fontSize = 9.sp, color = Color.White,
-                            modifier = Modifier
+                        Box(
+                            Modifier
                                 .align(Alignment.TopEnd)
-                                .size(15.dp)
+                                .size(16.dp)
                                 .background(MaterialTheme.colorScheme.error, CircleShape),
-                            textAlign = TextAlign.Center)
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("✕", fontSize = 9.sp, color = Color.White)
+                        }
                     }
                 }
             }
-            Text("＋", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(30.dp)
+            Box(
+                Modifier
+                    .size(32.dp)
                     .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), CircleShape)
                     .noRippleClickable { addTemplateOpen = true },
-                textAlign = TextAlign.Center)
+                contentAlignment = Alignment.Center
+            ) {
+                Text("＋", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 1.dp))
+            }
         }
 
         val cents = Money.parse(amountText)
@@ -320,6 +330,7 @@ fun RecordScreen(vm: AppViewModel) {
             if (cid != null && cents > 0) {
                 vm.addRecord(kind, cents, cid, accountId, occurredAt, note)
                 amountText = ""
+                note = ""   // 备注随金额一起重置，便于连续录入
             }
         }
         Spacer(Modifier.height(8.dp))

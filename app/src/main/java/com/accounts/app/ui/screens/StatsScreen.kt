@@ -199,11 +199,6 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
-                    if (selectedCatId != null) {
-                        Text("再次点击下方该分类可恢复", fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 4.dp))
-                    }
                 }
             }
         }

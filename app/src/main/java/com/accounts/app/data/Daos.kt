@@ -33,6 +33,12 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE kind = :kind AND enabled = 1 ORDER BY sortOrder")
     suspend fun listByKindOnce(kind: String): List<Category>
+
+    @Query("SELECT * FROM categories")
+    suspend fun allOnce(): List<Category>
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -48,6 +54,12 @@ interface AccountDao {
 
     @Query("UPDATE accounts SET enabled = 0 WHERE id = :id")
     suspend fun disable(id: Long)
+
+    @Query("SELECT * FROM accounts")
+    suspend fun allOnce(): List<Account>
+
+    @Query("DELETE FROM accounts")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -63,6 +75,12 @@ interface TransactionDao {
 
     @Delete
     suspend fun delete(transaction: Transaction)
+
+    @Query("SELECT * FROM transactions")
+    suspend fun allOnce(): List<Transaction>
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -72,6 +90,12 @@ interface TransferDao {
 
     @Insert
     suspend fun insert(transfer: Transfer): Long
+
+    @Query("SELECT * FROM transfers")
+    suspend fun allOnce(): List<Transfer>
+
+    @Query("DELETE FROM transfers")
+    suspend fun deleteAll()
 }
 
 @Dao
@@ -81,6 +105,12 @@ interface TemplateDao {
 
     @Query("SELECT COUNT(*) FROM templates")
     suspend fun countOnce(): Int
+
+    @Query("SELECT * FROM templates")
+    suspend fun allOnce(): List<Template>
+
+    @Query("DELETE FROM templates")
+    suspend fun deleteAll()
 
     @Insert
     suspend fun insert(template: Template): Long

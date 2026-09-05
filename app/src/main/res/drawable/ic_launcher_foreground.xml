@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 晨雾主题的极简图标：紫→蓝渐变色块上的白色圆环（内部再留一个白点），示意"记一笔" -->
+<!-- 环形占比图标 · 前景：白色占比环 + 珊瑚占比点 + 白色小亮点（居中于安全区） -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- 白环：圆心(54,54)，半径 24，线宽 9 -->
     <path
-        android:fillColor="#8B7CF6"
-        android:pathData="M54,20 a34,34 0 1,0 0.001,0 z" />
+        android:pathData="M54,78 a24,24 0 1,1 0,-48 a24,24 0 1,1 0,48"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="9"
+        android:strokeLineCap="round" />
+    <!-- 珊瑚占比点（左下 45°） -->
     <path
-        android:fillColor="#5FB4FF"
-        android:pathData="M54,20 a34,34 0 0,1 0,68 a34,34 0 0,1 -0.001,-68 z" />
+        android:fillColor="#FF7D9C"
+        android:pathData="M31,71 a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 z" />
+    <!-- 白色小亮点（右上 45°） -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,38 m-13,0 a13,13 0 1,0 26,0 a13,13 0 1,0 -26,0" />
-    <path
-        android:fillColor="#8B7CF6"
-        android:pathData="M54,44 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" />
+        android:pathData="M68,37 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 z" />
 </vector>

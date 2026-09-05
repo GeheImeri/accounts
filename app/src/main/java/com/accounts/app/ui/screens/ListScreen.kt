@@ -290,7 +290,7 @@ private fun EditRecordDialog(
                     textStyle = MaterialTheme.typography.titleLarge.copy(color = Ink),
                     singleLine = true,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                        keyboardType = androidx.compose.foundation.text.KeyboardType.Decimal
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )

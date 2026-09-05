@@ -525,7 +525,7 @@ private fun TransferDialog(
                     onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = Ink),
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.foundation.text.KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal),
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))

@@ -629,14 +629,14 @@ private fun BudgetCard(
             }
         }
         Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-            Text("$periodLabel预算", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+            Text("${periodLabel}预算", fontSize = 12.sp, color = scheme.onSurfaceVariant)
             Spacer(Modifier.weight(1f))
             Text("¥${Money.format(budgetCents)}  点此修改", fontSize = 13.sp,
                 fontWeight = FontWeight.Bold, color = scheme.primary,
                 modifier = Modifier.noRippleClickable(onClick = onEdit))
         }
         Row(Modifier.fillMaxWidth().padding(top = 2.dp)) {
-            Text("$periodLabel已支出", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+            Text("${periodLabel}已支出", fontSize = 12.sp, color = scheme.onSurfaceVariant)
             Spacer(Modifier.weight(1f))
             Text("¥${Money.format(spent)}", fontSize = 13.sp, fontWeight = FontWeight.Bold,
                 color = ExpenseRose)

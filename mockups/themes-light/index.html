@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Accounts · 五版轻亮动态主题</title>
+  <style>
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#24324a;background:#f4f8ff;min-height:100vh;overflow-x:hidden}
+    body:before,body:after{content:"";position:fixed;border-radius:50%;filter:blur(4px);z-index:-1;animation:float 9s ease-in-out infinite}
+    body:before{width:34vw;height:34vw;left:-8vw;top:-10vw;background:radial-gradient(circle,#b8f3e6 0,rgba(184,243,230,0) 70%)}
+    body:after{width:42vw;height:42vw;right:-12vw;top:8vh;background:radial-gradient(circle,#d9d1ff 0,rgba(217,209,255,0) 68%);animation-delay:-4s}
+    header{max-width:1180px;margin:auto;padding:58px 22px 28px}.eyebrow{font-size:12px;font-weight:850;letter-spacing:.18em;color:#6775d8}h1{font-size:clamp(30px,5vw,58px);line-height:1.08;margin:10px 0 15px;letter-spacing:-.05em}.intro{max-width:720px;color:#68758b;line-height:1.8;font-size:14px}.rule{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.rule span{padding:7px 12px;border-radius:99px;background:rgba(255,255,255,.74);border:1px solid rgba(255,255,255,.9);box-shadow:0 7px 22px rgba(51,79,126,.07);font-size:12px;color:#506077}
+    main{max-width:1180px;margin:auto;padding:8px 22px 76px;display:grid;grid-template-columns:repeat(12,1fr);gap:18px}.theme{grid-column:span 6;min-height:310px;border-radius:32px;padding:24px;position:relative;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 18px 48px rgba(47,77,124,.11);transition:.35s transform,.35s box-shadow}.theme:hover{transform:translateY(-7px);box-shadow:0 28px 58px rgba(47,77,124,.16)}.theme:last-child{grid-column:4/span 6}.theme:after{content:"↗";position:absolute;right:22px;top:20px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.66);font-size:18px}.num{font-size:11px;letter-spacing:.16em;font-weight:900;opacity:.65}.theme h2{margin:8px 0 6px;font-size:30px;letter-spacing:-.04em}.theme p{max-width:450px;font-size:13px;line-height:1.7;color:#526076}.swatches{display:flex;gap:8px;margin:14px 0}.swatches i{width:28px;height:28px;border-radius:9px;border:2px solid rgba(255,255,255,.7);box-shadow:0 3px 10px rgba(28,47,80,.12)}.tags{display:flex;gap:7px;flex-wrap:wrap}.tags b{font-size:10px;padding:5px 9px;border-radius:99px;background:rgba(255,255,255,.62);font-weight:750}.mini{height:82px;margin-top:18px;display:flex;align-items:flex-end;gap:7px}.mini span{display:block;background:rgba(255,255,255,.74);box-shadow:0 8px 20px rgba(48,75,118,.09)}
+    .water{background:linear-gradient(140deg,#dffaff,#d9f7ed 55%,#e6e1ff)}.water .mini span{width:22%;border-radius:28px 28px 12px 12px}.water .mini span:nth-child(1){height:46px}.water .mini span:nth-child(2){height:76px}.water .mini span:nth-child(3){height:58px}.water .mini span:nth-child(4){height:68px}
+    .lime{background:linear-gradient(140deg,#f3ffd2,#dff7ff 62%,#ffe8de)}.lime .mini{align-items:stretch;display:grid;grid-template-columns:1.2fr .8fr 1fr}.lime .mini span{border-radius:13px}.lime .mini span:nth-child(2){transform:translateY(14px);background:#c8ff63}.lime .mini span:nth-child(3){background:#73bfff}
+    .cloud{background:linear-gradient(150deg,#f9fdff,#dff2ff 58%,#e4faf4)}.cloud .mini{align-items:center}.cloud .mini span{height:10px;border-radius:99px}.cloud .mini span:nth-child(1){width:31%}.cloud .mini span:nth-child(2){width:18%;background:#77bddd}.cloud .mini span:nth-child(3){width:31%}.cloud .mini span:nth-child(4){width:12%;background:#83d9c1}
+    .bloom{background:linear-gradient(145deg,#f2ffe9,#ffe6ed 54%,#eee7ff)}.bloom .mini{justify-content:center;align-items:center}.bloom .mini span{width:47px;height:65px;border-radius:70% 30% 65% 35%;transform-origin:bottom}.bloom .mini span:nth-child(2){transform:rotate(45deg);background:#ffc9d7}.bloom .mini span:nth-child(3){transform:rotate(-45deg);background:#b5eba5}
+    .prism{background:linear-gradient(145deg,#fff9cf,#e4f2ff 45%,#eee7ff)}.prism .mini{align-items:stretch;gap:0}.prism .mini span{border-radius:0;clip-path:polygon(0 0,100% 16%,86% 100%,12% 84%)}.prism .mini span:nth-child(1){width:31%;background:#ffd83d}.prism .mini span:nth-child(2){width:38%;background:#61aefb;transform:translateX(-7px)}.prism .mini span:nth-child(3){width:38%;background:#9d85ef;transform:translateX(-15px)}
+    footer{text-align:center;color:#78849a;font-size:12px;padding:0 20px 36px}@keyframes float{50%{transform:translate3d(2vw,3vh,0) scale(1.08)}}
+    @media(max-width:760px){header{padding-top:38px}.theme,.theme:last-child{grid-column:1/-1}.theme{min-height:290px}main{padding-left:14px;padding-right:14px}h1{font-size:38px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">ACCOUNTS / THEME LAB 02</div>
+    <h1>五种轻亮气质，<br>五套真正不同的界面。</h1>
+    <p class="intro">每版都包含首页、明细、统计、设置四屏完整预览。功能与数据保持一致，差异覆盖导航、信息结构、组件形状、图表表达和动效节奏。</p>
+    <div class="rule"><span>全部浅色</span><span>中等灵动</span><span>360–430px 适配</span><span>支持减少动态效果</span></div>
+  </header>
+  <main>
+    <a class="theme water" href="a-water.html"><div><div class="num">THEME 01</div><h2>水光 · 涟漪</h2><p>半透明水滴卡片与波浪分区，安静但持续流动。适合喜欢清澈、柔和、耐看体验的人。</p><div class="swatches"><i style="background:#70d8ef"></i><i style="background:#78dfbe"></i><i style="background:#a797ef"></i><i style="background:#fff"></i></div><div class="tags"><b>水滴玻璃</b><b>涟漪反馈</b><b>水位图表</b></div></div><div class="mini"><span></span><span></span><span></span><span></span></div></a>
+    <a class="theme lime" href="b-lime.html"><div><div class="num">THEME 02</div><h2>青柠 · 节拍</h2><p>Bento 信息块、利落圆角和强数字层级。五版中节奏最鲜明，适合高效率与年轻感。</p><div class="swatches"><i style="background:#c8ff63"></i><i style="background:#73bfff"></i><i style="background:#ff8a67"></i><i style="background:#fbffef"></i></div><div class="tags"><b>Bento 布局</b><b>弹性节拍</b><b>醒目数字</b></div></div><div class="mini"><span></span><span></span><span></span></div></a>
+    <a class="theme cloud" href="c-cloud.html"><div><div class="num">THEME 03</div><h2>云轨 · 漫游</h2><p>横向分类轨道、纵向明细时间线和航线式导航，让页面像在空气中滑行。</p><div class="swatches"><i style="background:#80caff"></i><i style="background:#83d9c1"></i><i style="background:#dff2ff"></i><i style="background:#fff"></i></div><div class="tags"><b>轨道导航</b><b>时间线</b><b>滑行转场</b></div></div><div class="mini"><span></span><span></span><span></span><span></span></div></a>
+    <a class="theme bloom" href="d-bloom.html"><div><div class="num">THEME 04</div><h2>花氧 · 生长</h2><p>花瓣分类、曲线容器与生长式图表。自然感来自形状和节奏，而不是复古纹理。</p><div class="swatches"><i style="background:#a9e899"></i><i style="background:#ffc2d1"></i><i style="background:#b9a9f4"></i><i style="background:#fbfff7"></i></div><div class="tags"><b>有机曲线</b><b>花瓣环图</b><b>舒展入场</b></div></div><div class="mini"><span></span><span></span><span></span></div></a>
+    <a class="theme prism" href="e-prism.html"><div><div class="num">THEME 05</div><h2>折光 · 几何</h2><p>非对称切面、清晰网格和移动高亮块。明亮理性，强调数据组织与现代识别度。</p><div class="swatches"><i style="background:#ffd83d"></i><i style="background:#61aefb"></i><i style="background:#9d85ef"></i><i style="background:#fff"></i></div><div class="tags"><b>几何切面</b><b>数据网格</b><b>分段展开</b></div></div><div class="mini"><span></span><span></span><span></span></div></a>
+  </main>
+  <footer>选择任一方案进入四屏完整预览 · 返回本页可继续比较</footer>
+</body>
+</html>

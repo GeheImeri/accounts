@@ -670,7 +670,7 @@ private fun BudgetCard(
                 modifier = Modifier.noRippleClickable(onClick = onEdit))
         }
         Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-            Text("$periodLabel已支出", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+            Text("${periodLabel}已支出", fontSize = 12.sp, color = scheme.onSurfaceVariant)
             Spacer(Modifier.weight(1f))
             Text("¥${Money.format(spent)}", fontSize = 13.sp, fontWeight = FontWeight.Bold,
                 color = ExpenseRose)

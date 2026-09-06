@@ -57,10 +57,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.accounts.app.data.Category
+import com.accounts.app.data.Transaction
 import com.accounts.app.ui.AppViewModel
 import com.accounts.app.ui.comps.CtaButton
 import com.accounts.app.ui.comps.Segment
 import com.accounts.app.ui.comps.noRippleClickable
+import com.accounts.app.ui.theme.ExpenseRose
+import com.accounts.app.ui.theme.IncomeGreen
 import com.accounts.app.ui.theme.Ink
 import com.accounts.app.ui.theme.chipColor
 import com.accounts.app.util.Days
@@ -69,6 +72,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.ZoneOffset
 
 /** 首页可见分类：启用 + 该类型，pinned 优先，最多 8 个（首页固定 8 格） */
@@ -117,6 +121,9 @@ fun RecordScreen(vm: AppViewModel) {
     val baseRecents = remember(transactions) { transactions.map { it.amountCents }.distinct() }
     val recents = baseRecents.filterNot { it in hiddenRecents }.take(4)
     val kindTemplates = templates.filter { it.kind == kind }
+
+    val budgetValue by vm.budget.collectAsState()
+    var budgetEditOpen by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -328,6 +335,15 @@ fun RecordScreen(vm: AppViewModel) {
                 resetToDefaults()  // 钱包与时间回到默认
             }
         }
+
+        // ===== 预算卡（保存按钮下方）=====
+        BudgetCard(
+            budgetCents = budgetValue?.amountCents ?: 0L,
+            period = budgetValue?.period ?: "month",
+            transactions = transactions,
+            onEdit = { budgetEditOpen = true },
+            onPeriodChange = { p -> vm.setBudget(budgetValue?.amountCents ?: 0L, p) }
+        )
         Spacer(Modifier.height(8.dp))
     }
 
@@ -336,6 +352,14 @@ fun RecordScreen(vm: AppViewModel) {
             initial = occurredAt,
             onPick = { occurredAt = it; timePickerOpen = false },
             onDismiss = { timePickerOpen = false }
+        )
+    }
+    if (budgetEditOpen) {
+        BudgetEditDialog(
+            amountCents = budgetValue?.amountCents ?: 0L,
+            period = budgetValue?.period ?: "month",
+            onDismiss = { budgetEditOpen = false },
+            onSave = { cents, p -> vm.setBudget(cents, p); budgetEditOpen = false }
         )
     }
     if (addTemplateOpen) {
@@ -537,6 +561,188 @@ private fun AddTemplateDialog(
                 enabled = name.isNotBlank() && Money.parse(amount) > 0 && catId != null,
                 onClick = { onAdd(name.trim(), Money.parse(amount), catId!!, kind) }
             ) { Text("新增") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+    )
+}
+
+// ===== 预算卡（保存按钮下方）=====
+
+private fun budgetMoney(cents: Long): String =
+    if (cents < 0) "-¥${Money.format(-cents)}" else "¥${Money.format(cents)}"
+
+@Composable
+private fun BudgetCard(
+    budgetCents: Long,
+    period: String,
+    transactions: List<Transaction>,
+    onEdit: () -> Unit,
+    onPeriodChange: (String) -> Unit
+) {
+    val scheme = MaterialTheme.colorScheme
+    val today = LocalDate.now()
+    val startEnd: Pair<Long, Long>
+    var days = today.dayOfMonth
+    if (period == "year") {
+        startEnd = Days.monthRange(YearMonth.of(today.year, 1))[0] to
+            Days.monthRange(YearMonth.of(today.year + 1, 1))[0]
+        days = today.dayOfYear
+    } else {
+        val r = Days.monthRange(YearMonth.from(today))
+        startEnd = r[0] to r[1]
+    }
+    val spent = transactions.filter {
+        it.type == "expense" && it.occurredAtMillis in startEnd.first until startEnd.second
+    }.sumOf { it.amountCents }
+    val remaining = budgetCents - spent
+    val pctUsed = if (budgetCents > 0) spent * 100 / budgetCents else 0L
+    val frac = if (budgetCents > 0) spent.toFloat() / budgetCents.toFloat() else 0f
+    val over = budgetCents > 0 && spent > budgetCents
+    val periodLabel = if (period == "year") "今年" else "本月"
+
+    Column(
+        Modifier.fillMaxWidth()
+            .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(22.dp))
+            .background(scheme.surface, RoundedCornerShape(22.dp))
+            .padding(13.dp)
+    ) {
+        if (budgetCents <= 0) {
+            Text("＋ 设置预算（月/年）", fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                color = scheme.primary,
+                modifier = Modifier.fillMaxWidth().noRippleClickable(onClick = onEdit)
+                    .padding(vertical = 10.dp),
+                textAlign = TextAlign.Center)
+            return@Column
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("预算", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            listOf("月" to "month", "年" to "year").forEach { (lbl, p) ->
+                val sel = period == p
+                Text(lbl, fontSize = 11.5.sp, fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(start = 4.dp)
+                        .background(if (sel) scheme.primary else Color(0xFFF1EEF8),
+                            RoundedCornerShape(999.dp))
+                        .noRippleClickable { if (!sel) onPeriodChange(p) }
+                        .padding(horizontal = 11.dp, vertical = 4.dp),
+                    color = if (sel) Color.White else scheme.onSurfaceVariant)
+            }
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            Text("$periodLabel预算", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+            Spacer(Modifier.weight(1f))
+            Text("¥${Money.format(budgetCents)}  点此修改", fontSize = 13.sp,
+                fontWeight = FontWeight.Bold, color = scheme.primary,
+                modifier = Modifier.noRippleClickable(onClick = onEdit))
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 2.dp)) {
+            Text("$periodLabel已支出", fontSize = 12.sp, color = scheme.onSurfaceVariant)
+            Spacer(Modifier.weight(1f))
+            Text("¥${Money.format(spent)}", fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                color = ExpenseRose)
+        }
+        Box(
+            Modifier.fillMaxWidth().padding(top = 8.dp).height(10.dp)
+                .background(Color(0xFFF1EEF8), RoundedCornerShape(999.dp))
+        ) {
+            Box(
+                Modifier.fillMaxWidth(frac.coerceIn(0f, 1f)).height(10.dp)
+                    .background(if (over) ExpenseRose else scheme.primary,
+                        RoundedCornerShape(999.dp))
+            )
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+            Text("已用 ${pctUsed}%", fontSize = 9.5.sp, color = scheme.onSurfaceVariant)
+            Spacer(Modifier.weight(1f))
+            Text(
+                if (remaining >= 0) "剩余 ${100 - pctUsed.coerceAtMost(100)}%"
+                else "超支 ${budgetMoney(-remaining)}",
+                fontSize = 9.5.sp,
+                color = if (remaining >= 0) scheme.onSurfaceVariant else ExpenseRose
+            )
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 10.dp)) {
+            Column(
+                Modifier.weight(1f)
+                    .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text("预算余额", fontSize = 10.sp, color = scheme.onSurfaceVariant)
+                Text(budgetMoney(remaining), fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                    color = if (remaining < 0) ExpenseRose else IncomeGreen)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column(
+                Modifier.weight(1f)
+                    .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(14.dp))
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            ) {
+                Text("每日平均", fontSize = 10.sp, color = scheme.onSurfaceVariant)
+                val avgCents = if (days > 0) spent / days else 0L
+                Text("¥${Money.format(avgCents)}", fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold, color = scheme.primary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BudgetEditDialog(
+    amountCents: Long,
+    period: String,
+    onDismiss: () -> Unit,
+    onSave: (Long, String) -> Unit
+) {
+    var amount by remember { mutableStateOf(if (amountCents > 0) Money.formatPlain(amountCents) else "") }
+    var p by remember { mutableStateOf(period) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("设置预算", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("周期", fontSize = 13.sp)
+                    Spacer(Modifier.weight(1f))
+                    listOf("月" to "month", "年" to "year").forEach { (lbl, v) ->
+                        val sel = p == v
+                        Text(lbl, fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(start = 6.dp)
+                                .background(if (sel) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(999.dp))
+                                .noRippleClickable { p = v }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                            color = if (sel) Color.White
+                            else MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                BasicTextField(
+                    value = amount,
+                    onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
+                    textStyle = MaterialTheme.typography.bodyLarge
+                        .copy(color = MaterialTheme.colorScheme.onSurface),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    decorationBox = { inner ->
+                        Box(Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(10.dp))
+                            .padding(12.dp)) {
+                            if (amount.isEmpty()) Text("预算金额（0 = 不启用）",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("保存后按当前周期实时统计已支出，余额与每日平均自动刷新",
+                    fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(Money.parse(amount), p) }) { Text("保存") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
     )

@@ -493,10 +493,6 @@ private fun AccountBalanceSection(
                         fontSize = 8.sp, textAlign = TextAlign.Center, color = dimColor)
                 }
             }
-            Text("余额 = 期初 + 各月累计收支/转账 · 点图例可隐藏", fontSize = 9.sp,
-                color = dimColor,
-                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                textAlign = TextAlign.Center)
         }
     }
 }

@@ -3,6 +3,7 @@ package com.accounts.app.data
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
@@ -117,4 +118,19 @@ interface TemplateDao {
 
     @Delete
     suspend fun delete(template: Template)
+}
+
+@Dao
+interface BudgetDao {
+    @Query("SELECT * FROM budgets LIMIT 1")
+    fun observeFirst(): Flow<Budget?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(budget: Budget)
+
+    @Query("SELECT * FROM budgets LIMIT 1")
+    suspend fun firstOnce(): Budget?
+
+    @Query("DELETE FROM budgets")
+    suspend fun deleteAll()
 }

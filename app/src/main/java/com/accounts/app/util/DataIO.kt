@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import com.accounts.app.data.Account
+import com.accounts.app.data.Budget
 import com.accounts.app.data.Category
 import com.accounts.app.data.Template
 import com.accounts.app.data.Transaction
@@ -23,7 +24,8 @@ object DataIO {
         val accounts: List<Account> = emptyList(),
         val transactions: List<Transaction> = emptyList(),
         val transfers: List<Transfer> = emptyList(),
-        val templates: List<Template> = emptyList()
+        val templates: List<Template> = emptyList(),
+        val budget: Budget? = null
     )
 
     // ===== 导出 =====
@@ -99,6 +101,12 @@ object DataIO {
                     .put("sortOrder", tp.sortOrder))
             }
         })
+        root.put("budgets", JSONArray().also { a ->
+            s.budget?.let { b ->
+                a.put(JSONObject()
+                    .put("id", b.id).put("amountCents", b.amountCents).put("period", b.period))
+            }
+        })
         return root.toString(2)
     }
 
@@ -169,7 +177,13 @@ object DataIO {
                     o.getLong("amountCents"), o.getLong("categoryId"),
                     o.getString("kind"), o.getInt("sortOrder")))
             }
-            Snapshot(cats, accs, txns, trs, tpls)
+            var budget: Budget? = null
+            val arr = root.optJSONArray("budgets")
+            if (arr != null && arr.length() > 0) {
+                val o = arr.getJSONObject(0)
+                budget = Budget(o.getLong("id"), o.getLong("amountCents"), o.getString("period"))
+            }
+            Snapshot(cats, accs, txns, trs, tpls, budget)
         } catch (e: Exception) {
             null
         }

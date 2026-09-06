@@ -13,6 +13,11 @@ class Repository(private val db: AppDatabase) {
     val transactions: Flow<List<Transaction>> = db.transactionDao().observeAll()
     val transfers: Flow<List<Transfer>> = db.transferDao().observeAll()
     val templates: Flow<List<Template>> = db.templateDao().observeAll()
+    val budgets: Flow<Budget?> = db.budgetDao().observeFirst()
+
+    suspend fun setBudget(cents: Long, period: String) {
+        db.budgetDao().upsert(Budget(id = 1L, amountCents = cents, period = period))
+    }
 
     suspend fun addTransaction(type: String, amountCents: Long, categoryId: Long,
                                accountId: Long, occurredAtMillis: Long, note: String): Long {
@@ -84,7 +89,8 @@ class Repository(private val db: AppDatabase) {
         accounts = db.accountDao().allOnce(),
         transactions = db.transactionDao().allOnce(),
         transfers = db.transferDao().allOnce(),
-        templates = db.templateDao().allOnce()
+        templates = db.templateDao().allOnce(),
+        budget = db.budgetDao().firstOnce()
     )
 
     /** 恢复：清空后按备份重建（保留原 id，保证分类/账户外键一致） */
@@ -92,6 +98,7 @@ class Repository(private val db: AppDatabase) {
         db.transactionDao().deleteAll()
         db.transferDao().deleteAll()
         db.templateDao().deleteAll()
+        db.budgetDao().deleteAll()
         db.categoryDao().deleteAll()
         db.accountDao().deleteAll()
         s.categories.forEach { db.categoryDao().insert(it) }
@@ -99,6 +106,7 @@ class Repository(private val db: AppDatabase) {
         s.transfers.forEach { db.transferDao().insert(it) }
         s.templates.forEach { db.templateDao().insert(it) }
         s.transactions.forEach { db.transactionDao().insert(it) }
+        db.budgetDao().upsert(s.budget ?: Budget())
     }
 
     companion object {

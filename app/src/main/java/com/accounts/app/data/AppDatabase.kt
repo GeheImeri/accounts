@@ -11,10 +11,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * 本地数据库（唯一数据源，App 无网络权限）。
  * 预置数据：支出分类 10（前 8 个 pinned = 首页固定 8 格）、收入分类 6、默认账户 4、示例模板 2。
  * v2：新增 templates 表（快捷模板）。
+ * v3：新增 budgets 表（单行预算配置，默认未启用）。
  */
 @Database(
-    entities = [Category::class, Account::class, Transaction::class, Transfer::class, Template::class],
-    version = 2,
+    entities = [Category::class, Account::class, Transaction::class, Transfer::class,
+        Template::class, Budget::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -24,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDao
     abstract fun transferDao(): TransferDao
     abstract fun templateDao(): TemplateDao
+    abstract fun budgetDao(): BudgetDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
@@ -35,7 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "jianji.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .addCallback(SeedCallback)
                     .build()
                     .also { INSTANCE = it }
@@ -87,6 +90,9 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 }
                 seedTemplates(db)
+                db.execSQL(
+                    "INSERT OR IGNORE INTO budgets(id,amountCents,period) VALUES(1,0,'month')"
+                )
             }
         }
 
@@ -110,6 +116,20 @@ abstract class AppDatabase : RoomDatabase() {
                         "categoryId INTEGER NOT NULL, kind TEXT NOT NULL, sortOrder INTEGER NOT NULL DEFAULT 0)"
                 )
                 seedTemplates(db)
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS budgets (" +
+                        "id INTEGER NOT NULL PRIMARY KEY, " +
+                        "amountCents INTEGER NOT NULL DEFAULT 0, " +
+                        "period TEXT NOT NULL DEFAULT 'month')"
+                )
+                db.execSQL(
+                    "INSERT OR IGNORE INTO budgets(id,amountCents,period) VALUES(1,0,'month')"
+                )
             }
         }
     }

@@ -81,3 +81,11 @@ data class Template(
     val kind: String,          // expense / income
     val sortOrder: Int = 0
 )
+
+/** 预算（单行配置：固定 id=1）。amountCents=0 表示未启用 */
+@Entity(tableName = "budgets")
+data class Budget(
+    @PrimaryKey val id: Long = 1,
+    val amountCents: Long = 0,
+    val period: String = "month"   // month / year
+)

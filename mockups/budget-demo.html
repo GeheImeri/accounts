@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accounts · 首页完整预览（含预算卡）</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:linear-gradient(180deg,#F3EFFB,#EAF2FE 45%,#FCEFF4);color:#3F4257;padding:26px 16px 60px}
+  h1{text-align:center;font-size:21px}
+  .sub{text-align:center;color:#8A8F98;font-size:13px;margin:8px auto 26px;max-width:760px;line-height:1.9}
+  .wrap{display:flex;justify-content:center}
+  .ph{width:370px;background:#fff;border-radius:46px;padding:11px;box-shadow:0 18px 44px rgba(90,80,150,.32)}
+  .sc{position:relative;background:#fff;border-radius:36px;height:820px;display:flex;flex-direction:column}
+  .body{flex:1;overflow-y:auto;padding:12px 16px 92px;display:flex;flex-direction:column;gap:10px}
+  .body::-webkit-scrollbar{width:0}
+  .seg{display:flex;background:#F1EEF8;border-radius:12px;padding:3px}
+  .seg span{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:13px;color:#9A9DB3}
+  .seg span.on{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;font-weight:800}
+  .amount{text-align:center;font-size:40px;font-weight:800;color:#3F4257;padding:8px 0 2px;font-variant-numeric:tabular-nums}
+  .amount i{font-size:20px;color:#9A9DB3;font-style:normal;font-weight:600}
+  .amount em{font-style:normal;color:#9A9DB3}
+  .note{text-align:center;font-size:13px;color:#9A9DB3;opacity:.85;padding-bottom:6px;border-bottom:1px dashed #EEEBF6}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:6px}
+  .cat{border-radius:16px;padding:13px 0;text-align:center;font-size:12px;font-weight:700;color:#3F4257;
+       box-shadow:0 3px 8px rgba(120,80,30,.08)}
+  .c1{background:#FFE4D1}.c2{background:#DBE9FF}.c3{background:#F8E0EF}.c4{background:#E9E0FD}
+  .c5{background:#DFF3E8}.c6{background:#FFF0D9}.c7{background:#DFF0F0}.c8{background:#FBE1E6}
+  .c1.on{outline:2.5px solid #8B7CF6}
+  .meta{display:flex;justify-content:space-between;font-size:12.5px;color:#9A9DB3;margin-top:10px}
+  .meta b{color:#3F4257;font-weight:600}
+  .cap2{font-size:11.5px;color:#9A9DB3;margin-top:8px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+  .chip{font-size:12px;padding:6px 13px;border-radius:999px;border:1px solid #E8E2F4;background:#FDFCFF;color:#3F4257}
+  .tpl{background:#F4EEFE;border-color:#E2D8F6}
+  .add{width:28px;height:28px;border-radius:50%;border:1.5px dashed #B9A6F3;color:#8B7CF6;display:flex;
+       align-items:center;justify-content:center;font-size:16px;margin:2px 0}
+  .save{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;text-align:center;font-weight:800;
+        font-size:15px;letter-spacing:6px;border-radius:999px;padding:14px 0;margin-top:8px}
+  /* 预算卡 */
+  .bud{border-radius:22px;background:#FDFCFF;
+       border:1px solid #E8E2F4;padding:13px}
+  .bud .top{display:flex;align-items:center;justify-content:space-between}
+  .bud h4{font-size:15px;font-weight:800}
+  .cycle{display:flex;gap:6px}
+  .cyc{font-size:11.5px;padding:4px 12px;border-radius:999px;background:#F1EEF8;color:#9A9DB3;font-weight:700}
+  .cyc.on{background:linear-gradient(135deg,#8B7CF6,#5FB4FF);color:#fff}
+  .r1{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+  .l1{font-size:12px;color:#9A9DB3}
+  .v1{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+  .v1 small{font-size:9.5px;color:#B9A6F3;font-weight:600}
+  .v1.spent{color:#FF7D9C}
+  .prog{height:10px;background:#F1EEF8;border-radius:999px;overflow:hidden;margin-top:8px}
+  .prog i{display:block;height:100%;width:62%;border-radius:999px;background:linear-gradient(90deg,#8B7CF6,#FF9F68)}
+  .pr2{display:flex;justify-content:space-between;font-size:9.5px;color:#B9B2C4;margin-top:4px}
+  .m2{display:flex;gap:10px;margin-top:12px}
+  .box{flex:1;border:1px solid #E8E2F4;border-radius:14px;padding:9px 10px}
+  .box .k{font-size:10px;color:#9A9DB3}
+  .box .v{font-size:15px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
+  .box.rem .v{color:#2FC98A}
+  .box.avg .v{color:#8B7CF6}
+  .nav{position:absolute;left:0;right:0;bottom:0;padding:8px 0 10px;display:flex;justify-content:center;gap:56px;
+       background:linear-gradient(180deg,rgba(255,255,255,0),#fff 42%)}
+  .nav .n{width:44px;height:44px;border-radius:50%;background:#F4F0FF;color:#8E93A8;display:flex;
+          align-items:center;justify-content:center;font-size:13px}
+  .nav .n.on{background:linear-gradient(135deg,#8B7CF6,#5FB4FF);color:#fff}
+</style>
+</head>
+<body>
+<h1>Accounts · 首页完整预览（含预算卡）</h1>
+<p class="sub">首页全貌自上而下：段选 → 金额 → 分类 → 钱包/时间 → 最近金额 → 我的模板 → <b style="color:#6C5CE7">保存 → 预算卡（新增）</b>（说明文字已去除）</p>
+<div class="wrap">
+<div class="ph"><div class="sc">
+  <div class="body">
+
+    <div class="seg"><span class="on">支出</span><span>收入</span></div>
+
+    <div class="amount"><i>¥</i><em>0.00</em></div>
+    <div class="note">备注（可选）</div>
+
+    <div class="grid">
+      <div class="cat c1 on">餐饮</div><div class="cat c2">交通</div><div class="cat c3">购物</div><div class="cat c4">居住</div>
+      <div class="cat c5">日用</div><div class="cat c6">娱乐</div><div class="cat c7">医疗</div><div class="cat c8">人情</div>
+    </div>
+
+    <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#8B7CF6;font-weight:700">今天 12:30 ▾</span></div>
+
+    <div class="cap2">最近金额</div>
+    <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+
+    <div class="cap2">我的模板</div>
+    <div class="chips"><span class="chip tpl">早餐 ¥8</span><span class="chip tpl">地铁 ¥6</span><span class="add">＋</span></div>
+
+    <div class="save">保 存</div>
+
+    <!-- ===== 预算卡（新增）===== -->
+    <div class="bud">
+      <div class="top"><h4>预算</h4>
+        <div class="cycle"><span class="cyc on">月</span><span class="cyc">年</span></div>
+      </div>
+      <div class="r1"><span class="l1">本月预算</span><span class="v1">¥3,000.00 <small>点此修改</small></span></div>
+      <div class="r1"><span class="l1">本月已支出</span><span class="v1 spent">¥1,850.00</span></div>
+      <div class="prog"><i></i></div>
+      <div class="pr2"><span>已用 62%</span><span>剩余 38%</span></div>
+      <div class="m2">
+        <div class="box rem"><div class="k">预算余额</div><div class="v">¥1,150.00</div></div>
+        <div class="box avg"><div class="k">每日平均</div><div class="v">¥74.00</div></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="nav"><span class="n on">＋</span><span class="n">☰</span><span class="n">◪</span></div>
+</div></div>
+</div>
+</body>
+</html>

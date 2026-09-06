@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.accounts.app.data.Account
+import com.accounts.app.data.Budget
 import com.accounts.app.data.Category
 import com.accounts.app.data.Repository
 import com.accounts.app.data.Template
@@ -41,6 +42,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val templates: StateFlow<List<Template>> =
         repo.templates.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val budget: StateFlow<Budget?> =
+        repo.budgets.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     // ===== 记一笔 =====
     fun addRecord(type: String, amountCents: Long, categoryId: Long, accountId: Long,
                   occurredAtMillis: Long, note: String) {
@@ -75,6 +79,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun deleteTemplate(template: Template) {
         viewModelScope.launch { repo.deleteTemplate(template) }
+    }
+
+    fun setBudget(amountCents: Long, period: String) {
+        viewModelScope.launch { repo.setBudget(amountCents, period) }
     }
 
     // ===== 分类管理 =====

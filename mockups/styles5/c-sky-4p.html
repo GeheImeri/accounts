@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C 晴空·简白 · 四屏全览</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#16233D;
+ background:radial-gradient(900px 520px at 10% -8%,rgba(90,160,255,.16),transparent 60%),
+           radial-gradient(700px 460px at 100% 8%,rgba(255,143,168,.12),transparent 55%),#F5F9FF;
+ padding:24px 14px 60px}
+h1{text-align:center;font-size:21px}
+.sub{text-align:center;color:#7C8CA6;font-size:12.5px;margin:6px auto 22px;max-width:880px;line-height:1.9}
+.sec{max-width:1500px;margin:0 auto 10px;font-size:13px;font-weight:800;color:#2E7BFF}
+.sec small{color:#7C8CA6;font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;max-width:1500px;margin:0 auto 30px}
+.phone{width:300px;margin:0 auto;background:#fff;border-radius:44px;padding:9px;box-shadow:0 18px 40px rgba(70,110,190,.14)}
+.sc{background:#fff;border-radius:36px;overflow:hidden}
+.bdy{padding:6px 13px 10px;display:flex;flex-direction:column;gap:9px;min-height:360px}
+.t{display:flex;justify-content:space-between;font-size:9.5px;color:#A9B6CA;padding:7px 15px 0}
+h2{text-align:center;font-size:36px;font-weight:800}
+h2 small{font-size:16px;color:#7C8CA6}
+h3{font-size:17px;font-weight:800}
+.tab{display:flex;background:#EFF5FF;border-radius:999px;padding:3px;margin-top:2px}
+.tab i{flex:1;font-style:normal;text-align:center;padding:7px 0;border-radius:999px;font-size:12.5px;color:#7C8CA6}
+.tab i.on{background:#fff;color:#2E7BFF;font-weight:800;box-shadow:0 5px 14px rgba(46,123,255,.18)}
+.cat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat div{text-align:center;font-size:10.5px;color:#16233D;font-weight:600;background:#fff;border:1px solid #E6EDF7;border-radius:16px;padding:9px 0 7px;box-shadow:0 6px 14px rgba(80,120,200,.05)}
+.cat i{display:block;font-style:normal;font-size:19px;margin-bottom:3px}
+.cat div.on{border:2px solid #2E7BFF;background:#F0F6FF;color:#2E7BFF}
+.meta{display:flex;justify-content:space-between;font-size:11.5px;color:#7C8CA6}
+.meta b{color:#16233D}
+.chips{display:flex;gap:6px}
+.chip{font-size:11px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #E6EDF7;color:#4C5B76}
+.btn{background:linear-gradient(90deg,#2E7BFF,#6FB6FF);color:#fff;text-align:center;padding:12px 0;border-radius:999px;font-weight:800;letter-spacing:3px;font-size:13px;box-shadow:0 10px 22px rgba(46,123,255,.28)}
+.bar{height:8px;border-radius:99px;background:#E9F0FA;overflow:hidden}
+.bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#2E7BFF,#6FB6FF)}
+/* 明细 C：周分组卡片 */
+.wk{font-size:10px;color:#7C8CA6;display:flex;gap:5px;align-items:center;margin:3px 0 2px}
+.wk b{background:#EFF5FF;color:#2E7BFF;border-radius:99px;padding:1px 8px;font-size:9.5px}
+.dc{background:#fff;border:1px solid #E6EDF7;border-radius:16px;padding:6px 9px;display:flex;gap:8px;align-items:center;box-shadow:0 5px 12px rgba(80,120,200,.05)}
+.dc .ico{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#EFF5FF;font-size:13px}
+.dc .mi{flex:1}.dc .mi b{display:block;font-size:12px}.dc .mi span{font-size:9px;color:#A9B6CA}
+.dc .am{font-weight:800;font-size:12px}
+/* 统计 C：大字月滑轨+面积感柱 */
+.sl{display:flex;align-items:center;gap:10px;font-size:12px}
+.sl b{font-size:15px}
+.mcard{background:linear-gradient(160deg,#fff,#F4F9FF);border:1px solid #E6EDF7;border-radius:18px;padding:10px 12px;display:flex;justify-content:space-between}
+.mcard div{flex:1;font-size:9.5px;color:#7C8CA6}
+.mcard b{display:block;font-size:14px;color:#16233D;margin-top:2px}
+.ring{width:80px;height:80px;border-radius:50%;margin:8px auto;position:relative;background:conic-gradient(#FF9F68 0 35%,#F5A623 35% 51%,#5AA7FF 51% 82%,#FF8FB0 82% 100%);box-shadow:0 0 0 8px #F0F6FF}
+.ring:after{content:"";position:absolute;inset:17px;border-radius:50%;background:#fff}
+.bars{display:flex;align-items:flex-end;gap:3px;height:44px}
+.bars i{flex:1;background:linear-gradient(180deg,#6FB6FF,#2E7BFF);border-radius:8px 8px 0 0;opacity:.85}
+.bars i.lo{background:#CFE1FF}
+/* 设置 C：堆叠卡列表 */
+.st{display:flex;flex-direction:column;gap:8px}
+.st .g{background:#fff;border:1px solid #E6EDF7;border-radius:16px;overflow:hidden;box-shadow:0 6px 14px rgba(80,120,200,.06)}
+.st .r{display:flex;align-items:center;padding:9px 11px;font-size:12px}
+.st .r+.r{border-top:1px solid #F0F5FF}
+.st .r .ic{width:24px;height:24px;border-radius:9px;background:#EFF5FF;display:flex;align-items:center;justify-content:center;margin-right:9px;font-size:12px}
+.st .r b{flex:1}
+.sw{width:34px;height:19px;border-radius:99px;background:#2E7BFF;position:relative}
+.sw:after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;right:2px;top:2px;box-shadow:0 2px 4px rgba(0,0,0,.15)}
+/* nav C：胶囊分块 */
+.nav{display:flex;margin:4px 10px 8px;background:#EFF5FF;border-radius:999px;padding:4px}
+.nav span{flex:1;text-align:center;font-size:10px;color:#7C8CA6;padding:7px 0;border-radius:999px}
+.nav span.on{background:#fff;color:#2E7BFF;font-weight:800;box-shadow:0 4px 10px rgba(46,123,255,.18)}
+</style></head><body>
+<h1>主题 C · 晴空·简白 —— 四屏全览</h1>
+<p class="sub">结构签名：底部<b>整条胶囊分块导航(当前页白色胶囊)</b>；首页=圆角<b>云图标分类宫格</b>；明细=<b>周分组折叠卡片</b>；统计=<b>月份滑轨+卡片叠层+面积柱</b>；设置=<b>堆叠卡列表(带图标钮)</b>。</p>
+
+<div class="sec">① 首页 <small>（超大圆角 + 云朵分类 + 白色胶囊分段）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:30</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div class="tab"><i class="on">支出</i><i>收入</i></div>
+  <h2><small>¥</small>0.00</h2>
+  <div style="text-align:center;color:#A9B6CA;font-size:12px">备注（可选）</div>
+  <div class="cat">
+   <div class="on"><i>🍜</i>餐饮</div><div><i>🚇</i>交通</div><div><i>🛍️</i>购物</div><div><i>🏠</i>居住</div>
+   <div><i>🧺</i>日用</div><div><i>🎮</i>娱乐</div><div><i>💊</i>医疗</div><div><i>🎁</i>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#2E7BFF">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="btn">保 存</div>
+  <div class="bar"><i></i></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;color:#7C8CA6"><span>本月预算</span><b style="color:#1FA97C">余额 ¥1,150</b></div>
+ </div>
+ <div class="nav"><span class="on">记一笔</span><span>明细</span><span>统计</span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">② 明细 <small>（本周/上周折叠卡片组）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:31</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between"><h3>明细</h3><span style="font-size:12px;color:#2E7BFF">‹ 8月 ›</span></div>
+  <div class="mcard"><div>支出<b>¥2,345</b></div><div>收入<b style="color:#1FA97C">¥14,500</b></div><div>结余<b>¥12,155</b></div></div>
+  <div class="wk"><b>本周</b> 8月25日 — 8月31日</div>
+  <div class="dc"><span class="ico">🍜</span><span class="mi"><b>午餐</b><span>餐饮·现金·和同事</span></span><span class="am">−23.50</span></div>
+  <div class="dc"><span class="ico">🚇</span><span class="mi"><b>地铁</b><span>交通·微信零钱</span></span><span class="am">−6.00</span></div>
+  <div class="wk"><b>上周</b> 8月18日 — 8月24日</div>
+  <div class="dc"><span class="ico">🏠</span><span class="mi"><b>房租</b><span>居住·储蓄卡</span></span><span class="am">−1,200.00</span></div>
+  <div class="dc"><span class="ico">💌</span><span class="mi"><b>红包</b><span>收入·微信零钱</span></span><span class="am" style="color:#1FA97C">+200.00</span></div>
+  <div style="text-align:center;color:#A9B6CA;font-size:9.5px">点任意卡片可编辑（含改钱包）</div>
+ </div>
+ <div class="nav"><span>记一笔</span><span class="on">明细</span><span>统计</span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">③ 统计 <small>（月份滑轨 + 卡片叠层 + 圆环气泡）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:32</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h3>统计</h3><span style="font-size:11px;color:#2E7BFF">⚙</span></div>
+  <div class="sl"><span style="color:#A9B6CA">‹</span><b>2025年8月</b><span style="color:#2E7BFF">▾</span><span style="color:#A9B6CA">›</span></div>
+  <div class="mcard"><div>支出<b>¥2,345</b></div><div>收入<b style="color:#1FA97C">¥14,500</b></div><div>结余<b style="color:#2E7BFF">¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;color:#7C8CA6"><span>支出构成</span><span style="color:#2E7BFF">展开全部 ▾</span></div>
+  <div class="bars"><i class="lo" style="height:25%"></i><i class="lo" style="height:40%"></i><i style="height:35%"></i><i style="height:55%"></i><i style="height:70%"></i><i style="height:95%"></i></div>
+  <div style="font-size:9.5px;color:#A9B6CA">近6月支出（蓝=今年高亮）</div>
+ </div>
+ <div class="nav"><span>记一笔</span><span>明细</span><span class="on">统计</span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">④ 设置 <small>（堆叠卡 + 圆角图标钮 + 胶囊开关）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:33</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <h3>‹ 设置</h3>
+  <div class="st">
+   <div class="g"><div class="r"><span class="ic">🗂️</span><b>分类管理</b><span style="color:#A9B6CA">›</span></div><div class="r"><span class="ic">💳</span><b>账户管理</b><span style="color:#A9B6CA">›</span></div></div>
+   <div class="g"><div class="r"><span class="ic">🎨</span><b>主题</b><span style="color:#7C8CA6">跟随系统</span><span style="color:#A9B6CA">›</span></div><div class="r"><span class="ic">👛</span><b>默认支出账户</b><span style="color:#7C8CA6">现金</span></div><div class="r"><span class="ic">🔁</span><b>连续记账</b><span class="sw"></span></div></div>
+   <div class="g"><div class="r"><span class="ic">📤</span><b>导出 / 备份 / 恢复</b><span style="color:#A9B6CA">›</span></div></div>
+  </div>
+ </div>
+ <div class="nav"><span>记一笔</span><span>明细</span><span>统计</span><span class="on">设置</span></div>
+</div></div></div>
+</body></html>

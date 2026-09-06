@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 优化预览：结余转账 + 多预算卡片</title>
+<style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#3F4257;
+  background:linear-gradient(180deg,#F3EFFB,#EAF2FE 45%,#FCEFF4);padding:26px 14px 60px}
+ h1{text-align:center;font-size:21px}
+ .sub{text-align:center;color:#9A9DB3;font-size:12.5px;margin:8px auto 26px;max-width:860px;line-height:1.9}
+ .wrap{display:flex;justify-content:center;gap:26px;align-items:flex-start;flex-wrap:wrap}
+ .ph{width:340px;background:#fff;border-radius:44px;padding:10px;box-shadow:0 16px 38px rgba(110,95,190,.26);position:relative}
+ .sc{background:#fff;border-radius:34px;padding:14px;min-height:600px;position:relative}
+ .cap{font-size:10px;color:#9A9DB3;margin-bottom:8px}
+ .dim{position:absolute;inset:0;background:rgba(20,16,40,.38);z-index:1;border-radius:34px}
+ .dlg{position:absolute;left:16px;right:16px;top:70px;background:#fff;border-radius:22px;padding:16px 15px 12px;z-index:2;box-shadow:0 22px 54px rgba(10,8,40,.42)}
+ .dlg h4{font-size:16px;font-weight:800;margin-bottom:6px}
+ .mb{display:flex;justify-content:space-between;align-items:center;background:#F4F0FF;border-radius:11px;padding:8px 11px;margin-bottom:6px}
+ .mb .l{font-size:12.5px;font-weight:800;color:#6C5CE7}
+ .mb .v{font-size:15px;font-weight:900;color:#2FC98A;font-variant-numeric:tabular-nums}
+ .row{display:flex;align-items:center;padding:6.5px 0;font-size:12.5px}
+ .dot{width:11px;height:11px;border-radius:50%;flex:none}
+ .nm{flex:1;padding-left:9px;font-weight:700}
+ .am{font-weight:800;font-variant-numeric:tabular-nums}
+ .line{height:1px;background:#EFE9FF;margin:5px 0}
+ .cum{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;font-weight:800}
+ .acts{display:flex;gap:8px;margin-top:8px}
+ .acts .a{flex:1;text-align:center;padding:10px 0;border-radius:999px;font-weight:800;font-size:13.5px}
+ .acts .go{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff}
+ .acts .ok{background:#F4F0FF;color:#6C5CE7}
+ .newmark{display:inline-block;background:#E5F8EF;color:#17925F;font-size:9.5px;font-weight:800;border-radius:999px;padding:1px 8px;margin-left:6px}
+ /* 预算卡 */
+ .bud{border:1px solid #E8E2F4;border-radius:22px;background:#FDFCFF;padding:12px 13px;margin-top:10px}
+ .bud .top{display:flex;align-items:center;gap:7px}
+ .bud h4{font-size:14.5px;font-weight:800}
+ .badge{font-size:9.5px;font-weight:800;border-radius:999px;padding:2px 9px}
+ .badge.m{background:#F0E9FE;color:#6C5CE7}
+ .badge.y{background:#E3F6EC;color:#17925F}
+ .bud .edit{margin-left:auto;color:#B9A6F3;font-size:10.5px;font-weight:700}
+ .r1{display:flex;justify-content:space-between;align-items:baseline;margin-top:7px}
+ .l1{font-size:11.5px;color:#9A9DB3}
+ .v1{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums}
+ .v1.spent{color:#FF7D9C}
+ .prog{height:9px;border-radius:99px;background:#F1EEF8;overflow:hidden;margin-top:7px}
+ .prog i{display:block;height:100%;border-radius:99px}
+ .m2{display:flex;gap:9px;margin-top:10px}
+ .box{flex:1;border:1px solid #EFE9FF;border-radius:13px;padding:7px 10px}
+ .box .k{font-size:9.5px;color:#9A9DB3}
+ .box .v{font-size:14px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+ .add{border:1.5px dashed #B9A6F3;border-radius:20px;color:#8B7CF6;text-align:center;font-size:13px;font-weight:700;
+      padding:11px 0;margin-top:10px;background:rgba(139,124,246,.05)}
+ .aside{max-width:380px;background:rgba(255,255,255,.78);border:1px solid #fff;border-radius:18px;padding:15px 17px;
+        font-size:12.5px;line-height:2.05;color:#4a5060;box-shadow:0 8px 20px rgba(110,100,170,.12)}
+ .aside b{color:#3F4257}
+ .aside .k{color:#6C5CE7;font-weight:800}
+</style></head><body>
+<h1>Accounts · 优化预览</h1>
+<p class="sub">① 钱包结余弹窗新增<b>转账</b>入口　② 首页预算卡升级：<b>多卡片、可命名、按月/按年独立统计</b>（名称、金额、周期均可改；支持删除与新增）</p>
+<div class="wrap">
+
+<!-- ① 钱包结余 + 转账 -->
+<div class="ph"><div class="sc">
+ <div class="cap">统计 → 点「结余」卡</div>
+ <div class="dim"></div>
+ <div class="dlg">
+  <h4>钱包结余</h4>
+  <div class="mb"><span class="l">本月结余</span><span class="v">¥12,155.00</span></div>
+  <div class="row"><span class="dot" style="background:#FFB15F"></span><span class="nm">现金</span><span class="am">¥1,250.00</span></div>
+  <div class="row"><span class="dot" style="background:#8B7CF6"></span><span class="nm">储蓄卡</span><span class="am">¥8,000.00</span></div>
+  <div class="row"><span class="dot" style="background:#63A9FF"></span><span class="nm">支付宝</span><span class="am">¥2,518.80</span></div>
+  <div class="row"><span class="dot" style="background:#2FC98A"></span><span class="nm">微信零钱</span><span class="am">¥386.20</span></div>
+  <div class="line"></div>
+  <div class="cum"><span>累计合计</span><span style="color:#2FC98A">¥12,155.00</span></div>
+  <div class="acts"><span class="a go">转 账</span><span class="a ok">知道了</span></div>
+  <div style="font-size:9.5px;color:#9A9DB3;text-align:center;margin-top:7px">点「转账」→ 选择 从/到 钱包 + 金额（不计收支）</div>
+ </div>
+</div></div>
+
+<!-- ② 首页多预算 -->
+<div class="ph"><div class="sc">
+ <div class="cap">记一笔页 → 保存按钮下方（可下滑）</div>
+ <div style="text-align:center;font-size:22px;font-weight:800;padding:8px 0 2px">¥ 0.00</div>
+ <div style="text-align:center;color:#9A9DB3;font-size:11px;margin-bottom:8px">（分类/金额区省略）</div>
+ <div style="background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;text-align:center;padding:11px 0;border-radius:999px;font-weight:800;letter-spacing:4px">保 存</div>
+
+ <!-- 预算卡 1：按月 -->
+ <div class="bud">
+  <div class="top"><h4>日常开销</h4><span class="badge m">按月</span><span class="edit">✎ 点此改名/改金额</span></div>
+  <div class="r1"><span class="l1">本月已支出</span><span class="v1 spent">¥1,850.00</span></div>
+  <div class="prog"><i style="width:62%;background:linear-gradient(90deg,#8B7CF6,#FF9F68)"></i></div>
+  <div class="r1" style="font-size:10px;color:#9A9DB3;margin-top:3px"><span>已用 62%</span><span>剩余 38%</span></div>
+  <div class="m2"><div class="box"><div class="k">预算余额（月）</div><div class="v" style="color:#2FC98A">¥1,150.00</div></div>
+              <div class="box"><div class="k">每日平均</div><div class="v" style="color:#8B7CF6">¥74.00</div></div></div>
+ </div>
+
+ <!-- 预算卡 2：按年 -->
+ <div class="bud" style="margin-top:8px">
+  <div class="top"><h4>今年总预算</h4><span class="badge y">按年</span><span class="edit">✎ 点此改名</span></div>
+  <div class="r1"><span class="l1">今年已支出</span><span class="v1 spent">¥12,460.00</span></div>
+  <div class="prog"><i style="width:42%;background:linear-gradient(90deg,#2FC98A,#8B7CF6)"></i></div>
+  <div class="r1" style="font-size:10px;color:#9A9DB3"><span>已用 42%</span><span>剩余 58%</span></div>
+  <div class="m2"><div class="box"><div class="k">预算余额（年）</div><div class="v" style="color:#2FC98A">¥17,540.00</div></div>
+              <div class="box"><div class="k">每日平均</div><div class="v" style="color:#8B7CF6">¥54.65</div></div></div>
+ </div>
+
+ <div class="add">＋ 新增预算</div>
+</div></div>
+
+<div class="aside">
+ <b>功能说明（审核点）</b><br>
+ ① <b>钱包结余 → 转账</b>：弹窗底部新增「转账」按钮（与"知道了"并列）；点按进入 从/到钱包 + 金额 对话框，转账不计收支、两钱包余额即时更新。<br>
+ ② <b>多预算卡片</b>：每张卡独立<b>名称 + 金额 + 周期</b>；月卡按本月统计、年卡按今年统计（口径互不干扰）<br>
+ ③ 每张卡右上角「✎」进入编辑：可<b>改名称</b>、改金额、在 按月/按年 间切换，或<b>删除该卡</b><br>
+ ④ 底部「＋ 新增预算」可创建任意多张（如：日常开销-按月、今年总预算-按年、旅行基金-按年…）<br>
+ ⑤ 周期徽章实时显示「按月 / 按年」，进度、余额、每日平均均按卡片所选方式计算并随流水自动刷新
+</div>
+</div>
+</body></html>

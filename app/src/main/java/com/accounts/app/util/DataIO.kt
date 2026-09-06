@@ -25,7 +25,7 @@ object DataIO {
         val transactions: List<Transaction> = emptyList(),
         val transfers: List<Transfer> = emptyList(),
         val templates: List<Template> = emptyList(),
-        val budget: Budget? = null
+        val budgets: List<Budget> = emptyList()
     )
 
     // ===== 导出 =====
@@ -65,7 +65,8 @@ object DataIO {
                 a.put(JSONObject()
                     .put("id", c.id).put("name", c.name).put("color", c.color)
                     .put("kind", c.kind).put("sortOrder", c.sortOrder)
-                    .put("enabled", c.enabled).put("pinned", c.pinned))
+                    .put("enabled", c.enabled).put("pinned", c.pinned)
+                    .put("icon", c.icon))
             }
         })
         root.put("accounts", JSONArray().also { a ->
@@ -102,9 +103,10 @@ object DataIO {
             }
         })
         root.put("budgets", JSONArray().also { a ->
-            s.budget?.let { b ->
+            s.budgets.forEach { b ->
                 a.put(JSONObject()
-                    .put("id", b.id).put("amountCents", b.amountCents).put("period", b.period))
+                    .put("id", b.id).put("name", b.name).put("amountCents", b.amountCents)
+                    .put("period", b.period).put("sortOrder", b.sortOrder))
             }
         })
         return root.toString(2)
@@ -150,7 +152,7 @@ object DataIO {
             listLong("categories") { o ->
                 cats.add(Category(o.getLong("id"), o.getString("name"), o.getLong("color"),
                     o.getString("kind"), o.getInt("sortOrder"), o.getBoolean("enabled"),
-                    o.getBoolean("pinned")))
+                    o.getBoolean("pinned"), o.optString("icon")))
             }
             val accs = mutableListOf<Account>()
             listLong("accounts") { o ->
@@ -177,13 +179,13 @@ object DataIO {
                     o.getLong("amountCents"), o.getLong("categoryId"),
                     o.getString("kind"), o.getInt("sortOrder")))
             }
-            var budget: Budget? = null
-            val arr = root.optJSONArray("budgets")
-            if (arr != null && arr.length() > 0) {
-                val o = arr.getJSONObject(0)
-                budget = Budget(o.getLong("id"), o.getLong("amountCents"), o.getString("period"))
+            val budgets = mutableListOf<Budget>()
+            listLong("budgets") { o ->
+                budgets.add(Budget(o.getLong("id"), o.optString("name", "预算"),
+                    o.getLong("amountCents"), o.getString("period"),
+                    o.optInt("sortOrder", 0)))
             }
-            Snapshot(cats, accs, txns, trs, tpls, budget)
+            Snapshot(cats, accs, txns, trs, tpls, budgets)
         } catch (e: Exception) {
             null
         }

@@ -12,11 +12,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * 预置数据：支出分类 10（前 8 个 pinned = 首页固定 8 格）、收入分类 6、默认账户 4、示例模板 2。
  * v2：新增 templates 表（快捷模板）。
  * v3：新增 budgets 表（单行预算配置，默认未启用）。
+ * v4：budgets 升级为多行（含 name/自动主键/排序），支持多预算卡片。
+ * v5：categories 新增 icon 列（首页瓦片 emoji 图标），并按默认分类名回填图标。
  */
 @Database(
     entities = [Category::class, Account::class, Transaction::class, Transfer::class,
         Template::class, Budget::class],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -38,13 +40,22 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "jianji.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .addCallback(SeedCallback)
                     .build()
                     .also { INSTANCE = it }
             }
 
         private fun argb(hex: String): Long = ("FF" + hex.removePrefix("#")).toLong(16)
+
+        /** 默认分类图标：name -> emoji（首页瓦片用；空串表示不显示） */
+        private val defaultIcons = mapOf(
+            "餐饮" to "🍜", "交通" to "🚇", "购物" to "🛍", "居住" to "🏠",
+            "日用" to "🧺", "娱乐" to "🎮", "医疗" to "💊", "人情" to "🎁",
+            "旅行" to "🧳", "学习" to "📚",
+            "工资" to "💰", "奖金" to "🏆", "理财" to "📈", "退款" to "💸",
+            "红包" to "🧧", "其他" to "📦"
+        )
 
         private val SeedCallback = object : Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
@@ -62,19 +73,19 @@ abstract class AppDatabase : RoomDatabase() {
                     Triple("红包", "#FF8FA3", true), Triple("其他", "#9A9DB3", true)
                 )
                 var order = 0
-                expense.forEachIndexed { i, (name, hex, pinned) ->
+                expense.forEachIndexed { _, (name, hex, pinned) ->
                     order++
                     db.execSQL(
-                        "INSERT INTO categories(name,color,kind,sortOrder,enabled,pinned) VALUES(?,?,?,?,1,?)",
-                        arrayOf(name, argb(hex), "expense", order, if (pinned) 1 else 0)
+                        "INSERT INTO categories(name,color,kind,sortOrder,enabled,pinned,icon) VALUES(?,?,?,?,1,?,?)",
+                        arrayOf(name, argb(hex), "expense", order, if (pinned) 1 else 0, defaultIcons[name] ?: "")
                     )
                 }
                 order = 0
-                income.forEachIndexed { i, (name, hex, pinned) ->
+                income.forEachIndexed { _, (name, hex, pinned) ->
                     order++
                     db.execSQL(
-                        "INSERT INTO categories(name,color,kind,sortOrder,enabled,pinned) VALUES(?,?,?,?,1,?)",
-                        arrayOf(name, argb(hex), "income", order, if (pinned) 1 else 0)
+                        "INSERT INTO categories(name,color,kind,sortOrder,enabled,pinned,icon) VALUES(?,?,?,?,1,?,?)",
+                        arrayOf(name, argb(hex), "income", order, if (pinned) 1 else 0, defaultIcons[name] ?: "")
                     )
                 }
                 val accounts = listOf(
@@ -90,9 +101,6 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 }
                 seedTemplates(db)
-                db.execSQL(
-                    "INSERT OR IGNORE INTO budgets(id,amountCents,period) VALUES(1,0,'month')"
-                )
             }
         }
 
@@ -130,6 +138,38 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     "INSERT OR IGNORE INTO budgets(id,amountCents,period) VALUES(1,0,'month')"
                 )
+            }
+        }
+
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE budgets_new (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "name TEXT NOT NULL DEFAULT '预算', " +
+                        "amountCents INTEGER NOT NULL DEFAULT 0, " +
+                        "period TEXT NOT NULL DEFAULT 'month', " +
+                        "sortOrder INTEGER NOT NULL DEFAULT 0)"
+                )
+                db.execSQL(
+                    "INSERT INTO budgets_new(name,amountCents,period,sortOrder) " +
+                        "SELECT '本月预算',amountCents,period,1 FROM budgets"
+                )
+                db.execSQL("DROP TABLE budgets")
+                db.execSQL("ALTER TABLE budgets_new RENAME TO budgets")
+            }
+        }
+
+        /** v5：categories 加 icon 列；按默认分类名回填图标（不影响用户已改的自定义分类） */
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT ''")
+                defaultIcons.forEach { (name, emoji) ->
+                    db.execSQL(
+                        "UPDATE categories SET icon = ? WHERE name = ? AND icon = ''",
+                        arrayOf(emoji, name)
+                    )
+                }
             }
         }
     }

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 主题 E 晨雾·焕新</title>
+<style>
+:root{
+  --bg1:#F3EFFB;--bg2:#EAF2FE;--bg3:#FCEFF4;
+  --card:rgba(255,255,255,.66);--line:rgba(255,255,255,.95);
+  --ink:#3F4257;--ink2:#9A9DB3;
+  --acc:#8B7CF6;--acc2:#5FB4FF;
+  --inc:#2FC98A;--exp:#FF7D9C;
+  --c1:#FF9F68;--c2:#63A9FF;--c3:#F07BAF;--c4:#8B7CF6;--c5:#6FCF97;--c6:#FFB15F;--c7:#62C6C0;--c8:#FF8FA3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);
+  background:
+    radial-gradient(760px 520px at 10% -8%,rgba(139,124,246,.28),transparent 60%),
+    radial-gradient(700px 480px at 96% 4%,rgba(95,180,255,.30),transparent 55%),
+    radial-gradient(640px 460px at 50% 110%,rgba(255,143,168,.24),transparent 60%),
+    linear-gradient(180deg,var(--bg1),var(--bg2) 50%,var(--bg3));
+  padding:28px 16px 70px}
+h1{text-align:center;font-size:22px;letter-spacing:1px}
+.sub{text-align:center;color:var(--ink2);font-size:13px;margin:8px auto 24px;max-width:760px;line-height:1.9}
+.wrap{display:flex;justify-content:center;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.info{width:330px;display:flex;flex-direction:column;gap:14px}
+.icon{width:128px;height:128px;margin:0 auto;border-radius:30px;padding:6px;background:linear-gradient(135deg,#F8F4FF,#EFF6FF);
+     box-shadow:0 12px 30px rgba(139,124,246,.35),inset 0 0 0 1px rgba(255,255,255,.9)}
+.icon svg{width:100%;height:100%;display:block}
+.pal{display:flex;gap:8px;justify-content:center}
+.pal span{width:26px;height:26px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.traits i{font-style:normal;font-size:11.5px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.7);
+          border:1px solid rgba(255,255,255,.95);color:#5E4F86}
+.motion{font-size:12px;color:#8A7FAE;line-height:2.1;background:rgba(255,255,255,.6);backdrop-filter:blur(8px);
+        border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:12px 14px}
+.motion b{color:var(--acc)}
+.ph{width:352px;background:#fff;border-radius:50px;padding:11px;box-shadow:0 20px 44px rgba(100,85,170,.3)}
+.sc{background:rgba(255,255,255,.6);backdrop-filter:blur(14px);border-radius:40px;padding:16px;border:1px solid rgba(255,255,255,.95);
+    display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;background:rgba(255,255,255,.7);border-radius:14px;padding:3px;border:1px solid rgba(255,255,255,.9)}
+.seg span{flex:1;text-align:center;padding:8px 0;border-radius:11px;font-size:13px;color:var(--ink2)}
+.seg span.on{color:#fff;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));
+             box-shadow:0 6px 16px rgba(139,124,246,.4)}
+.amount{text-align:center;font-size:42px;font-weight:800;color:var(--ink);letter-spacing:1px}
+.amount em{font-style:normal;font-size:20px;color:var(--ink2)}
+.note{text-align:center;color:var(--ink2);font-size:13px;padding-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.cat{text-align:center;padding:12px 0;border-radius:20px;font-size:11.5px;font-weight:700;color:#4A3E6E;
+     box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 5px 12px rgba(120,100,180,.10)}
+.cat.on{outline:2.5px solid var(--acc);box-shadow:0 8px 18px rgba(139,124,246,.30)}
+.cat i{display:block;font-style:normal;font-size:12px;opacity:0}
+.grid .cat span:nth-of-type(1){display:block}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2)}
+.meta b{color:var(--ink)}
+.chips{display:flex;gap:6px}
+.chip{font-size:11.5px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);color:#6C5F93}
+.save{text-align:center;padding:14px 0;border-radius:999px;font-weight:800;letter-spacing:4px;color:#fff;
+      background:linear-gradient(90deg,var(--acc),var(--acc2));box-shadow:0 10px 24px rgba(139,124,246,.4),inset 0 1px 0 rgba(255,255,255,.35)}
+.bud{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);
+     background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:10px 12px;backdrop-filter:blur(8px)}
+.bud b{color:var(--inc)}
+.bud .bar{flex:1;height:8px;margin:0 10px;background:rgba(139,124,246,.15);border-radius:999px;overflow:hidden}
+.bud .bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:999px}
+.hr{height:1px;background:rgba(139,124,246,.16)}
+.stat .cards{display:flex;gap:7px}
+.stat .s{flex:1;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);border-radius:15px;padding:8px 9px;font-size:10px;color:var(--ink2);backdrop-filter:blur(6px)}
+.stat .s b{display:block;font-size:12.5px;color:var(--ink)}
+.ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c1)0 35%,var(--c2)35% 65%,var(--c4)65% 82%,var(--c6)82% 100%);position:relative;margin:9px auto;
+     box-shadow:0 0 0 6px rgba(255,255,255,.5),0 10px 20px rgba(139,124,246,.25)}
+.ring:after{content:"";position:absolute;inset:19px;border-radius:50%;background:#FDFCFF}
+.bars{display:flex;align-items:flex-end;gap:3px;height:48px;margin-top:6px}
+.bars i{flex:1;background:#D4CCF8;border-radius:5px 5px 0 0;min-height:3px}
+.bars i.hi{background:linear-gradient(180deg,var(--acc),var(--acc2))}
+.note2{font-size:11.5px;color:#8A7FAE;line-height:1.8}
+</style></head>
+<body>
+<h1>Accounts · 主题 E · 晨雾·焕新</h1>
+<p class="sub">在现有晨雾基础上的精修升级：更柔的光晕、更透的玻璃、更圆润——保留你已认可的气质，细节再拔高</p>
+<div class="wrap">
+ <div class="info">
+  <div class="icon"><svg viewBox="0 0 120 120"><defs><linearGradient id="ge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9D8CFF"/><stop offset="1" stop-color="#5FB4FF"/></linearGradient></defs><rect width="120" height="120" rx="30" fill="#FDF9F0"/><circle cx="60" cy="60" r="40" fill="url(#ge)"/><circle cx="60" cy="60" r="27" fill="none" stroke="#fff" stroke-width="9" stroke-dasharray="58 112" transform="rotate(-90 60 60)"/><circle cx="86" cy="40" r="8" fill="#FFD166"/></svg></div>
+  <div class="pal"><span style="background:#F3EFFB"></span><span style="background:#8B7CF6"></span><span style="background:#5FB4FF"></span><span style="background:#2FC98A"></span></div>
+  <div class="traits"><i>磨砂玻璃升级</i><i>流光高光</i><i>环形图标+星光</i><i>细润圆角</i></div>
+  <div class="motion"><b>动效：</b>丝绸般顺滑——界面切换 220ms 缓出淡入；按钮自带顶部高光扫过；选中环形扇区柔光呼吸；玻璃卡片在滚动中随背景光晕流动。</div>
+ </div>
+ <div class="ph"><div class="sc">
+  <div class="seg"><span class="on">支出</span><span>收入</span></div>
+  <div class="amount"><em>¥</em>0.00</div>
+  <div class="note">备注（可选）</div>
+  <div class="grid">
+    <div class="cat" style="background:color-mix(in srgb,#FF9F68 18%,#fff)">餐饮</div>
+    <div class="cat" style="background:color-mix(in srgb,#63A9FF 18%,#fff)">交通</div>
+    <div class="cat" style="background:color-mix(in srgb,#F07BAF 18%,#fff)">购物</div>
+    <div class="cat" style="background:color-mix(in srgb,#8B7CF6 18%,#fff)">居住</div>
+    <div class="cat" style="background:color-mix(in srgb,#6FCF97 18%,#fff)">日用</div>
+    <div class="cat" style="background:color-mix(in srgb,#FFB15F 18%,#fff)">娱乐</div>
+    <div class="cat" style="background:color-mix(in srgb,#62C6C0 18%,#fff)">医疗</div>
+    <div class="cat" style="background:color-mix(in srgb,#FF8FA3 18%,#fff)">人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:var(--acc)">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="save">保 存</div>
+  <div class="bud"><span>本月预算</span><div class="bar"><i></i></div><b>¥1,150</b></div>
+  <div class="hr"></div>
+  <div class="stat"><div class="cards"><div class="s">支出<b>¥2,345</b></div><div class="s">收入<b style="color:var(--inc)">¥14,500</b></div><div class="s">结余<b style="color:var(--acc)">¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div class="bars"><i></i><i></i><i></i><i></i><i></i><i class="hi"></i><i></i><i class="hi"></i></div></div>
+  <div class="note2">深色模式沿用现有实现；本轮主要打磨浅色的光感、圆角与动效节奏。</div>
+ </div></div>
+</div>
+</body></html>

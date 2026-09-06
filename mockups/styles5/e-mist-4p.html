@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E 晨雾·焕新 · 四屏全览</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#3F4257;
+ background:radial-gradient(760px 500px at 10% -8%,rgba(139,124,246,.30),transparent 60%),
+           radial-gradient(700px 460px at 96% 4%,rgba(95,180,255,.32),transparent 55%),
+           radial-gradient(640px 440px at 50% 112%,rgba(255,143,168,.26),transparent 60%),#F0EDF9;
+ padding:24px 14px 60px}
+h1{text-align:center;font-size:21px}
+.sub{text-align:center;color:#9A9DB3;font-size:12.5px;margin:6px auto 22px;max-width:880px;line-height:1.9}
+.sec{max-width:1500px;margin:0 auto 10px;font-size:13px;font-weight:800;color:#6C5CE7}
+.sec small{color:#9A9DB3;font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;max-width:1500px;margin:0 auto 30px}
+.phone{width:300px;margin:0 auto;background:#fff;border-radius:46px;padding:9px;box-shadow:0 18px 40px rgba(110,95,190,.26)}
+.sc{background:rgba(255,255,255,.55);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.95);border-radius:38px;overflow:hidden;position:relative}
+.bdy{padding:5px 13px 12px;display:flex;flex-direction:column;gap:8px;min-height:330px}
+.t{display:flex;justify-content:space-between;font-size:9px;color:#B7B2CC;padding:7px 14px 0}
+h2{text-align:center;font-size:36px;font-weight:800;color:#3F4257}
+h2 small{font-size:15px;color:#9A9DB3}
+h3{font-size:16px;font-weight:800}
+.tab{display:flex;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);border-radius:13px;padding:3px}
+.tab i{flex:1;font-style:normal;text-align:center;padding:7px 0;border-radius:10px;font-size:12px;color:#9A9DB3}
+.tab i.on{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;font-weight:800;box-shadow:0 5px 14px rgba(139,124,246,.4)}
+.note{text-align:center;color:#9A9DB3;font-size:12px;padding-bottom:4px}
+.cat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat div{text-align:center;padding:11px 0;border-radius:18px;font-size:11px;font-weight:700;color:#4A3E6E;
+         box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 5px 12px rgba(120,100,180,.10)}
+.cat div:nth-child(1){background:color-mix(in srgb,#FF9F68 20%,#fff)}.cat div:nth-child(2){background:color-mix(in srgb,#63A9FF 20%,#fff)}
+.cat div:nth-child(3){background:color-mix(in srgb,#F07BAF 20%,#fff)}.cat div:nth-child(4){background:color-mix(in srgb,#8B7CF6 20%,#fff)}
+.cat div:nth-child(5){background:color-mix(in srgb,#6FCF97 20%,#fff)}.cat div:nth-child(6){background:color-mix(in srgb,#FFB15F 20%,#fff)}
+.cat div:nth-child(7){background:color-mix(in srgb,#62C6C0 20%,#fff)}.cat div:nth-child(8){background:color-mix(in srgb,#FF8FA3 20%,#fff)}
+.cat div.on{outline:2.5px solid #8B7CF6;box-shadow:0 10px 20px rgba(139,124,246,.3)}
+.meta{display:flex;justify-content:space-between;font-size:11.5px;color:#9A9DB3}
+.meta b{color:#3F4257}
+.chips{display:flex;gap:6px}
+.chip{font-size:11px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.95);color:#6C5F93}
+.btn{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;text-align:center;padding:11px 0;border-radius:999px;font-weight:800;letter-spacing:4px;font-size:13px;box-shadow:0 10px 22px rgba(139,124,246,.4),inset 0 1px 0 rgba(255,255,255,.4)}
+/* E 首页签名：底部常驻输入条 */
+.dockbar{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.8);backdrop-filter:blur(12px);
+         border:1px solid rgba(255,255,255,.95);border-radius:18px;padding:7px;box-shadow:0 8px 20px rgba(139,124,246,.18)}
+.dockbar .f{flex:1;background:#F1EEF8;border-radius:12px;padding:9px 11px;font-size:12px;color:#9A9DB3}
+.dockbar .b{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;border-radius:12px;padding:10px 16px;font-weight:800;font-size:13px}
+.bar{height:8px;border-radius:99px;background:rgba(139,124,246,.15);overflow:hidden}
+.bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#8B7CF6,#5FB4FF);border-radius:99px}
+/* 明细 E：左侧彩色色条行 */
+.wk{font-size:10px;color:#9A9DB3;margin:2px 0}
+.dc{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);border-radius:14px;padding:7px 9px;backdrop-filter:blur(8px)}
+.dc .sl{width:4px;align-self:stretch;border-radius:4px;background:var(--cc,#8B7CF6);flex:none}
+.dc .mi{flex:1}.dc .mi b{display:block;font-size:12px}.dc .mi span{font-size:8.5px;color:#9A9DB3}
+.dc .am{font-weight:800;font-size:12px}
+/* 统计 E */
+.mcard{display:flex;gap:7px}
+.mcard div{flex:1;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.95);border-radius:14px;padding:7px 8px;backdrop-filter:blur(8px)}
+.mcard small{display:block;font-size:8.5px;color:#9A9DB3}
+.mcard b{font-size:12.5px}
+.ring{width:84px;height:84px;border-radius:50%;margin:8px auto;position:relative;
+      background:conic-gradient(#FF9F68 0 35%,#F5A623 35% 51%,#8B7CF6 51% 82%,#63A9FF 82% 100%);
+      box-shadow:0 0 0 6px rgba(255,255,255,.5),0 10px 22px rgba(139,124,246,.3)}
+.ring:after{content:"";position:absolute;inset:17px;border-radius:50%;background:#FDFCFF}
+.seg2{display:flex;gap:8px;align-items:center}
+.seg2 span{border:1px solid #DCCFF9;background:rgba(255,255,255,.8);color:#6C5CE7;font-size:11px;border-radius:999px;padding:4px 11px;font-weight:700}
+.bars{display:flex;align-items:flex-end;gap:3px;height:42px}
+.bars i{flex:1;background:#D5CDF7;border-radius:5px 5px 0 0}
+.bars i.hi{background:linear-gradient(180deg,#8B7CF6,#5FB4FF)}
+/* 设置 E */
+.glass{display:flex;flex-direction:column;gap:8px}
+.glass .g{background:rgba(255,255,255,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.95);border-radius:16px;overflow:hidden}
+.glass .r{display:flex;align-items:center;padding:9px 11px;font-size:12px}
+.glass .r+.r{border-top:1px solid rgba(139,124,246,.12)}
+.glass .r b{flex:1}
+.sw{width:34px;height:19px;border-radius:99px;background:linear-gradient(90deg,#8B7CF6,#5FB4FF);position:relative}
+.sw:after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;right:2px;top:2px}
+/* nav E：纯圆钮 */
+.nav{display:flex;justify-content:space-around;align-items:center;padding:8px 16px 8px;margin-top:2px}
+.nav span{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.95);
+          box-shadow:0 4px 10px rgba(110,100,170,.12);display:flex;align-items:center;justify-content:center;color:#8E93A8;font-size:13px}
+.nav span.on{background:linear-gradient(135deg,#8B7CF6,#5FB4FF);color:#fff;box-shadow:0 8px 16px rgba(139,124,246,.4)}
+</style></head><body>
+<h1>主题 E · 晨雾·焕新 —— 四屏全览</h1>
+<p class="sub">结构签名：首页改为<b>"常驻底部输入条"</b>(金额与保存固定在屏底、内容上滚)；明细=<b>左侧彩色细条的行卡(周分组)</b>；统计=<b>玻璃仪表卡+环形+胶囊月选</b>；设置=<b>磨砂分组(带圆钮开关)</b>；导航仍是<b>纯圆钮</b>。整体保持你已习惯的晨雾，只在结构细节上焕新。</p>
+
+<div class="sec">① 首页 <small>（内容上滚 + 底部常驻"金额/保存"输入条）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:30</span><span>●●● 89%</span></div>
+ <div class="bdy" style="padding-bottom:6px">
+  <div class="tab"><i class="on">支出</i><i>收入</i></div>
+  <h2><small>¥</small>0.00</h2>
+  <div class="note">备注（可选）</div>
+  <div class="cat">
+   <div class="on">餐饮</div><div>交通</div><div>购物</div><div>居住</div>
+   <div>日用</div><div>娱乐</div><div>医疗</div><div>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#6C5CE7">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="bar"><i></i></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;color:#9A9DB3"><span>本月预算</span><b style="color:#2FC98A">余额 ¥1,150</b></div>
+ </div>
+ <div class="dockbar"><span class="f">输入金额…</span><span class="b">保存</span></div>
+ <div class="nav"><span class="on">＋</span><span>☰</span><span>◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">② 明细 <small>（左侧彩条行卡 + 周分组）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:31</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between"><h3>明细</h3><span style="font-size:11px;color:#6C5CE7;border:1px solid #DCCFF9;border-radius:999px;padding:3px 10px;background:rgba(255,255,255,.8)">8月 ▾</span></div>
+  <div class="mcard"><div><small>支出</small><b>¥2,345</b></div><div><small>收入</small><b style="color:#2FC98A">¥14,500</b></div></div>
+  <div class="wk">本周 · 8月25日 周二</div>
+  <div class="dc"><span class="sl" style="--cc:#FF9F68"></span><span class="mi"><b>午餐</b><span>餐饮·现金·和同事</span></span><span class="am" style="color:#FF7D9C">−23.50</span></div>
+  <div class="dc"><span class="sl" style="--cc:#63A9FF"></span><span class="mi"><b>地铁</b><span>交通·微信零钱</span></span><span class="am" style="color:#FF7D9C">−6.00</span></div>
+  <div class="dc"><span class="sl" style="--cc:#2FC98A"></span><span class="mi"><b>红包</b><span>收入·微信零钱</span></span><span class="am" style="color:#2FC98A">＋200.00</span></div>
+  <div class="wk">上周 · 8月18日</div>
+  <div class="dc"><span class="sl" style="--cc:#F5A623"></span><span class="mi"><b>房租</b><span>居住·储蓄卡·11月房租</span></span><span class="am" style="color:#FF7D9C">−1,200.00</span></div>
+ </div>
+ <div class="nav"><span>＋</span><span class="on">☰</span><span>◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">③ 统计 <small>（玻璃仪表卡 + 环形 + 胶囊月份）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:32</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between;align-items:center"><h3>统计</h3><span style="color:#9A9DB3">⚙</span></div>
+  <div class="seg2"><span>‹</span><span class="on">2025年8月</span><span>›</span></div>
+  <div class="mcard"><div><small>支出</small><b>¥2,345</b></div><div><small>收入</small><b style="color:#2FC98A">¥14,500</b></div><div><small>结余</small><b>¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;color:#9A9DB3"><span>支出构成 · 点击突出</span><span style="color:#6C5CE7">展开全部 ▾</span></div>
+  <div class="bars"><i></i><i></i><i></i><i></i><i class="hi"></i><i></i><i></i><i class="hi"></i></div>
+  <div style="font-size:9px;color:#9A9DB3">近12月支出趋势</div>
+ </div>
+ <div class="nav"><span>＋</span><span>☰</span><span class="on">◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">④ 设置 <small>（磨砂分组 + 圆钮开关 + 胶囊主题样本）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:33</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <h3>‹ 设置</h3>
+  <div class="glass">
+   <div class="g"><div class="r"><b>分类管理</b><span style="color:#9A9DB3">›</span></div><div class="r"><b>账户管理</b><span style="color:#9A9DB3">›</span></div></div>
+   <div class="g"><div class="r"><b>主题（晨雾·焕新）</b><span style="color:#9A9DB3">跟随系统</span><span style="color:#9A9DB3">›</span></div><div class="r"><b>默认支出账户</b><span style="color:#9A9DB3">现金</span></div><div class="r"><b>连续记账</b><span class="sw"></span></div></div>
+   <div class="g"><div class="r"><b>导出 CSV</b><span style="color:#9A9DB3">›</span></div><div class="r"><b>备份到文件 / 从备份恢复</b><span style="color:#9A9DB3">›</span></div></div>
+  </div>
+ </div>
+ <div class="nav"><span>＋</span><span>☰</span><span>◪</span><span class="on">⚙</span></div>
+</div></div></div>
+</body></html>

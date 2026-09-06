@@ -42,8 +42,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     val templates: StateFlow<List<Template>> =
         repo.templates.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val budget: StateFlow<Budget?> =
-        repo.budgets.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    val budgets: StateFlow<List<Budget>> =
+        repo.budgets.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ===== 记一笔 =====
     fun addRecord(type: String, amountCents: Long, categoryId: Long, accountId: Long,
@@ -81,8 +81,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.deleteTemplate(template) }
     }
 
-    fun setBudget(amountCents: Long, period: String) {
-        viewModelScope.launch { repo.setBudget(amountCents, period) }
+    fun addBudget(name: String, amountCents: Long, period: String) {
+        viewModelScope.launch { repo.addBudget(name, amountCents, period) }
+    }
+
+    fun updateBudget(budget: Budget) {
+        viewModelScope.launch { repo.updateBudget(budget) }
+    }
+
+    fun deleteBudget(budget: Budget) {
+        viewModelScope.launch { repo.deleteBudget(budget) }
     }
 
     // ===== 分类管理 =====

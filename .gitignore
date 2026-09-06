@@ -11,3 +11,12 @@ captures/
 .cxx/
 *.keystore
 !gradle/wrapper/gradle-wrapper.jar
+
+# 本地调试产物（不入库）
+mockups/_chrome_tmp/
+mockups/_chrome_tmp2/
+mockups/_chrome_tmp3/
+mockups/_shot-*.png
+mockups/_probe.html
+mockups/_d*.txt
+mockups/_dump.txt

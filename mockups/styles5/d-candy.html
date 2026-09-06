@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 主题 D 多巴胺·糖果</title>
+<style>
+:root{
+  --bg:#FFF3EC;--card:#FFFFFF;--ink:#2A2533;--ink2:#9A8FA0;--line:#F3E4DC;
+  --acc:#FF5D73;--acc2:#FF9A3D;
+  --inc:#12B981;--exp:#FF4D6D;
+  --c1:#FF7A45;--c2:#4D8DFF;--c3:#FF5DA2;--c4:#9B5DE5;--c5:#00C2A8;--c6:#FFC53D;--c7:#22D3EE;--c8:#FF8FA3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);
+  background:radial-gradient(700px 400px at 90% -8%,rgba(255,92,115,.14),transparent 60%),
+             radial-gradient(700px 400px at -8% 20%,rgba(77,141,255,.12),transparent 60%),var(--bg);
+  padding:28px 16px 70px}
+h1{text-align:center;font-size:22px;letter-spacing:.5px;color:#2A2533}
+.sub{text-align:center;color:var(--ink2);font-size:13px;margin:8px auto 24px;max-width:760px;line-height:1.9}
+.wrap{display:flex;justify-content:center;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.info{width:330px;display:flex;flex-direction:column;gap:14px}
+.icon{width:128px;height:128px;margin:0 auto;border-radius:32px;background:#FFF6EE;padding:8px;
+     box-shadow:0 12px 26px rgba(180,90,40,.22),0 0 0 2px #2A2533}
+.icon svg{width:100%;height:100%;display:block}
+.pal{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.pal span{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.traits i{font-style:normal;font-size:11.5px;padding:5px 12px;border-radius:999px;background:#fff;
+          border:2px solid #2A2533;color:#2A2533;font-weight:700}
+.motion{font-size:12px;color:#8A7D92;line-height:2.1;background:#fff;border:2px solid #2A2533;border-radius:16px;padding:12px 14px}
+.motion b{color:var(--acc)}
+.ph{width:352px;background:#fff;border-radius:46px;padding:10px;box-shadow:0 18px 40px rgba(200,120,80,.22)}
+.sc{background:#FFFDFB;border-radius:38px;padding:15px;display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;gap:6px}
+.seg span{flex:1;text-align:center;padding:9px 0;border-radius:999px;font-size:13px;font-weight:800;
+          border:2px solid #2A2533;background:#fff;color:var(--ink2)}
+.seg span.on{background:linear-gradient(90deg,#FF5D73,#FF9A3D);color:#fff;box-shadow:3px 3px 0 #2A2533}
+.amount{text-align:center;font-size:42px;font-weight:900;color:#2A2533;letter-spacing:1px}
+.amount em{font-style:normal;font-size:20px;color:#B9A8BE}
+.note{text-align:center;color:var(--ink2);font-size:13px;font-weight:700;padding-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.cat{text-align:center;padding:12px 0 10px;border-radius:18px;font-size:11px;font-weight:800;color:#fff;
+     border:2px solid #2A2533;box-shadow:3px 3px 0 #2A2533}
+.cat.on{transform:translate(1px,1px);box-shadow:1px 1px 0 #2A2533}
+.cat i{display:block;font-style:normal;font-size:19px;margin-bottom:2px;filter:drop-shadow(0 1px 0 rgba(0,0,0,.2))}
+.cat:nth-child(1){background:var(--c1)}.cat:nth-child(2){background:var(--c2)}.cat:nth-child(3){background:var(--c3)}
+.cat:nth-child(4){background:var(--c4)}.cat:nth-child(5){background:var(--c5)}.cat:nth-child(6){background:var(--c6)}
+.cat:nth-child(7){background:var(--c7)}.cat:nth-child(8){background:var(--c8)}
+.meta{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#8A7D92}
+.meta b{color:#2A2533}
+.chips{display:flex;gap:6px}
+.chip{font-size:11.5px;padding:6px 12px;border-radius:999px;background:#fff;border:2px solid #2A2533;font-weight:800;color:#2A2533}
+.save{text-align:center;padding:14px 0;border-radius:999px;font-weight:900;letter-spacing:4px;color:#fff;
+      background:linear-gradient(90deg,#FF5D73,#FF9A3D);border:2px solid #2A2533;box-shadow:4px 4px 0 #2A2533;
+      animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.bud{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:#8A7D92;
+     background:#fff;border:2px dashed #2A2533;border-radius:16px;padding:10px 12px}
+.bud b{color:var(--inc)}
+.bud .bar{flex:1;height:9px;margin:0 10px;background:#F3E4DC;border-radius:999px;overflow:hidden}
+.bud .bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#12B981,#FFC53D);border-radius:999px}
+.hr{height:0;border-top:3px dotted #E8D5C9}
+.stat .cards{display:flex;gap:7px}
+.stat .s{flex:1;background:#fff;border:2px solid #2A2533;border-radius:14px;padding:8px 9px;font-size:10px;font-weight:800;color:#8A7D92;box-shadow:2px 2px 0 #2A2533}
+.stat .s b{display:block;font-size:12px;color:#2A2533}
+.ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c1)0 35%,var(--c2)35% 65%,var(--c4)65% 82%,var(--c6)82% 100%);position:relative;margin:9px auto;border:3px solid #2A2533}
+.ring:after{content:"";position:absolute;inset:19px;border-radius:50%;background:#FFFDFB}
+.bars{display:flex;align-items:flex-end;gap:3px;height:48px;margin-top:6px}
+.bars i{flex:1;background:var(--c6);border-radius:4px;min-height:3px}
+.bars i.hi{background:var(--acc)}
+.note2{font-size:11.5px;color:#8A7D92;line-height:1.8;font-weight:600}
+</style></head>
+<body>
+<h1>Accounts · 主题 D · 多巴胺·糖果</h1>
+<p class="sub">奶油底 + 高饱和糖果色 + 2px 粗描边"贴纸感" · 活泼有情绪，记账也开心</p>
+<div class="wrap">
+ <div class="info">
+  <div class="icon"><svg viewBox="0 0 120 120"><rect width="120" height="120" rx="30" fill="#FFF6EE"/><rect x="14" y="14" width="92" height="92" rx="24" fill="#FFC53D"/><rect x="14" y="14" width="92" height="92" rx="24" fill="none" stroke="#2A2533" stroke-width="4"/><circle cx="60" cy="60" r="30" fill="#FF5D73"/><circle cx="60" cy="60" r="30" fill="none" stroke="#2A2533" stroke-width="4"/><text x="60" y="73" font-size="34" font-weight="900" fill="#fff" text-anchor="middle" font-family="Arial">¥</text><circle cx="92" cy="28" r="7" fill="#fff" stroke="#2A2533" stroke-width="3"/></svg></div>
+  <div class="pal"><span style="background:#FFC53D"></span><span style="background:#FF5D73"></span><span style="background:#4D8DFF"></span><span style="background:#12B981"></span></div>
+  <div class="traits"><i>粗描边贴纸图标</i><i>实心糖果分类块</i><i>可可爱爱的弹跳</i><i>黑色轮廓=统一语言</i></div>
+  <div class="motion"><b>动效：</b>一切都很"弹"——按钮点按 0.93 压缩回弹、保存键轻微上下浮动、分类块触碰蹦一下、数值滚动像弹珠；错误/超支用"抖动"。</div>
+ </div>
+ <div class="ph"><div class="sc">
+  <div class="seg"><span class="on">支出</span><span>收入</span></div>
+  <div class="amount"><em>¥</em>0.00</div>
+  <div class="note">备注（可选）</div>
+  <div class="grid">
+    <div class="cat"><i>餐</i>餐饮</div><div class="cat"><i>行</i>交通</div>
+    <div class="cat"><i>购</i>购物</div><div class="cat"><i>住</i>居住</div>
+    <div class="cat"><i>日</i>日用</div><div class="cat"><i>乐</i>娱乐</div>
+    <div class="cat"><i>医</i>医疗</div><div class="cat"><i>礼</i>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:var(--acc)">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="save">保 存</div>
+  <div class="bud"><span>本月预算</span><div class="bar"><i></i></div><b>¥1,150</b></div>
+  <div class="hr"></div>
+  <div class="stat"><div class="cards"><div class="s">支出<b>¥2,345</b></div><div class="s">收入<b style="color:var(--inc)">¥14,500</b></div><div class="s">结余<b style="color:var(--acc)">¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div class="bars"><i></i><i></i><i></i><i class="hi"></i><i></i><i class="hi"></i><i class="hi"></i><i></i></div></div>
+  <div class="note2">深色模式为"深夜糖果"（深紫底 + 荧光糖果色）。</div>
+ </div></div>
+</div>
+</body></html>

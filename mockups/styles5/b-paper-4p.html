@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B 纸韵·墨白 · 四屏全览</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,"Songti SC","SimSun",serif;color:#23201A;
+ background:radial-gradient(800px 420px at 50% -10%,rgba(200,150,60,.1),transparent 60%),#F1EBDD;
+ padding:24px 14px 60px}
+h1{text-align:center;font-size:21px;letter-spacing:3px}
+.sub{text-align:center;color:#8C8575;font-size:12.5px;margin:6px auto 22px;max-width:880px}
+.sec{max-width:1500px;margin:0 auto 8px;font-size:13px;font-weight:800;letter-spacing:2px;border-bottom:1px solid #23201A;padding-bottom:4px}
+.sec small{font-weight:400;color:#8C8575;letter-spacing:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:1500px;margin:0 auto 28px}
+.phone{width:300px;margin:0 auto;background:#E3D9C2;border-radius:4px;padding:9px;box-shadow:0 14px 30px rgba(120,90,40,.22)}
+.sc{background:#FFFDF7;border-radius:3px;overflow:hidden;position:relative}
+.sc:before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 24px,rgba(70,55,20,.025) 24px 25px)}
+.bdy{padding:4px 16px 12px;display:flex;flex-direction:column;gap:8px;min-height:352px;position:relative}
+.t{display:flex;justify-content:space-between;font-size:10px;color:#A59B84;padding:7px 16px 0;letter-spacing:1px}
+h2{text-align:center;font-size:38px;font-weight:200;letter-spacing:1px;padding-top:2px}
+h2 small{font-size:17px;color:#8C8575}
+h3{font-size:16px;font-weight:700;letter-spacing:2px}
+.tab{display:flex;border-bottom:1px solid #23201A;margin-bottom:2px}
+.tab i{flex:1;font-style:normal;text-align:center;padding:5px 0 7px;font-size:13px;letter-spacing:4px;color:#A59B84;border-bottom:2px solid transparent}
+.tab i.on{color:#23201A;font-weight:800;border-bottom-color:#C93A2B}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.li2{display:flex;gap:8px;padding:5px 2px;font-size:12.5px;letter-spacing:1px;border-bottom:1px dashed #E4DBC6;align-items:baseline}
+.li2 .no{color:#C93A2B;font-size:10px;font-weight:700}
+.li2 .dot{margin-left:auto;color:#C9C0A9}
+.note{text-align:center;color:#8C8575;font-size:11.5px;border-bottom:1px dashed #D8CDB4;padding-bottom:6px;letter-spacing:2px}
+.meta{display:flex;justify-content:space-between;font-size:11.5px;color:#8C8575;border-top:1px solid #23201A;padding-top:8px;letter-spacing:1px}
+.meta b{color:#23201A}
+.btn{background:#C93A2B;color:#FFF9F0;text-align:center;padding:10px 0;font-weight:800;letter-spacing:10px;font-size:14px;box-shadow:3px 3px 0 rgba(70,45,10,.25)}
+/* 明细 B：账本两栏 */
+.ds{display:flex;justify-content:space-between;font-size:10.5px;color:#A59B84;letter-spacing:2px;border-bottom:1px solid #23201A;padding-bottom:3px}
+.led{display:flex;flex-direction:column}
+.led .ln{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px dashed #E4DBC6;font-size:12.5px}
+.led .ln .c{width:44px;color:#6E6656}
+.led .ln .n{flex:1;color:#23201A}
+.led .ln .a{font-variant-numeric:tabular-nums;font-weight:700}
+.led .ln.plus .a{color:#1F7A5C}
+/* 统计 B：头条+刻环+细柱 */
+.hd{font-size:24px;font-weight:700;letter-spacing:1px}
+.hd small{display:block;font-size:10px;color:#8C8575;font-weight:400;letter-spacing:3px}
+.cards2{display:flex;gap:6px}
+.cs2{flex:1;border-top:2px solid #23201A;padding-top:5px;font-size:9.5px;color:#8C8575}
+.cs2 b{display:block;font-size:12px;color:#23201A}
+.tick{width:86px;height:86px;margin:6px auto;border-radius:50%;border:1px solid #D8CDB4;position:relative;
+      background:conic-gradient(#23201A 0 4%,transparent 4% 13%,#23201A 13% 17%,transparent 17% 26%,#C93A2B 26% 77%,transparent 77% 100%)}
+.tick:after{content:"35% 餐饮";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#6E6656;letter-spacing:1px}
+.bar2{display:flex;align-items:flex-end;gap:4px;height:42px;border-bottom:1px solid #23201A;padding:0 4px}
+.bar2 i{flex:1;background:#23201A;min-height:2px}
+.bar2 i.hi{background:#C93A2B}
+/* 设置 B：目录式 */
+.idx{border-top:2px solid #23201A}
+.idx .it{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #E4DBC6;font-size:12.5px;letter-spacing:1px}
+.idx .it .num{color:#C93A2B;font-size:10px}
+.idx .it b{flex:1}
+.idx .it .arrow{color:#8C8575}
+.sw{width:34px;height:18px;border:1px solid #23201A;background:#1F7A5C;position:relative;display:inline-block}
+.sw:after{content:"";position:absolute;width:12px;height:12px;background:#FFFDF7;right:2px;top:2px;border:1px solid #23201A}
+/* nav B：文字+红点 */
+.nav{display:flex;border-top:2px solid #23201A;margin:0 10px 6px;padding-top:7px}
+.nav span{flex:1;text-align:center;font-size:11px;letter-spacing:3px;color:#A59B84;padding-bottom:3px;position:relative}
+.nav span.on{color:#23201A;font-weight:800}
+.nav span.on:after{content:"";position:absolute;left:50%;margin-left:-2px;bottom:-4px;width:4px;height:4px;border-radius:50%;background:#C93A2B}
+</style></head><body>
+<h1>主题 B · 纸韵·墨白 —— 四屏全览</h1>
+<p class="sub">结构签名：底部<b>文字页签(当前页下方朱红圆点)</b>；首页=编号式<b>两列编目分类</b>；明细=<b>上下两栏账本(日期/摘要/金额)</b>；统计=<b>大字头条+刻度环+黑白朱柱</b>；设置=<b>目录索引式</b>。</p>
+
+<div class="sec">① 首页 · 记一笔 <small>（票据页式：分段字签 + 编号分类 + 盖章式保存）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:30</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div class="tab"><i class="on">支出</i><i>收入</i></div>
+  <h2><small>¥</small>0.00</h2>
+  <div class="note">备注（可选）</div>
+  <div class="grid2">
+   <div class="li2"><span class="no">01</span>餐饮<span class="dot">…</span></div><div class="li2"><span class="no">02</span>交通<span class="dot">…</span></div>
+   <div class="li2"><span class="no">03</span>购物<span class="dot">…</span></div><div class="li2"><span class="no">04</span>居住<span class="dot">…</span></div>
+   <div class="li2"><span class="no">05</span>日用<span class="dot">…</span></div><div class="li2"><span class="no">06</span>娱乐<span class="dot">…</span></div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span>今天 12:30 ▾</span></div>
+  <div class="btn">保 存</div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:#8C8575;border:1px solid #E4DBC6;padding:7px 9px;letter-spacing:1px"><span>本月预算</span><b style="color:#1F7A5C">余 ¥1,150</b></div>
+ </div>
+ <div class="nav"><span>记一笔</span><span>明细</span><span>统计</span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">② 明细 <small>（账本两栏：上汇总栏 + 下逐笔栏，朱红=收入）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:31</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>明细</h3><span style="font-size:12px;letter-spacing:2px">‹ 2025年8月 ›</span></div>
+  <div class="cards2"><div class="cs2">本月支出<b>¥2,345</b></div><div class="cs2">本月收入<b style="color:#1F7A5C">¥14,500</b></div><div class="cs2">结余<b>¥12,155</b></div></div>
+  <div class="ds"><span>8月25日 周二</span><span>支 47.50 · 收 200.00</span></div>
+  <div class="led">
+   <div class="ln"><span class="c">12:00</span><span class="n">午餐·餐饮·现金</span><span class="a">−23.50</span></div>
+   <div class="ln"><span class="c">15:00</span><span class="n">咖啡·餐饮·现金</span><span class="a">−18.00</span></div>
+   <div class="ln"><span class="c">18:20</span><span class="n">地铁·交通·微信</span><span class="a">−6.00</span></div>
+   <div class="ln plus"><span class="c">20:00</span><span class="n">红包·收入·微信</span><span class="a">＋200.00</span></div>
+  </div>
+  <div style="text-align:right;font-size:10px;color:#A59B84;letter-spacing:2px">— 点击任一行可编辑(含改钱包) —</div>
+ </div>
+ <div class="nav"><span>记一笔</span><span style="font-weight:800;color:#23201A">明细<span style="display:block;width:4px;height:4px;border-radius:50%;background:#C93A2B;margin:3px auto 0"></span></span><span>统计</span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">③ 统计 <small>（刊物头条 + 刻度环 + 铅字柱）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:32</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between;align-items:baseline"><h3>统计</h3><span style="font-size:11px;border:1px solid #23201A;padding:2px 8px;letter-spacing:2px">本月</span></div>
+  <div class="hd">¥12,155<small>本月结余 · 较上月 ▲12%</small></div>
+  <div class="cards2"><div class="cs2">支出<b>¥2,345</b></div><div class="cs2">收入<b style="color:#1F7A5C">¥14,500</b></div></div>
+  <div class="tick"></div>
+  <div class="bar2"><i style="height:30%"></i><i style="height:48%"></i><i style="height:38%"></i><i style="height:60%"></i><i style="height:52%"></i><i class="hi" style="height:88%"></i><i style="height:70%"></i><i class="hi" style="height:95%"></i></div>
+  <div style="display:flex;justify-content:space-between;font-size:9px;color:#8C8575"><span>近12月支出(黑/朱红=峰值)</span></div>
+ </div>
+ <div class="nav"><span>记一笔</span><span>明细</span><span style="font-weight:800;color:#23201A">统计<span style="display:block;width:4px;height:4px;border-radius:50%;background:#C93A2B;margin:3px auto 0"></span></span><span>设置</span></div>
+</div></div></div>
+
+<div class="sec">④ 设置 <small>（目录索引：编号条目 + 纸张样本选主题）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:33</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <h3 style="letter-spacing:4px">‹ 设置</h3>
+  <div class="idx">
+   <div class="it"><span class="num">01</span><b>分类管理</b><span class="arrow">›</span></div>
+   <div class="it"><span class="num">02</span><b>账户管理</b><span class="arrow">›</span></div>
+   <div class="it"><span class="num">03</span><b>主题</b><span style="color:#8C8575">跟随系统</span><span class="arrow">›</span></div>
+   <div class="it"><span class="num">04</span><b>默认支出账户</b><span style="color:#8C8575">现金</span></div>
+   <div class="it"><span class="num">05</span><b>连续记账</b><span class="sw"></span></div>
+   <div class="it"><span class="num">06</span><b>导出 / 备份 / 恢复</b><span class="arrow">›</span></div>
+  </div>
+ </div>
+ <div class="nav"><span>记一笔</span><span>明细</span><span>统计</span><span style="font-weight:800;color:#23201A">设置<span style="display:block;width:4px;height:4px;border-radius:50%;background:#C93A2B;margin:3px auto 0"></span></span></div>
+</div></div></div>
+</body></html>

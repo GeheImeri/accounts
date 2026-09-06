@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Tune
@@ -42,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,6 +89,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     var showAllAccounts by remember { mutableStateOf(false) }
     var balanceDialog by remember { mutableStateOf(false) }
     var dailyDialogType by remember { mutableStateOf<String?>(null) }
+    var transferOpen by remember { mutableStateOf(false) }
 
     val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
     val catMap = remember(categories) { categories.associateBy { it.id } }
@@ -347,9 +350,110 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
             accounts = accounts,
             transactions = transactions,
             transfers = transfers,
-            monthBalance = balance
-        ) { balanceDialog = false }
+            monthBalance = balance,
+            onTransfer = { balanceDialog = false; transferOpen = true },
+            onDismiss = { balanceDialog = false }
+        )
     }
+    if (transferOpen) {
+        BalanceTransferDialog(
+            accounts = accounts,
+            onDismiss = { transferOpen = false },
+            onTransfer = { from, to, cents, note ->
+                vm.addTransfer(from, to, cents, note)
+                transferOpen = false
+            }
+        )
+    }
+}
+
+/** 钱包间转账（不计收支） */
+@Composable
+private fun BalanceTransferDialog(
+    accounts: List<Account>,
+    onDismiss: () -> Unit,
+    onTransfer: (Long, Long, Long, String) -> Unit
+) {
+    var fromId by remember { mutableStateOf(accounts.firstOrNull()?.id ?: 0L) }
+    var toId by remember { mutableStateOf(accounts.getOrNull(1)?.id
+        ?: accounts.firstOrNull()?.id ?: 0L) }
+    var amount by remember { mutableStateOf("") }
+
+    @Composable
+    fun AccountPick(label: String, selectedId: Long, onSelect: (Long) -> Unit) {
+        Column(Modifier.fillMaxWidth().padding(bottom = 6.dp)) {
+            Text("$label：", fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            accounts.chunked(4).forEach { rowAccs ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    rowAccs.forEach { a ->
+                        val sel = a.id == selectedId
+                        Box(
+                            Modifier.weight(1f)
+                                .background(
+                                    if (sel) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .noRippleClickable { onSelect(a.id) }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(a.name, fontSize = 12.sp,
+                                color = if (sel) Color.White
+                                else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                    repeat(4 - rowAccs.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("账户转账", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                AccountPick("从", fromId) { fromId = it }
+                AccountPick("到", toId) { toId = it }
+                Text("金额（元）", fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                BasicTextField(
+                    value = amount,
+                    onValueChange = { amount = it.filter { c -> c.isDigit() || c == '.' } },
+                    textStyle = MaterialTheme.typography.bodyLarge
+                        .copy(color = MaterialTheme.colorScheme.onSurface),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal
+                    ),
+                    decorationBox = { inner ->
+                        Box(Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(10.dp))
+                            .padding(12.dp)) {
+                            if (amount.isEmpty()) Text("转账金额",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("转账不计收支，仅调整两钱包余额", fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = fromId != toId && Money.parse(amount) > 0,
+                onClick = { onTransfer(fromId, toId, Money.parse(amount), "") }
+            ) { Text("确认转账") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+    )
 }
 
 private fun delta(cur: Long, prev: Long): String? {
@@ -600,6 +704,7 @@ private fun BalanceDialog(
     transactions: List<Transaction>,
     transfers: List<com.accounts.app.data.Transfer>,
     monthBalance: Long,
+    onTransfer: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val rows = remember(accounts, transactions, transfers) {
@@ -660,7 +765,13 @@ private fun BalanceDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("知道了") }
+            Row {
+                TextButton(onClick = onTransfer) {
+                    Text("转账", fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary)
+                }
+                TextButton(onClick = onDismiss) { Text("知道了") }
+            }
         }
     )
 }

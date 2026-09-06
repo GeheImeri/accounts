@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D 多巴胺·糖果 · 四屏全览</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#2A2533;
+ background:radial-gradient(700px 420px at 92% -8%,rgba(255,92,115,.16),transparent 60%),
+           radial-gradient(700px 420px at -6% 18%,rgba(77,141,255,.14),transparent 60%),#FFF2E9;
+ padding:24px 14px 60px}
+h1{text-align:center;font-size:21px;color:#2A2533}
+.sub{text-align:center;color:#9A8FA0;font-size:12.5px;margin:6px auto 22px;max-width:880px;line-height:1.9}
+.sec{max-width:1500px;margin:0 auto 10px;font-size:13px;font-weight:900;color:#FF5D73}
+.sec small{color:#9A8FA0;font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;max-width:1500px;margin:0 auto 30px}
+.phone{width:300px;margin:0 auto;background:#fff;border-radius:40px;padding:9px;box-shadow:0 16px 34px rgba(200,120,80,.2)}
+.sc{background:#FFFDFB;border-radius:32px;overflow:hidden}
+.bdy{padding:6px 12px 10px;display:flex;flex-direction:column;gap:8px;min-height:352px}
+.t{display:flex;justify-content:space-between;font-size:9px;color:#C5B4BE;padding:7px 13px 0}
+h2{text-align:center;font-size:34px;font-weight:900}
+h2 small{font-size:15px;color:#B9A8BE}
+h3{font-size:16px;font-weight:900}
+.tab{display:flex;gap:6px}
+.tab i{flex:1;font-style:normal;text-align:center;padding:9px 0;border-radius:999px;font-size:13px;font-weight:900;border:2px solid #2A2533;background:#fff;color:#B9A8BE;box-shadow:2px 2px 0 #2A2533}
+.tab i.on{background:linear-gradient(90deg,#FF5D73,#FF9A3D);color:#fff}
+.cat{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat div{text-align:center;border:2px solid #2A2533;border-radius:16px;padding:10px 0 8px;box-shadow:3px 3px 0 #2A2533;color:#fff;font-size:11px;font-weight:900}
+.cat i{display:block;font-style:normal;font-size:20px;font-weight:900;margin-bottom:2px;color:#fff}
+.cat div:nth-child(1){background:#FF7A45}.cat div:nth-child(2){background:#4D8DFF}.cat div:nth-child(3){background:#FF5DA2}
+.cat div:nth-child(4){background:#9B5DE5}.cat div:nth-child(5){background:#00C2A8}.cat div:nth-child(6){background:#FFC53D}
+.cat div:nth-child(7){background:#22D3EE}.cat div:nth-child(8){background:#FF8FA3}
+.meta{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;color:#8A7D92}
+.meta b{color:#2A2533}
+.chips{display:flex;gap:6px}
+.chip{font-size:11px;padding:5px 11px;border-radius:999px;background:#fff;border:2px solid #2A2533;font-weight:800}
+.btn{text-align:center;padding:12px 0;border-radius:999px;font-weight:900;letter-spacing:3px;color:#fff;
+     background:linear-gradient(90deg,#FF5D73,#FF9A3D);border:2px solid #2A2533;box-shadow:4px 4px 0 #2A2533}
+.bar{height:10px;border:2px solid #2A2533;border-radius:99px;background:#F3E4DC;overflow:hidden}
+.bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#12B981,#FFC53D)}
+/* 明细 D：贴纸行时间线 */
+.wk{font-size:11px;font-weight:900;color:#8A7D92}
+.dc{display:flex;align-items:center;gap:8px;border:2px solid #2A2533;border-radius:16px;padding:7px 8px;box-shadow:2px 2px 0 #2A2533;background:#fff}
+.dc .st{width:34px;height:34px;border-radius:12px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;border:2px solid #2A2533;flex:none}
+.dc .mi{flex:1}.dc .mi b{display:block;font-size:12px}.dc .mi span{font-size:8.5px;color:#A99AA6}
+.dc .am{font-weight:900;font-size:12.5px}
+/* 统计 D */
+.donut2{width:96px;height:96px;border-radius:50%;margin:6px auto;position:relative;border:4px solid #2A2533;
+        background:conic-gradient(#FF7A45 0 35%,#FFC53D 35% 51%,#9B5DE5 51% 82%,#22D3EE 82% 100%)}
+.donut2:after{content:"35%\n餐饮";position:absolute;inset:20px;border-radius:50%;background:#FFFDFB;border:2px solid #2A2533;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;text-align:center;white-space:pre}
+.candies{display:flex;align-items:flex-end;gap:6px;height:56px;padding:0 6px}
+.candies i{flex:1;border:2px solid #2A2533;border-radius:8px 8px 0 0;min-height:6px}
+.candies i:nth-child(1){background:#FFC53D;height:32%}.candies i:nth-child(2){background:#FF5D73;height:48%}
+.candies i:nth-child(3){background:#4D8DFF;height:40%}.candies i:nth-child(4){background:#12B981;height:64%}
+.candies i:nth-child(5){background:#9B5DE5;height:88%}.candies i:nth-child(6){background:#FF9A3D;height:76%}
+/* 设置 D */
+.stk{display:flex;flex-direction:column;gap:8px}
+.stk .g{background:#fff;border:2px solid #2A2533;border-radius:16px;overflow:hidden;box-shadow:3px 3px 0 #2A2533}
+.stk .r{display:flex;align-items:center;gap:8px;padding:9px 10px;font-size:12px;font-weight:800}
+.stk .r+.r{border-top:2px solid #F0DfD3}
+.stk .r .c{width:22px;height:22px;border-radius:8px;border:2px solid #2A2533;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.stk .r b{flex:1}
+.sw2{width:36px;height:20px;border:2px solid #2A2533;border-radius:99px;background:#12B981;position:relative}
+.sw2:after{content:"";position:absolute;width:12px;height:12px;background:#fff;border-radius:50%;right:2px;top:2px}
+/* nav D：悬浮圆钮贴纸 */
+.nav{display:flex;justify-content:space-around;padding:6px 10px 8px;margin-top:2px}
+.nav span{width:44px;height:44px;border-radius:50%;border:2.5px solid #2A2533;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;box-shadow:3px 3px 0 #2A2533;background:#fff;color:#2A2533}
+.nav span.on{background:linear-gradient(135deg,#FF5D73,#FF9A3D);color:#fff;transform:scale(1.15)}
+</style></head><body>
+<h1>主题 D · 多巴胺·糖果 —— 四屏全览</h1>
+<p class="sub">结构签名：底部<b>悬浮大圆钮贴纸(当前钮放大跳色)</b>；首页=两枚<b>贴纸分页钮+汉字徽章圆角色块</b>；明细=<b>每笔一枚彩色贴纸卡(贴纸阴影)</b>；统计=<b>糖饼大环(切厚片)+糖棍柱</b>；设置=<b>粗描边贴纸分组</b>。黑线轮廓是统一的"贴纸语言"。</p>
+
+<div class="sec">① 首页 <small>（贴纸分段 + 汉字徽章分类 + 立体保存）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:30</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div class="tab"><i class="on">支出</i><i>收入</i></div>
+  <h2><small>¥</small>0.00</h2>
+  <div style="text-align:center;color:#B9A8BE;font-size:12px;font-weight:700">备注（可选）</div>
+  <div class="cat">
+   <div><i>餐</i>餐饮</div><div><i>行</i>交通</div><div><i>购</i>购物</div><div><i>住</i>居住</div>
+   <div><i>日</i>日用</div><div><i>乐</i>娱乐</div><div><i>医</i>医疗</div><div><i>礼</i>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#FF5D73">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="btn">保 存</div>
+  <div class="bar"><i></i></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#8A7D92"><span>本月预算</span><b style="color:#12B981">余额 ¥1,150</b></div>
+ </div>
+ <div class="nav"><span class="on">＋</span><span>☰</span><span>◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">② 明细 <small>（贴纸时间线：彩色贴纸行 + 红/绿金额）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:31</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between"><h3>明细</h3><span style="font-size:12px;font-weight:900;color:#FF5D73">‹ 8月 ›</span></div>
+  <div class="tab"><i class="on" style="flex:1.4">支 ¥2,345</i><i style="color:#12B981;flex:1">收 ¥14,500</i></div>
+  <div class="wk">8月25日 周二</div>
+  <div class="dc"><span class="st" style="background:#FF7A45">餐</span><span class="mi"><b>午餐</b><span>餐饮·现金·和同事</span></span><span class="am">−23.50</span></div>
+  <div class="dc"><span class="st" style="background:#4D8DFF">行</span><span class="mi"><b>地铁</b><span>交通·微信零钱</span></span><span class="am">−6.00</span></div>
+  <div class="dc"><span class="st" style="background:#12B981">礼</span><span class="mi"><b>红包</b><span>收入·微信零钱</span></span><span class="am" style="color:#12B981">+200.00</span></div>
+  <div class="dc"><span class="st" style="background:#9B5DE5">住</span><span class="mi"><b>房租</b><span>居住·储蓄卡</span></span><span class="am">−1,200.00</span></div>
+ </div>
+ <div class="nav"><span>＋</span><span class="on">☰</span><span>◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">③ 统计 <small>（糖饼大环切厚片 + 糖棍柱 + 贴纸卡）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:32</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <div style="display:flex;justify-content:space-between"><h3>统计</h3><span style="font-size:11px;color:#FF5D73">本月 ▾</span></div>
+  <div class="tab"><i class="on">支出 ¥2,345</i><i>收入 ¥14,500</i><i>结余 ¥12,155</i></div>
+  <div class="donut2"></div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:900;color:#8A7D92"><span>支出构成</span><span style="color:#FF5D73">展开全部 ▾</span></div>
+  <div class="candies"></div>
+  <div style="font-size:9px;color:#A99AA6;font-weight:700;text-align:center">近12月支出 · 点击糖棍查看月份</div>
+ </div>
+ <div class="nav"><span>＋</span><span>☰</span><span class="on">◪</span><span>⚙</span></div>
+</div></div></div>
+
+<div class="sec">④ 设置 <small>（贴纸分组 + 彩色圆钮入口 + 粗边开关）</small></div>
+<div class="grid"><div class="phone"><div class="sc">
+ <div class="t"><span>12:33</span><span>●●● 89%</span></div>
+ <div class="bdy">
+  <h3>‹ 设置</h3>
+  <div class="stk">
+   <div class="g"><div class="r"><span class="c" style="background:#FF7A45">类</span><b>分类管理</b><span style="color:#A99AA6">›</span></div><div class="r"><span class="c" style="background:#4D8DFF">钱</span><b>账户管理</b><span style="color:#A99AA6">›</span></div></div>
+   <div class="g"><div class="r"><span class="c" style="background:#FF5DA2">彩</span><b>主题（糖果色）</b><span style="color:#8A7D92">跟随系统</span><span style="color:#A99AA6">›</span></div><div class="r"><span class="c" style="background:#00C2A8">包</span><b>默认钱包</b><span style="color:#8A7D92">现金</span></div><div class="r"><span class="c" style="background:#FFC53D">连</span><b>连续记账</b><span class="sw2"></span></div></div>
+   <div class="g"><div class="r"><span class="c" style="background:#9B5DE5">出</span><b>导出 / 备份 / 恢复</b><span style="color:#A99AA6">›</span></div></div>
+  </div>
+ </div>
+ <div class="nav"><span>＋</span><span>☰</span><span>◪</span><span class="on">⚙</span></div>
+</div></div></div>
+</body></html>

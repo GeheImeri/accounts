@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 首页分类加图标 预览</title><style>
+ *{box-sizing:border-box;margin:0;padding:0}
+ body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#3F4257;
+  background:radial-gradient(760px 500px at 10% -8%,rgba(139,124,246,.28),transparent 60%),
+            radial-gradient(700px 460px at 96% 4%,rgba(95,180,255,.3),transparent 55%),
+            radial-gradient(640px 440px at 50% 112%,rgba(255,143,168,.24),transparent 60%),#F0EDF9;
+  padding:26px 14px 60px}
+ h1{text-align:center;font-size:21px}
+ .sub{text-align:center;color:#9A9DB3;font-size:12.5px;margin:8px auto 26px;max-width:820px;line-height:1.9}
+ .wrap{display:flex;justify-content:center;gap:26px;flex-wrap:wrap}
+ .ph{width:340px;background:#fff;border-radius:44px;padding:10px;box-shadow:0 16px 38px rgba(110,95,190,.26)}
+ .sc{background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.95);border-radius:34px;padding:15px;backdrop-filter:blur(14px)}
+ .seg{display:flex;background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.9);border-radius:13px;padding:3px}
+ .seg span{flex:1;text-align:center;padding:8px 0;border-radius:10px;font-size:13px;color:#9A9DB3}
+ .seg span.on{background:linear-gradient(90deg,#8B7CF6,#5FB4FF);color:#fff;font-weight:800;box-shadow:0 5px 14px rgba(139,124,246,.4)}
+ .amount{text-align:center;font-size:38px;font-weight:800;padding:8px 0 0}
+ .amount small{font-size:16px;color:#9A9DB3}
+ .note{text-align:center;color:#9A9DB3;font-size:12px;padding:4px 0 10px}
+ .lab{font-size:11px;color:#9A9DB3;letter-spacing:.3px;margin:4px 2px 8px}
+ .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 9px}
+ .cat{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 0 9px;border-radius:20px;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 5px 12px rgba(120,100,180,.1);position:relative}
+ .cat .ico{width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+           background:rgba(255,255,255,.85);font-size:18px;box-shadow:0 3px 7px rgba(100,90,160,.12)}
+ .cat b{font-size:11.5px;font-weight:700;color:#4A3E6E}
+ .cat .dot{position:absolute;top:6px;right:7px;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.35}
+ .cat.on{outline:2.5px solid #8B7CF6;box-shadow:0 9px 18px rgba(139,124,246,.3)}
+ .c1{background:color-mix(in srgb,#FF9F68 22%,#fff)}.c2{background:color-mix(in srgb,#63A9FF 22%,#fff)}
+ .c3{background:color-mix(in srgb,#F07BAF 22%,#fff)}.c4{background:color-mix(in srgb,#8B7CF6 22%,#fff)}
+ .c5{background:color-mix(in srgb,#6FCF97 22%,#fff)}.c6{background:color-mix(in srgb,#FFB15F 22%,#fff)}
+ .c7{background:color-mix(in srgb,#62C6C0 22%,#fff)}.c8{background:color-mix(in srgb,#FF8FA3 22%,#fff)}
+ .i1{background:color-mix(in srgb,#2FC98A 22%,#fff)}.i2{background:color-mix(in srgb,#FFB15F 22%,#fff)}
+ .i3{background:color-mix(in srgb,#63A9FF 22%,#fff)}.i4{background:color-mix(in srgb,#62C6C0 22%,#fff)}
+ .i5{background:color-mix(in srgb,#FF8FA3 22%,#fff)}.i6{background:color-mix(in srgb,#9A9DB3 22%,#fff)}
+ .meta{display:flex;justify-content:space-between;font-size:11.5px;color:#9A9DB3;margin-top:12px}
+ .meta b{color:#3F4257}
+ .tip{margin-top:12px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);border-radius:16px;
+      padding:10px 12px;font-size:11px;color:#8A7FAE;line-height:1.9;backdrop-filter:blur(8px)}
+ .aside{width:340px;background:rgba(255,255,255,.75);border:1px solid #fff;border-radius:18px;padding:15px 17px;
+        font-size:12.5px;line-height:2.05;color:#4a5060;box-shadow:0 8px 20px rgba(110,100,170,.12)}
+ .aside b{color:#3F4257}.aside .k{color:#6C5CE7;font-weight:800}
+</style></head><body>
+<h1>Accounts · 首页分类「带图标」预览</h1>
+<p class="sub">分类色片保留晨雾柔和色，内部加<b>白色小图标卡（emoji）</b> + 分类名；支出/收入各一套图标；选中分类高亮紫环 + 圆点标记。</p>
+<div class="wrap">
+
+<!-- 支出 -->
+<div class="ph"><div class="sc">
+ <div class="seg"><span class="on">支出</span><span>收入</span></div>
+ <div class="amount"><small>¥</small>0.00</div>
+ <div class="note">备注（可选）</div>
+ <div class="lab">支出分类 · 点选即选中（保存见底部按钮）</div>
+ <div class="grid">
+  <div class="cat c1 on"><span class="ico">🍜</span><b>餐饮</b><span class="dot"></span></div>
+  <div class="cat c2"><span class="ico">🚇</span><b>交通</b></div>
+  <div class="cat c3"><span class="ico">🛍️</span><b>购物</b></div>
+  <div class="cat c4"><span class="ico">🏠</span><b>居住</b></div>
+  <div class="cat c5"><span class="ico">🧺</span><b>日用</b></div>
+  <div class="cat c6"><span class="ico">🎮</span><b>娱乐</b></div>
+  <div class="cat c7"><span class="ico">💊</span><b>医疗</b></div>
+  <div class="cat c8"><span class="ico">🎁</span><b>人情</b></div>
+ </div>
+ <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#8B7CF6">今天 12:30 ▾</span></div>
+ <div class="tip">← 点右下「更多」可查看并管理全部支出分类（首页固定 8 个，长按可调整顺序）</div>
+</div></div>
+
+<!-- 收入 -->
+<div class="ph"><div class="sc">
+ <div class="seg"><span>支出</span><span class="on">收入</span></div>
+ <div class="amount"><small>¥</small>0.00</div>
+ <div class="note">备注（可选）</div>
+ <div class="lab">收入分类 · 绿系淡彩 + 图标</div>
+ <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="cat i1 on"><span class="ico">💰</span><b>工资</b><span class="dot"></span></div>
+  <div class="cat i2"><span class="ico">🎉</span><b>奖金</b></div>
+  <div class="cat i3"><span class="ico">📈</span><b>理财</b></div>
+  <div class="cat i4"><span class="ico">💸</span><b>退款</b></div>
+  <div class="cat i5"><span class="ico">🧧</span><b>红包</b></div>
+  <div class="cat i6"><span class="ico">📦</span><b>其他</b></div>
+ </div>
+ <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:#8B7CF6">今天 12:30 ▾</span></div>
+ <div class="tip">← 收入分类同样：图标 + 名称 + 色片；在「分类管理」中可改图标/颜色/名称、可增删</div>
+</div></div>
+
+<div class="aside">
+ <b>本版改动说明（审核点）</b><br>
+ ① 每个分类 = <span class="k">白色小图标卡(emoji) + 名称</span>，坐在原有柔和色片上——不再只有文字<br>
+ ② 图标统一放在白色圆角小卡内，色片底色仍区分类别；选中项外圈紫色高亮 + 右上小圆点<br>
+ ③ 支出 8 个常用 + 收入 6 个（工资/奖金/理财/退款/红包/其他）各配专属图标<br>
+ ④ 图标可在「分类管理」中修改（从内置 emoji 图标库选择），名称/颜色照旧可改<br>
+ ⑤ 若担心 emoji 风格不统一，也可选"线性符号图标"方案（更极简）——二选一待你定
+</div>
+</div>
+</body></html>

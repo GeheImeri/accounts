@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 主题 B 纸韵·墨白</title>
+<style>
+:root{
+  --bg:#F4EEDF;--paper:#FFFDF7;--ink:#23201A;--ink2:#8C8575;--line:#E4DBC6;
+  --acc:#C93A2B;--acc2:#E8A33D;
+  --inc:#1F7A5C;--exp:#B3542E;
+  --c1:#D95D39;--c2:#3E6BA8;--c3:#B0538A;--c4:#8B5E3C;--c5:#5F8F6A;--c6:#C7912C;--c7:#3E8A8A;--c8:#B04A5E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,"Songti SC","SimSun",serif;color:var(--ink);
+  background:radial-gradient(700px 400px at 50% -10%,rgba(200,150,60,.08),transparent 60%),var(--bg);
+  padding:28px 16px 70px}
+h1{text-align:center;font-size:22px;letter-spacing:3px}
+.sub{text-align:center;color:var(--ink2);font-size:13px;margin:8px auto 24px;max-width:760px;line-height:1.9}
+.wrap{display:flex;justify-content:center;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.info{width:330px;display:flex;flex-direction:column;gap:14px}
+.icon{width:128px;height:128px;margin:0 auto;background:#F8F2E4;border-radius:30px;padding:8px;
+     box-shadow:0 10px 26px rgba(120,90,40,.2),inset 0 0 0 2px #EDE0C4}
+.icon svg{width:100%;height:100%;display:block}
+.pal{display:flex;gap:8px;justify-content:center}
+.pal span{width:26px;height:26px;border-radius:7px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.traits i{font-style:normal;font-size:11.5px;padding:5px 12px;border-radius:3px;border:1px solid var(--line);background:#FFFDF7;color:#5C5547}
+.motion{font-size:12px;color:#7A7262;line-height:2.1;border:1px solid var(--line);background:#FFFCF4;border-radius:4px;padding:12px 14px}
+.motion b{color:var(--acc)}
+.ph{width:352px;background:#E7DDC8;border-radius:6px;padding:10px;box-shadow:0 16px 34px rgba(120,90,40,.25)}
+.sc{background:#FFFDF7;border-radius:4px;padding:16px;display:flex;flex-direction:column;gap:11px;position:relative}
+.sc:before{content:"";position:absolute;inset:0;border-radius:4px;pointer-events:none;
+           background:repeating-linear-gradient(0deg,transparent 0 26px,rgba(60,50,20,.03) 26px 27px)}
+.seg{display:flex;border-bottom:1px solid var(--ink);margin:0 0 4px}
+.seg span{flex:1;text-align:center;padding:8px 0 9px;font-size:14px;letter-spacing:4px;color:var(--ink2);border-bottom:2px solid transparent}
+.seg span.on{color:var(--ink);font-weight:800;border-bottom-color:var(--acc)}
+.amount{text-align:center;font-size:46px;font-weight:200;letter-spacing:1px;color:var(--ink)}
+.amount em{font-style:normal;font-size:22px;color:var(--ink2)}
+.note{text-align:center;color:var(--ink2);font-size:12px;padding-bottom:6px;border-bottom:1px dashed #D8CDB4}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 0}
+.cat{display:flex;align-items:center;gap:9px;padding:7px 6px;font-size:12.5px;letter-spacing:1px;
+     border-bottom:1px dashed #E7DEC9}
+.cat i{font-style:normal;color:var(--acc);font-weight:700;width:12px;text-align:center}
+.cat b{margin-left:auto;font-weight:400;color:#C9C0A9;font-size:10px}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);border-top:1px solid var(--ink);padding-top:9px}
+.meta b{color:var(--ink);font-weight:600;letter-spacing:1px}
+.chips{display:flex;gap:6px}
+.chip{font-family:inherit;font-size:11.5px;padding:4px 10px;border:1px solid var(--line);border-radius:2px;background:#FFFDF7;color:#6E6656}
+.save{text-align:center;padding:12px 0;border-radius:2px;background:var(--acc);color:#FFF9F0;
+      font-weight:800;letter-spacing:10px;font-size:15px;box-shadow:3px 3px 0 rgba(60,40,10,.2)}
+.bud{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);border:1px solid var(--line);padding:9px 10px}
+.bud b{color:var(--inc);letter-spacing:.5px}
+.bud .bar{flex:1;height:6px;margin:0 10px;background:#EFE7D2;overflow:hidden}
+.bud .bar i{display:block;height:100%;width:62%;background:var(--acc)}
+.hr{height:0;border-top:1px solid var(--ink)}
+.lab{font-size:10.5px;color:var(--ink2);letter-spacing:3px}
+.stat .cards{display:flex;gap:7px}
+.stat .s{flex:1;border:1px solid var(--line);border-left:3px solid var(--ink);padding:7px 9px;font-size:10px;color:var(--ink2)}
+.stat .s b{display:block;font-size:12.5px;color:var(--ink)}
+.ring{width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--c1)0 35%,var(--c2)35% 65%,var(--c4)65% 82%,var(--c6)82% 100%);margin:8px auto;border:1px solid #D8CDB4}
+.bars{display:flex;align-items:flex-end;gap:4px;height:46px;margin-top:6px}
+.bars i{flex:1;background:var(--ink);min-height:3px}
+.bars i.hi{background:var(--acc)}
+.note2{font-size:11.5px;color:#8B8270;line-height:1.9}
+</style></head>
+<body>
+<h1>Accounts · 主题 B · 纸韵·墨白</h1>
+<p class="sub">米纸底 + 炭墨排版 + 单一朱红 · 印刷刊物感：留白、衬线数字、票据式明细线</p>
+<div class="wrap">
+ <div class="info">
+  <div class="icon"><svg viewBox="0 0 120 120"><rect width="120" height="120" rx="22" fill="#F8F2E4"/><circle cx="60" cy="62" r="34" fill="none" stroke="#C93A2B" stroke-width="3"/><text x="60" y="76" font-size="34" font-family="Georgia,serif" fill="#C93A2B" text-anchor="middle">¥</text></svg></div>
+  <div class="pal"><span style="background:#F4EEDF"></span><span style="background:#23201A"></span><span style="background:#C93A2B"></span><span style="background:#1F7A5C"></span></div>
+  <div class="traits"><i>印章式图标</i><i>衬线数字</i><i>票据/信封元素</i><i>朱红点缀</i></div>
+  <div class="motion"><b>动效：</b>淡雅克制——保存按钮像盖印章的下压 0.98 缩放；页面切换如翻页擦除；朱红强调处轻呼吸；数值变化用"铅字跳动"更替。</div>
+ </div>
+ <div class="ph"><div class="sc">
+  <div class="seg"><span class="on">支出</span><span>收入</span></div>
+  <div class="amount"><em>¥</em>0.00</div>
+  <div class="note">备注（可选）</div>
+  <div class="grid">
+    <div class="cat"><i>◯</i>餐饮<b>常用</b></div><div class="cat"><i>◯</i>交通<b>常用</b></div>
+    <div class="cat"><i>◯</i>购物<b>常用</b></div><div class="cat"><i>◯</i>居住<b>常用</b></div>
+    <div class="cat"><i>◯</i>日用</div><div class="cat"><i>◯</i>娱乐</div>
+    <div class="cat"><i>◯</i>医疗</div><div class="cat"><i>◯</i>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span>今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="save">保 存</div>
+  <div class="bud"><span>本月预算</span><div class="bar"><i></i></div><b>余 ¥1,150</b></div>
+  <div class="hr"></div>
+  <div class="lab">统计缩略</div>
+  <div class="stat"><div class="cards"><div class="s">支出<b>¥2,345</b></div><div class="s">收入<b style="color:var(--inc)">¥14,500</b></div><div class="s">结余<b style="color:var(--acc)">¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div class="bars"><i></i><i></i><i></i><i class="hi"></i><i></i><i></i><i class="hi"></i><i class="hi"></i></div></div>
+  <div class="note2">深色模式=夜墨纸（#211D15 + 米白字），风格仍保持印刷刊物气质。</div>
+ </div></div>
+</div>
+</body></html>

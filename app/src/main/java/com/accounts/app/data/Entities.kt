@@ -10,6 +10,7 @@ import androidx.room.PrimaryKey
  * - kind: expense / income
  * - 不可真删：删除 = 停用（enabled=false），历史流水不悬空
  * - pinned：是否显示在记账首页固定 8 格中（在分类管理里切换）
+ * - icon：首页瓦片上的 emoji 图标（空串 = 不显示图标，只显示名称）
  */
 @Entity(tableName = "categories")
 data class Category(
@@ -19,7 +20,8 @@ data class Category(
     val kind: String,       // "expense" | "income"
     val sortOrder: Int = 0,
     val enabled: Boolean = true,
-    val pinned: Boolean = false
+    val pinned: Boolean = false,
+    val icon: String = ""   // emoji 图标
 )
 
 /** 账户：余额 = 初始 + 收入 − 支出 + 转入 − 转出（实时推算，见需求文档 F5） */
@@ -82,10 +84,12 @@ data class Template(
     val sortOrder: Int = 0
 )
 
-/** 预算（单行配置：固定 id=1）。amountCents=0 表示未启用 */
+/** 预算（可多条，各自独立命名 + 周期 月/年）。amountCents=0 表示未启用 */
 @Entity(tableName = "budgets")
 data class Budget(
-    @PrimaryKey val id: Long = 1,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String = "预算",
     val amountCents: Long = 0,
-    val period: String = "month"   // month / year
+    val period: String = "month",   // month / year
+    val sortOrder: Int = 0
 )

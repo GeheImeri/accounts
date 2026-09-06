@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounts · 主题 C 晴空·简白</title>
+<style>
+:root{
+  --bg:#F5F9FF;--card:#FFFFFF;--ink:#16233D;--ink2:#7C8CA6;--line:#E6EDF7;
+  --acc:#2E7BFF;--acc2:#6FB6FF;
+  --inc:#1FA97C;--exp:#FF7A7A;
+  --c1:#FF9F68;--c2:#5AA7FF;--c3:#FF8FB0;--c4:#7C7CF0;--c5:#5FD6A0;--c6:#FFC24D;--c7:#46C9D0;--c8:#FF8FA3;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);
+  background:
+    radial-gradient(900px 500px at 8% -6%, rgba(90,160,255,.14), transparent 60%),
+    radial-gradient(700px 460px at 100% 8%, rgba(255,143,168,.12), transparent 55%),
+    var(--bg);
+  padding:28px 16px 70px}
+h1{text-align:center;font-size:22px;letter-spacing:1px}
+.sub{text-align:center;color:var(--ink2);font-size:13px;margin:8px auto 24px;max-width:760px;line-height:1.9}
+.wrap{display:flex;justify-content:center;gap:26px;align-items:flex-start;flex-wrap:wrap}
+.info{width:330px;display:flex;flex-direction:column;gap:14px}
+.icon{width:128px;height:128px;margin:0 auto;border-radius:30px;background:linear-gradient(160deg,#5AA7FF,#2E7BFF);
+     box-shadow:0 14px 30px rgba(46,123,255,.35)}
+.icon svg{width:100%;height:100%;display:block}
+.pal{display:flex;gap:8px;justify-content:center}
+.pal span{width:26px;height:26px;border-radius:999px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.traits i{font-style:normal;font-size:11.5px;padding:5px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:#4C5B76}
+.motion{font-size:12px;color:#66758F;line-height:2.1;background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.motion b{color:var(--acc)}
+.ph{width:352px;background:#fff;border-radius:48px;padding:10px;box-shadow:0 20px 46px rgba(70,110,190,.16)}
+.sc{background:#fff;border-radius:38px;padding:15px;display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;background:#F0F5FF;border-radius:999px;padding:3px}
+.seg span{flex:1;text-align:center;padding:8px 0;border-radius:999px;font-size:13px;color:var(--ink2)}
+.seg span.on{background:#fff;color:var(--acc);font-weight:800;box-shadow:0 4px 12px rgba(46,123,255,.18)}
+.amount{text-align:center;font-size:42px;font-weight:800;color:var(--ink)}
+.amount em{font-style:normal;font-size:20px;color:var(--ink2)}
+.note{text-align:center;color:var(--ink2);font-size:13px;padding-bottom:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.cat{text-align:center;padding:13px 0;border-radius:18px;font-size:11.5px;font-weight:700;background:#fff;
+     border:1px solid var(--line);color:var(--ink);
+     box-shadow:0 5px 14px rgba(80,120,200,.06)}
+.cat.on{border:2px solid var(--acc);background:#F0F6FF;color:var(--acc)}
+.cat i{display:block;font-style:normal;font-size:19px;margin-bottom:3px}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2)}
+.meta b{color:var(--ink)}
+.chips{display:flex;gap:6px}
+.chip{font-size:11.5px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);color:#4C5B76}
+.save{text-align:center;padding:14px 0;border-radius:999px;font-weight:800;letter-spacing:4px;color:#fff;
+      background:linear-gradient(90deg,#2E7BFF,#6FB6FF);box-shadow:0 10px 24px rgba(46,123,255,.3)}
+.bud{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);
+     background:#F6FAFF;border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+.bud b{color:var(--inc)}
+.bud .bar{flex:1;height:7px;margin:0 10px;background:#E9F0FA;border-radius:999px;overflow:hidden}
+.bud .bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,#2E7BFF,#6FB6FF);border-radius:999px}
+.hr{height:1px;background:var(--line)}
+.stat .cards{display:flex;gap:7px}
+.stat .s{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px 9px;font-size:10px;color:var(--ink2);
+     box-shadow:0 4px 12px rgba(80,120,200,.05)}
+.stat .s b{display:block;font-size:12.5px;color:var(--ink)}
+.ring{width:94px;height:94px;border-radius:50%;background:conic-gradient(var(--c1)0 35%,var(--c2)35% 65%,var(--c4)65% 82%,var(--c6)82% 100%);position:relative;margin:9px auto}
+.ring:after{content:"";position:absolute;inset:19px;border-radius:50%;background:#fff}
+.bars{display:flex;align-items:flex-end;gap:3px;height:48px;margin-top:6px}
+.bars i{flex:1;background:#CFE1FF;border-radius:4px 4px 0 0;min-height:3px}
+.bars i.hi{background:var(--acc)}
+.note2{font-size:11.5px;color:#7C8CA6;line-height:1.8}
+</style></head>
+<body>
+<h1>Accounts · 主题 C · 晴空·简白</h1>
+<p class="sub">大留白 + 天蓝主色 + 柔和卡片 · 轻快明亮的"深呼吸"界面（Apple 系清爽度）</p>
+<div class="wrap">
+ <div class="info">
+  <div class="icon"><svg viewBox="0 0 120 120"><defs><linearGradient id="gc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FB6FF"/><stop offset="1" stop-color="#2E7BFF"/></linearGradient></defs><rect width="120" height="120" rx="28" fill="#fff"/><rect x="8" y="8" width="104" height="104" rx="24" fill="url(#gc)"/><circle cx="60" cy="66" r="16" fill="rgba(255,255,255,.35)"/><path d="M34 92 a26 26 0 0 1 52 0" fill="#fff"/><circle cx="60" cy="66" r="8" fill="#fff"/></svg></div>
+  <div class="pal"><span style="background:#F5F9FF"></span><span style="background:#2E7BFF"></span><span style="background:#1FA97C"></span><span style="background:#FF7A7A"></span></div>
+  <div class="traits"><i>云朵形图标</i><i>填充圆润小图标</i><i>低饱和阴影</i><i>超高留白</i></div>
+  <div class="motion"><b>动效：</b>轻盈弹性——按压缩放 0.97 回弹；卡片随滚动轻微上浮；选择切换用 150ms 淡入位移；保存成功以云朵形"叮"呼吸一次。</div>
+ </div>
+ <div class="ph"><div class="sc">
+  <div class="seg"><span class="on">支出</span><span>收入</span></div>
+  <div class="amount"><em>¥</em>0.00</div>
+  <div class="note">备注（可选）</div>
+  <div class="grid">
+    <div class="cat on"><i>🍜</i>餐饮</div><div class="cat"><i>🚇</i>交通</div>
+    <div class="cat"><i>🛍️</i>购物</div><div class="cat"><i>🏠</i>居住</div>
+    <div class="cat"><i>🧺</i>日用</div><div class="cat"><i>🎮</i>娱乐</div>
+    <div class="cat"><i>💊</i>医疗</div><div class="cat"><i>🎁</i>人情</div>
+  </div>
+  <div class="meta"><span>钱包：<b>现金</b> ▾</span><span style="color:var(--acc)">今天 12:30 ▾</span></div>
+  <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
+  <div class="save">保 存</div>
+  <div class="bud"><span>本月预算</span><div class="bar"><i></i></div><b>¥1,150</b></div>
+  <div class="hr"></div>
+  <div class="stat"><div class="cards"><div class="s">支出<b>¥2,345</b></div><div class="s">收入<b style="color:var(--inc)">¥14,500</b></div><div class="s">结余<b style="color:var(--acc)">¥12,155</b></div></div>
+  <div class="ring"></div>
+  <div class="bars"><i></i><i></i><i></i><i></i><i class="hi"></i><i></i><i class="hi"></i><i class="hi"></i></div></div>
+  <div class="note2">深色模式为夜空蓝灰 + 亮字；浅色为主、深色备选。</div>
+ </div></div>
+</div>
+</body></html>

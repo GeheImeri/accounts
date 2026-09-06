@@ -122,15 +122,24 @@ interface TemplateDao {
 
 @Dao
 interface BudgetDao {
-    @Query("SELECT * FROM budgets LIMIT 1")
-    fun observeFirst(): Flow<Budget?>
+    @Query("SELECT * FROM budgets ORDER BY sortOrder, id")
+    fun observeAll(): Flow<List<Budget>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(budget: Budget)
+    @Query("SELECT COALESCE(MAX(sortOrder), 0) FROM budgets")
+    suspend fun maxSortOrder(): Int
 
-    @Query("SELECT * FROM budgets LIMIT 1")
-    suspend fun firstOnce(): Budget?
+    @Query("SELECT * FROM budgets")
+    suspend fun allOnce(): List<Budget>
 
     @Query("DELETE FROM budgets")
     suspend fun deleteAll()
+
+    @Insert
+    suspend fun insert(budget: Budget): Long
+
+    @Update
+    suspend fun update(budget: Budget)
+
+    @Delete
+    suspend fun delete(budget: Budget)
 }

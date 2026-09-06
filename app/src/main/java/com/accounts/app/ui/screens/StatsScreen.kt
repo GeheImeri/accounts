@@ -219,7 +219,8 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
             GlassCard(
                 Modifier.weight(1f).noRippleClickable { balanceDialog = true }
             ) {
-                StatCell("结余", "¥${Money.format(balance)}", null, expense = false)
+                StatCell("结余", "¥${Money.format(balance)}", "▾", expense = false,
+                    hint = true)
             }
         }
 
@@ -777,13 +778,20 @@ private fun BalanceDialog(
 }
 
 @Composable
-private fun StatCell(label: String, value: String, deltaText: String?, expense: Boolean) {
+private fun StatCell(
+    label: String,
+    value: String,
+    deltaText: String?,
+    expense: Boolean,
+    hint: Boolean = false
+) {
     Text(label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     Text(value, fontWeight = FontWeight.Bold, fontSize = 15.sp,
         color = MaterialTheme.colorScheme.onSurface)
     if (deltaText != null) {
         Text(deltaText, fontSize = 10.sp,
-            color = if (expense) ExpenseRose else IncomeGreen)
+            color = if (hint) MaterialTheme.colorScheme.onSurfaceVariant
+            else if (expense) ExpenseRose else IncomeGreen)
     }
 }
 

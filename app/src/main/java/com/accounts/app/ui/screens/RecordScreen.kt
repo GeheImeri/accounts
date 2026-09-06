@@ -121,7 +121,10 @@ fun RecordScreen(vm: AppViewModel) {
     val cats = homeCategories(categories, kind)
     val baseRecents = remember(transactions) { transactions.map { it.amountCents }.distinct() }
     val recents = baseRecents.filterNot { it in hiddenRecents }.take(4)
-    val kindTemplates = templates.filter { it.kind == kind }
+    val enabledCategoryIds = categories.asSequence().filter { it.enabled }.map { it.id }.toSet()
+    val kindTemplates = templates.filter {
+        it.kind == kind && it.categoryId in enabledCategoryIds
+    }
 
     val budgets by vm.budgets.collectAsState()
     var editingBudget by remember { mutableStateOf<Budget?>(null) }
@@ -665,7 +668,7 @@ private fun BudgetCard(
                 color = if (budget.period == "year") IncomeGreen
                 else MaterialTheme.colorScheme.primary)
             Spacer(Modifier.weight(1f))
-            Text("¥${Money.format(amount)}  点此修改", fontSize = 13.sp,
+            Text("✎ 修改", fontSize = 13.sp,
                 fontWeight = FontWeight.Bold, color = scheme.primary,
                 modifier = Modifier.noRippleClickable(onClick = onEdit))
         }

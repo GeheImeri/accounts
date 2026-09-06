@@ -46,13 +46,36 @@ class Repository(private val db: AppDatabase) {
     suspend fun updateTransaction(transaction: Transaction) =
         db.transactionDao().update(transaction)
 
-    suspend fun addCategory(name: String, color: Long, kind: String, pinned: Boolean): Long {
+    suspend fun addCategory(
+        name: String,
+        icon: String,
+        color: Long,
+        kind: String,
+        pinned: Boolean
+    ): Long {
         // 排序 = 当前 kind 最大排序 + 1；新分类默认不进首页（pinned 由分类管理切换）
         val order = db.categoryDao().maxSortOrder(kind) + 1
         return db.categoryDao().insert(
-            Category(name = name, color = color, kind = kind, sortOrder = order, enabled = true, pinned = pinned)
+            Category(
+                name = name.trim(),
+                icon = icon.trim(),
+                color = color,
+                kind = kind,
+                sortOrder = order,
+                enabled = true,
+                pinned = pinned
+            )
         )
     }
+
+    suspend fun updateCategory(category: Category, name: String, icon: String, color: Long) {
+        db.categoryDao().update(
+            category.copy(name = name.trim(), icon = icon.trim(), color = color)
+        )
+    }
+
+    /** 减少分类 = 停用，不真删，保留历史流水的外键关系。 */
+    suspend fun disableCategory(category: Category) = db.categoryDao().disable(category.id)
 
     suspend fun setCategoryPinned(id: Long, pinned: Boolean) {
         val c = db.categoryDao().findByIdOnce(id) ?: return

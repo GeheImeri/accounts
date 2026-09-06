@@ -153,6 +153,7 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     val categories by vm.categories.collectAsState()
     var kind by remember { mutableStateOf("expense") }
     var addOpen by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<Category?>(null) }
 
     val list = remember(categories, kind) {
         categories.filter { it.enabled && it.kind == kind }
@@ -174,10 +175,29 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
             list.forEachIndexed { index, cat ->
                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(20.dp).background(chip(cat.color), RoundedCornerShape(8.dp)))
-                    Text(cat.name, Modifier.padding(start = 10.dp).weight(1f),
-                        fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold)
+                    Box(
+                        Modifier.size(28.dp)
+                            .background(chip(cat.color), RoundedCornerShape(9.dp))
+                            .noRippleClickable { editing = cat },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (cat.icon.isNotBlank()) Text(cat.icon, fontSize = 14.sp)
+                    }
+                    Text(
+                        cat.name,
+                        Modifier.padding(start = 10.dp).weight(1f)
+                            .noRippleClickable { editing = cat },
+                        fontSize = 13.5.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "修改",
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 5.dp)
+                            .noRippleClickable { editing = cat }
+                    )
                     // 上移 / 下移（简化拖拽排序）
                     Text("▲", fontSize = 10.sp,
                         color = if (index > 0) MaterialTheme.colorScheme.onSurfaceVariant
@@ -214,7 +234,7 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
                 if (cat != list.last()) Hairline()
             }
         }
-        Text("首页固定 8 个（当前 $pinnedCount / 8）· 点「首页/仅统计」切换 · ▲▼ 调整顺序",
+        Text("首页固定 8 个（当前 $pinnedCount / 8）· 可修改图标/名称/颜色或停用 · ▲▼ 调序",
             Modifier.fillMaxWidth(), fontSize = 11.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
         Spacer(Modifier.height(20.dp))
@@ -224,9 +244,23 @@ fun CategoryManageScreen(vm: AppViewModel, onBack: () -> Unit) {
         AddCategoryDialog(
             initialKind = kind,
             onDismiss = { addOpen = false },
-            onAdd = { name, color, k, pinned ->
-                vm.addCategory(name, color, k, pinned)
+            onAdd = { name, icon, color, k, pinned ->
+                vm.addCategory(name, icon, color, k, pinned)
                 addOpen = false
+            }
+        )
+    }
+    editing?.let { category ->
+        EditCategoryDialog(
+            category = category,
+            onDismiss = { editing = null },
+            onSave = { name, icon, color ->
+                vm.updateCategory(category, name, icon, color)
+                editing = null
+            },
+            onDisable = {
+                vm.disableCategory(category)
+                editing = null
             }
         )
     }
@@ -452,16 +486,17 @@ private fun colorFromHex(hex: String): Long = ("FF" + hex.removePrefix("#")).toL
 private fun AddCategoryDialog(
     initialKind: String,
     onDismiss: () -> Unit,
-    onAdd: (String, Long, String, Boolean) -> Unit
+    onAdd: (String, String, Long, String, Boolean) -> Unit
 ) {
     var kind by remember { mutableStateOf(initialKind) }
     var name by remember { mutableStateOf("") }
+    var icon by remember { mutableStateOf("") }
     var color by remember { mutableStateOf(colorFromHex(ExpensePalette.first())) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新增分类", fontWeight = FontWeight.Bold) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Segment(options = listOf("支出", "收入"),
                     selectedIndex = if (kind == "expense") 0 else 1,
                     onSelect = {
@@ -469,6 +504,31 @@ private fun AddCategoryDialog(
                         color = if (kind == "expense") colorFromHex(ExpensePalette.first())
                         else colorFromHex(IncomePalette.first())
                     })
+                Spacer(Modifier.height(10.dp))
+                BasicTextField(
+                    value = icon,
+                    onValueChange = { icon = it },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    ),
+                    singleLine = true,
+                    decorationBox = { inner ->
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(10.dp))
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (icon.isEmpty()) Text("图标（输入 emoji，可留空）",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(Modifier.height(10.dp))
                 BasicTextField(
                     value = name,
@@ -507,10 +567,124 @@ private fun AddCategoryDialog(
         },
         confirmButton = {
             TextButton(enabled = name.isNotBlank(), onClick = {
-                onAdd(name.trim(), color, kind, false)
+                onAdd(name.trim(), icon.trim(), color, kind, false)
             }) { Text("新增") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+    )
+}
+
+@Composable
+private fun EditCategoryDialog(
+    category: Category,
+    onDismiss: () -> Unit,
+    onSave: (String, String, Long) -> Unit,
+    onDisable: () -> Unit
+) {
+    var name by remember(category.id) { mutableStateOf(category.name) }
+    var icon by remember(category.id) { mutableStateOf(category.icon) }
+    var color by remember(category.id) { mutableStateOf(category.color) }
+    val palette = if (category.kind == "expense") ExpensePalette else IncomePalette
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                if (category.kind == "expense") "修改支出分类" else "修改收入分类",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                BasicTextField(
+                    value = icon,
+                    onValueChange = { icon = it },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    ),
+                    singleLine = true,
+                    decorationBox = { inner ->
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(10.dp))
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (icon.isEmpty()) Text("图标（输入 emoji，可留空）",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
+                BasicTextField(
+                    value = name,
+                    onValueChange = { name = it.take(6) },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),
+                    singleLine = true,
+                    decorationBox = { inner ->
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(10.dp))
+                                .padding(12.dp)
+                        ) {
+                            if (name.isEmpty()) Text("分类名称（6 字内）",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 13.sp)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
+                Text("颜色", fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(6.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    palette.chunked(6).forEach { rowColors ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            rowColors.forEach { hex ->
+                                val option = colorFromHex(hex)
+                                Box(
+                                    Modifier.weight(1f).height(30.dp)
+                                        .background(chip(option), RoundedCornerShape(9.dp))
+                                        .border(if (option == color) 2.dp else 0.dp,
+                                            MaterialTheme.colorScheme.primary,
+                                            RoundedCornerShape(9.dp))
+                                        .noRippleClickable { color = option }
+                                )
+                            }
+                            repeat(6 - rowColors.size) { Spacer(Modifier.weight(1f)) }
+                        }
+                    }
+                }
+                Text("停用后仅从记账和分类管理中隐藏，历史流水保留不变。",
+                    fontSize = 10.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp))
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = name.isNotBlank(),
+                onClick = { onSave(name.trim(), icon.trim(), color) }
+            ) { Text("保存") }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDisable) {
+                    Text("停用", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = onDismiss) { Text("取消") }
+            }
+        }
     )
 }
 

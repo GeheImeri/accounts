@@ -61,11 +61,11 @@ h1{text-align:center;font-size:21px}
 .s1 small{font-size:8.5px;color:#9A9DB3}
 .s1 b{font-size:12.5px}
 .sch{display:flex;gap:8px}
-.sch .in{flex:1;background:rgba(255,255,255,.85);border-radius:11px;padding:7px 11px;font-size:11px;color:#9A9DB3}
+.sch .in{flex:1;background:rgba(255,255,255,.85);border-radius:11px;padding:7px 11px;font-size:11px;color:#9A9DB3;text-align:left}
 .sch .fl{background:#F4F0FF;color:#6C5CE7;font-weight:800;font-size:11px;border-radius:10px;padding:7px 12px}
 .wk{font-size:9.5px;color:#9A9DB3;display:flex;justify-content:space-between;margin-top:4px;border-top:1px solid #F1EEF8;padding-top:5px}
 .dc{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px solid #F7F4FB}
-.dc .mi{flex:1}.dc .mi b{display:block;font-size:12px}.dc .mi span{font-size:8.5px;color:#9A9DB3}
+.dc .mi{flex:1;text-align:left}.dc .mi b{display:block;font-size:12px}.dc .mi span{font-size:8.5px;color:#9A9DB3}
 .dc .am{font-size:12px;font-weight:800}
 .card{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);border-radius:16px;padding:9px 11px}
 .c3{display:flex;gap:7px}
@@ -83,20 +83,23 @@ h1{text-align:center;font-size:21px}
 .rank .nm{width:44px;font-weight:700}
 .rank .tr{flex:1;height:7px;background:#F1EEF8;border-radius:99px;overflow:hidden}
 .rank .tr i{display:block;height:100%;border-radius:99px}
-.rank .amt{width:62px;text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+.rank .amt{width:68px;text-align:right;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .rank .pct{width:30px;text-align:right;color:#9A9DB3}
 .more{text-align:center;color:#8B7CF6;font-size:10.5px;font-weight:800;padding:5px 0 1px}
 .tl{font-size:11px;color:#9A9DB3;margin-top:2px}
-.bars{display:flex;align-items:flex-end;gap:2px;height:52px}
-.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
-.bars .b i{width:100%;background:#D8D0F8;border-radius:3px 3px 0 0;min-height:3px}
+.bars{display:flex;gap:2px;height:62px;flex:0 0 62px}
+.bars .b{flex:1;position:relative;height:100%}
+.bars .b i{position:absolute;left:0;right:0;bottom:13px;height:var(--h);background:#D8D0F8;border-radius:3px 3px 0 0;min-height:3px}
 .bars .b.hi i{background:linear-gradient(180deg,#8B7CF6,#5FB4FF)}
 .bars .b.g i{background:#B8EFD6}
 .bars .b.g.hi i{background:#2FC98A}
-.bars .b span{font-size:7px;color:#9A9DB3}
+.bars .b span{position:absolute;left:50%;bottom:0;transform:translateX(-50%);font-size:7px;color:#9A9DB3;white-space:nowrap}
 .lchart{width:100%}
+.chart-legend{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;font-size:8.5px;color:#6C5F93}
+.chart-legend span{display:flex;align-items:center;gap:3px}
+.chart-legend i{width:7px;height:7px;border-radius:50%;display:inline-block}
 .setg{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.95);border-radius:16px;overflow:hidden;backdrop-filter:blur(8px)}
-.setr{display:flex;align-items:center;padding:9px 11px;font-size:12px}
+.setr{display:flex;align-items:center;padding:9px 11px;font-size:12px;text-align:left}
 .setr+.setr{border-top:1px solid rgba(139,124,246,.12)}
 .setr b{flex:1}
 .setr .v{color:#9A9DB3;font-size:11px}
@@ -128,14 +131,14 @@ h1{text-align:center;font-size:21px}
   <div class="chips"><span class="chip">15</span><span class="chip">23.5</span><span class="chip">6</span><span class="chip">300</span></div>
   <div class="chips"><span class="chip">⭐ 早餐 ¥8</span><span class="chip">⭐ 地铁 ¥6</span><span class="chip add">＋</span></div>
   <div class="btn">保 存</div>
-  <div class="bud"><div class="tt">日常开销 <span class="badge m">按月</span><span style="margin-left:auto;font-size:9px;color:#B9A6F3">✎ 点此改</span></div>
+  <div class="bud"><div class="tt">日常开销 <span class="badge m">按月</span><span style="margin-left:auto;font-size:9px;color:#B9A6F3">✎ 修改</span></div>
    <div class="r1"><span>本月已支出</span><b style="color:#FF7D9C">¥1,850.00</b></div>
    <div class="prog"><i style="width:62%;background:linear-gradient(90deg,#8B7CF6,#FF9F68)"></i></div>
    <div class="pr2"><span>已用 62%</span><span>剩余 38%</span></div>
    <div class="m2"><div class="bx"><div class="k">预算余额</div><div class="v" style="color:#2FC98A">¥1,150.00</div></div>
                <div class="bx"><div class="k">每日平均</div><div class="v" style="color:#8B7CF6">¥74.00</div></div></div>
   </div>
-  <div class="bud"><div class="tt">今年总预算 <span class="badge y">按年</span></div>
+  <div class="bud"><div class="tt">今年总预算 <span class="badge y">按年</span><span style="margin-left:auto;font-size:9px;color:#B9A6F3">✎ 修改</span></div>
    <div class="r1"><span>今年已支出</span><b style="color:#FF7D9C">¥12,460.00</b></div>
    <div class="prog"><i style="width:42%;background:linear-gradient(90deg,#2FC98A,#8B7CF6)"></i></div>
    <div class="pr2"><span>已用 42%</span><span>剩余 58%</span></div>
@@ -144,7 +147,7 @@ h1{text-align:center;font-size:21px}
   </div>
   <div class="not" style="border:1.5px dashed #B9A6F3;border-radius:18px;padding:8px;color:#8B7CF6;font-weight:700">＋ 新增预算</div>
  </div>
- <div class="nav"><div class="st"><span class="on">＋</span><span>☰</span><span>◪</span><span>⚙</span></div></div>
+ <div class="nav"><div class="st"><span class="on">＋</span><span>☰</span><span>◪</span></div></div>
 </div></div></div>
 
 <!-- 明细 -->
@@ -165,7 +168,7 @@ h1{text-align:center;font-size:21px}
   <div class="dc"><span class="mi"><b>电影</b><span>娱乐 · 支付宝 · 和同事</span></span><span class="am" style="color:#FF7D9C">−32.00</span></div>
   <div style="text-align:center;font-size:10px;color:#8B7CF6;padding:6px">共 34 笔 · 下滑查看更多</div>
  </div>
- <div class="nav"><div class="st"><span>＋</span><span class="on">☰</span><span>◪</span><span>⚙</span></div></div>
+ <div class="nav"><div class="st"><span>＋</span><span class="on">☰</span><span>◪</span></div></div>
 </div></div></div>
 
 <!-- 统计 -->
@@ -174,7 +177,7 @@ h1{text-align:center;font-size:21px}
   <div class="hdr"><h3>统计</h3><span style="display:inline-flex;gap:8px;align-items:center"><span style="width:30px;height:30px;border-radius:50%;background:#F4F0FF;display:inline-flex;align-items:center;justify-content:center;color:#8E93A8">⚙</span><span class="pill">本月 ▾</span></span></div>
   <div class="c3"><div><small>支出</small><b>¥2,345.00</b><span style="display:block;font-size:7.5px;color:#FF7D9C">▼8%</span></div>
    <div><small>收入</small><b style="color:#2FC98A">¥14,500.00</b><span style="display:block;font-size:7.5px;color:#2FC98A">▲12%</span></div>
-   <div><small>结余 · 查看</small><b style="color:#6C5CE7">¥12,155.00</b><span style="display:block;font-size:7.5px;color:#9A9DB3">点开=钱包+转账</span></div></div>
+   <div><small>结余 · 查看</small><b style="color:#6C5CE7">¥12,155.00</b><span style="display:block;font-size:8px;line-height:8px;color:#9A9DB3">▾</span></div></div>
   <div class="card" style="display:flex;align-items:center;gap:12px">
    <div class="donut"></div>
    <div class="lg">
@@ -192,14 +195,13 @@ h1{text-align:center;font-size:21px}
   </div>
   <div class="tl">近 12 个月支出趋势</div>
   <div class="bars">
-   <div class="b"><i style="height:30%"></i><span>2月</span></div><div class="b"><i style="height:42%"></i><span>3月</span></div>
-   <div class="b"><i style="height:36%"></i><span>4月</span></div><div class="b"><i style="height:55%"></i><span>5月</span></div>
-   <div class="b"><i style="height:48%"></i><span>6月</span></div><div class="b"><i style="height:60%"></i><span>7月</span></div>
-   <div class="b"><i style="height:52%"></i><span>8月</span></div><div class="b"><i style="height:70%"></i><span>9月</span></div>
-   <div class="b"><i style="height:64%"></i><span>10月</span></div><div class="b"><i style="height:78%"></i><span>11月</span></div>
-   <div class="b hi"><i style="height:88%"></i><span>12月</span></div><div class="b hi"><i style="height:72%"></i><span>1月</span></div>
+   <div class="b" style="--h:30%"><i></i><span>2月</span></div><div class="b" style="--h:42%"><i></i><span>3月</span></div>
+   <div class="b" style="--h:36%"><i></i><span>4月</span></div><div class="b" style="--h:55%"><i></i><span>5月</span></div>
+   <div class="b" style="--h:48%"><i></i><span>6月</span></div><div class="b" style="--h:60%"><i></i><span>7月</span></div>
+   <div class="b" style="--h:52%"><i></i><span>8月</span></div><div class="b" style="--h:70%"><i></i><span>9月</span></div>
+   <div class="b" style="--h:64%"><i></i><span>10月</span></div><div class="b" style="--h:78%"><i></i><span>11月</span></div>
+   <div class="b hi" style="--h:88%"><i></i><span>12月</span></div><div class="b hi" style="--h:72%"><i></i><span>1月</span></div>
   </div>
-  <div class="tl">本月各账户支出构成（点排行项突出）</div>
   <div class="card" style="display:flex;align-items:center;gap:12px">
    <div class="donut" style="background:conic-gradient(#8B7CF6 0 45%,#FFB15F 45% 65%,#63A9FF 65% 79%,#2FC98A 79% 100%)"></div>
    <div class="lg"><div class="li"><span class="d" style="background:#8B7CF6"></span>储蓄卡<span class="pc">45%</span></div>
@@ -209,9 +211,13 @@ h1{text-align:center;font-size:21px}
   </div>
   <div class="card rank"><div class="li"><span class="dot" style="background:#8B7CF6"></span><span class="nm">储蓄卡</span><div class="tr"><i style="width:45%;background:#8B7CF6"></i></div><span class="amt">¥1,055.00</span><span class="pct">45%</span></div>
    <div class="li"><span class="dot" style="background:#FFB15F"></span><span class="nm">现金</span><div class="tr"><i style="width:20%;background:#FFB15F"></i></div><span class="amt">¥469.00</span><span class="pct">20%</span></div>
-   <div class="more">展开全部 6 个账户 ▾</div></div>
+  <div class="more">展开全部 6 个账户 ▾</div></div>
   <div class="tl">近 12 个月各账户余额变化（点图例显隐）</div>
   <div class="card">
+   <div class="chart-legend">
+    <span><i style="background:#8B7CF6"></i>储蓄卡</span><span><i style="background:#FFB15F"></i>现金</span>
+    <span><i style="background:#63A9FF"></i>支付宝</span><span><i style="background:#2FC98A"></i>微信零钱</span>
+   </div>
    <svg class="lchart" viewBox="0 0 300 92" xmlns="http://www.w3.org/2000/svg">
     <g stroke="#EFE9FF"><line x1="8" y1="18" x2="292" y2="18"/><line x1="8" y1="48" x2="292" y2="48"/><line x1="8" y1="78" x2="292" y2="78"/></g>
     <polyline fill="none" stroke="#FFB15F" stroke-width="2" points="8,78 34,75 60,77 86,72 112,75 138,70 164,73 190,68 216,72 242,66 268,68 292,67"/>
@@ -223,23 +229,22 @@ h1{text-align:center;font-size:21px}
   </div>
   <div class="tl">近 12 个月收入趋势</div>
   <div class="bars">
-   <div class="b g"><i style="height:40%"></i><span>2月</span></div><div class="b g"><i style="height:52%"></i><span>3月</span></div>
-   <div class="b g"><i style="height:45%"></i><span>4月</span></div><div class="b g"><i style="height:60%"></i><span>5月</span></div>
-   <div class="b g"><i style="height:58%"></i><span>6月</span></div><div class="b g"><i style="height:72%"></i><span>7月</span></div>
-   <div class="b g"><i style="height:66%"></i><span>8月</span></div><div class="b g"><i style="height:84%"></i><span>9月</span></div>
-   <div class="b g"><i style="height:90%"></i><span>10月</span></div><div class="b g"><i style="height:78%"></i><span>11月</span></div>
-   <div class="b g hi"><i style="height:95%"></i><span>12月</span></div><div class="b g hi"><i style="height:88%"></i><span>1月</span></div>
+   <div class="b g" style="--h:40%"><i></i><span>2月</span></div><div class="b g" style="--h:52%"><i></i><span>3月</span></div>
+   <div class="b g" style="--h:45%"><i></i><span>4月</span></div><div class="b g" style="--h:60%"><i></i><span>5月</span></div>
+   <div class="b g" style="--h:58%"><i></i><span>6月</span></div><div class="b g" style="--h:72%"><i></i><span>7月</span></div>
+   <div class="b g" style="--h:66%"><i></i><span>8月</span></div><div class="b g" style="--h:84%"><i></i><span>9月</span></div>
+   <div class="b g" style="--h:90%"><i></i><span>10月</span></div><div class="b g" style="--h:78%"><i></i><span>11月</span></div>
+   <div class="b g hi" style="--h:95%"><i></i><span>12月</span></div><div class="b g hi" style="--h:88%"><i></i><span>1月</span></div>
   </div>
-  <div style="text-align:center;font-size:9.5px;color:#B9B2CC">已到底部 · 点结余/支出/收入卡另有弹窗入口</div>
  </div>
- <div class="nav"><div class="st"><span>＋</span><span>☰</span><span class="on">◪</span><span>⚙</span></div></div>
+ <div class="nav"><div class="st"><span>＋</span><span>☰</span><span class="on">◪</span></div></div>
 </div></div></div>
 
 <!-- 设置 -->
 <div class="col"><div class="tlab">④ 设置</div><div class="ph"><div class="sc">
  <div class="body">
   <div class="hdr"><h3>‹ 设置</h3></div>
-  <div class="setg"><div class="setr"><b>分类管理</b><span class="v">图标/名称/颜色/排序 ›</span></div>
+  <div class="setg"><div class="setr"><b>分类管理</b><span class="v">图标/颜色/名称 · 增停改 ›</span></div>
    <div class="setr"><b>账户管理</b><span class="v">›</span></div></div>
   <div class="setg"><div class="setr"><b>主题</b><span class="v">跟随系统</span><span class="v">›</span></div>
    <div class="setr"><b>默认支出账户</b><span class="v">现金 ▾</span></div>

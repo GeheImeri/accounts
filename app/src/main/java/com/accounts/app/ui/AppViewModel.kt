@@ -98,8 +98,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.setCategoryPinned(category.id, !category.pinned) }
     }
 
-    fun addCategory(name: String, color: Long, kind: String, pinned: Boolean) {
-        viewModelScope.launch { repo.addCategory(name, color, kind, pinned) }
+    fun addCategory(name: String, icon: String, color: Long, kind: String, pinned: Boolean) {
+        viewModelScope.launch { repo.addCategory(name, icon, color, kind, pinned) }
+    }
+
+    fun updateCategory(category: Category, name: String, icon: String, color: Long) {
+        viewModelScope.launch { repo.updateCategory(category, name, icon, color) }
+    }
+
+    fun disableCategory(category: Category) {
+        viewModelScope.launch { repo.disableCategory(category) }
     }
 
     fun reorderCategories(kind: String, ids: List<Long>) {

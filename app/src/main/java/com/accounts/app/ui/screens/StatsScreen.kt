@@ -20,12 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.accounts.app.data.Account
 import com.accounts.app.data.Transaction
 import com.accounts.app.ui.AppViewModel
 import com.accounts.app.ui.comps.GlassCard
@@ -70,11 +73,14 @@ private fun totalsOf(list: List<Transaction>): Totals {
 fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     val transactions by vm.transactions.collectAsState()
     val categories by vm.categories.collectAsState()
+    val accounts by vm.accounts.collectAsState()
+    val transfers by vm.transfers.collectAsState()
 
     var monthOffset by remember { mutableStateOf(0) }
     var menuOpen by remember { mutableStateOf(false) }
     var showAll by remember { mutableStateOf(false) }
     var selectedCatId by remember { mutableStateOf<Long?>(null) }
+    var balanceDialog by remember { mutableStateOf(false) }
 
     val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
     val catMap = remember(categories) { categories.associateBy { it.id } }
@@ -170,7 +176,10 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                 StatCell("收入", "¥${Money.format(cur.income)}",
                     delta(cur.income, prev.income), expense = false)
             }
-            GlassCard(Modifier.weight(1f)) {
+            // 结余：点击查看各钱包余额
+            GlassCard(
+                Modifier.weight(1f).noRippleClickable { balanceDialog = true }
+            ) {
                 StatCell("结余", "¥${Money.format(balance)}", null, expense = false)
             }
         }
@@ -204,9 +213,6 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         }
 
         Spacer(Modifier.height(14.dp))
-        Text("分类排行（支出）· 点击查看占比",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
         GlassCard(Modifier.fillMaxWidth()) {
             shown.forEach { r ->
                 RankRow(r, selected = selectedCatId == r.categoryId, onClick = {
@@ -238,12 +244,96 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
 
         Spacer(Modifier.height(28.dp))
     }
+
+    if (balanceDialog) {
+        BalanceDialog(accounts, transactions, transfers) { balanceDialog = false }
+    }
 }
 
 private fun delta(cur: Long, prev: Long): String? {
     if (prev <= 0) return null
     val pct = (cur - prev) * 100 / prev
     return if (pct >= 0) "▲ $pct%" else "▼ ${-pct}%"
+}
+
+/** 账户余额 = 初始 + 收入 − 支出 + 转入 − 转出 */
+private fun accountBalance(
+    account: Account,
+    transactions: List<Transaction>,
+    transfers: List<com.accounts.app.data.Transfer>
+): Long {
+    var bal = account.initialBalanceCents
+    transactions.forEach { t ->
+        if (t.accountId == account.id) {
+            if (t.type == "income") bal += t.amountCents else bal -= t.amountCents
+        }
+    }
+    transfers.forEach { tr ->
+        if (tr.fromAccountId == account.id) bal -= tr.amountCents
+        if (tr.toAccountId == account.id) bal += tr.amountCents
+    }
+    return bal
+}
+
+private fun balanceText(cents: Long): String =
+    if (cents < 0) "-¥${Money.format(-cents)}" else "¥${Money.format(cents)}"
+
+/** 点击「结余」后的弹窗：各钱包当前余额 */
+@Composable
+private fun BalanceDialog(
+    accounts: List<Account>,
+    transactions: List<Transaction>,
+    transfers: List<com.accounts.app.data.Transfer>,
+    onDismiss: () -> Unit
+) {
+    val rows = remember(accounts, transactions, transfers) {
+        accounts.filter { it.enabled }
+            .sortedBy { it.sortOrder }
+            .map { a -> a to accountBalance(a, transactions, transfers) }
+    }
+    val total = remember(rows) { rows.sumOf { it.second } }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("钱包结余", fontWeight = FontWeight.Bold) },
+        text = {
+            Column {
+                rows.forEach { (acc, bal) ->
+                    Row(
+                        Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(Modifier.size(12.dp).background(Color(acc.color), CircleShape))
+                        Text(acc.name, Modifier.padding(start = 10.dp).weight(1f),
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold)
+                        Text(balanceText(bal), fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (bal < 0) ExpenseRose
+                            else MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+                Box(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp).height(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                )
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("合计", Modifier.weight(1f), fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface)
+                    Text(balanceText(total), fontSize = 15.sp, fontWeight = FontWeight.Bold,
+                        color = if (total < 0) ExpenseRose else IncomeGreen)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("知道了") }
+        }
+    )
 }
 
 @Composable

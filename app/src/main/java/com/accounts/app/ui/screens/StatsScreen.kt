@@ -86,6 +86,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     var accountSelectedId by remember { mutableStateOf<Long?>(null) }
     var showAllAccounts by remember { mutableStateOf(false) }
     var balanceDialog by remember { mutableStateOf(false) }
+    var dailyDialogType by remember { mutableStateOf<String?>(null) }
 
     val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
     val catMap = remember(categories) { categories.associateBy { it.id } }
@@ -199,11 +200,15 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         Spacer(Modifier.height(14.dp))
         // 总览卡
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            GlassCard(Modifier.weight(1f)) {
+            GlassCard(
+                Modifier.weight(1f).noRippleClickable { dailyDialogType = "expense" }
+            ) {
                 StatCell("支出", "¥${Money.format(cur.expense)}",
                     delta(cur.expense, prev.expense), expense = true)
             }
-            GlassCard(Modifier.weight(1f)) {
+            GlassCard(
+                Modifier.weight(1f).noRippleClickable { dailyDialogType = "income" }
+            ) {
                 StatCell("收入", "¥${Money.format(cur.income)}",
                     delta(cur.income, prev.income), expense = false)
             }
@@ -329,8 +334,21 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         Spacer(Modifier.height(28.dp))
     }
 
+    if (dailyDialogType != null) {
+        MonthAmountsDialog(
+            month = month,
+            type = dailyDialogType!!,
+            transactions = transactions,
+            onDismiss = { dailyDialogType = null }
+        )
+    }
     if (balanceDialog) {
-        BalanceDialog(accounts, transactions, transfers) { balanceDialog = false }
+        BalanceDialog(
+            accounts = accounts,
+            transactions = transactions,
+            transfers = transfers,
+            monthBalance = balance
+        ) { balanceDialog = false }
     }
 }
 
@@ -483,12 +501,109 @@ private fun AccountBalanceSection(
     }
 }
 
+/** 每日金额日历（支出/收入，可切换月份；支出金额带 −） */
+@Composable
+private fun MonthAmountsDialog(
+    month: YearMonth,
+    type: String,
+    transactions: List<Transaction>,
+    onDismiss: () -> Unit
+) {
+    val typeLabel = if (type == "income") "收入" else "支出"
+    var m by remember(month) { mutableStateOf(month) }
+    val dayAmounts = remember(m, type, transactions) {
+        val r = Days.monthRange(m)
+        transactions.filter {
+            it.type == type && it.occurredAtMillis in r[0] until r[1]
+        }.groupBy { Days.dayOf(it.occurredAtMillis).dayOfMonth }
+            .mapValues { (_, list) -> list.sumOf { it.amountCents } }
+    }
+    val total = remember(dayAmounts) { dayAmounts.values.sum() }
+    val daysInMonth = m.lengthOfMonth()
+    val firstWeekday = m.atDay(1).dayOfWeek.value
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("$typeLabel日历", fontWeight = FontWeight.Bold)
+                Spacer(Modifier.weight(1f))
+                Text("‹", fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.noRippleClickable { m = m.minusMonths(1) })
+                Text("${m.year}年${m.monthValue}月", fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 10.dp))
+                Text("›", fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.noRippleClickable { m = m.plusMonths(1) })
+            }
+        },
+        text = {
+            Column {
+                Row(Modifier.fillMaxWidth()) {
+                    listOf("一", "二", "三", "四", "五", "六", "日").forEach { w ->
+                        Text(w, Modifier.weight(1f), textAlign = TextAlign.Center,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+                val rowCount = ((firstWeekday - 1) + daysInMonth + 6) / 7
+                (0 until rowCount).forEach { r ->
+                    Row(Modifier.fillMaxWidth()) {
+                        (1..7).forEach { col ->
+                            val day = r * 7 + col - (firstWeekday - 1)
+                            if (day in 1..daysInMonth) {
+                                val cents = dayAmounts[day] ?: 0L
+                                Column(
+                                    Modifier.weight(1f).padding(vertical = 4.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text("$day", fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface)
+                                    Spacer(Modifier.height(3.dp))
+                                    Text(
+                                        if (cents > 0) {
+                                            (if (type == "income") "" else "-") +
+                                                Money.formatPlain(cents)
+                                        } else {
+                                            "\u00A0"
+                                        },
+                                        fontSize = 8.sp, maxLines = 1,
+                                        color = if (cents > 0) {
+                                            if (type == "income") IncomeGreen else ExpenseRose
+                                        } else {
+                                            Color.Transparent
+                                        }
+                                    )
+                                }
+                            } else {
+                                Spacer(Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+                Text("该月$typeLabel总额：¥${Money.format(total)}",
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    fontSize = 12.sp, textAlign = TextAlign.Center,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface)
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text("关闭") } }
+    )
+}
+
 /** 点击「结余」后的弹窗：各钱包当前余额 */
 @Composable
 private fun BalanceDialog(
     accounts: List<Account>,
     transactions: List<Transaction>,
     transfers: List<com.accounts.app.data.Transfer>,
+    monthBalance: Long,
     onDismiss: () -> Unit
 ) {
     val rows = remember(accounts, transactions, transfers) {
@@ -503,6 +618,19 @@ private fun BalanceDialog(
         title = { Text("钱包结余", fontWeight = FontWeight.Bold) },
         text = {
             Column {
+                // 顶部：本月结余摘要（与统计页卡片一致）
+                Row(
+                    Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("本月结余", fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface)
+                    Spacer(Modifier.weight(1f))
+                    Text(balanceText(monthBalance), fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (monthBalance < 0) ExpenseRose else IncomeGreen)
+                }
                 rows.forEach { (acc, bal) ->
                     Row(
                         Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -527,7 +655,7 @@ private fun BalanceDialog(
                     Modifier.fillMaxWidth().padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("合计", Modifier.weight(1f), fontSize = 14.sp,
+                    Text("累计合计", Modifier.weight(1f), fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface)
                     Text(balanceText(total), fontSize = 15.sp, fontWeight = FontWeight.Bold,

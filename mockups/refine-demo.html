@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accounts · 本轮优化 Demo v3</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:linear-gradient(180deg,#F3EFFB,#EAF2FE 45%,#FCEFF4);color:#3F4257;padding:26px 16px 60px}
+  h1{text-align:center;font-size:21px}
+  .sub{text-align:center;color:#8A8F98;font-size:13px;margin:8px auto 26px;max-width:900px;line-height:1.9}
+  .wrap{display:flex;justify-content:center;gap:22px;align-items:flex-start;flex-wrap:wrap}
+  .ph{width:346px;background:#fff;border-radius:44px;padding:10px;box-shadow:0 16px 38px rgba(90,80,150,.3)}
+  .sc{background:#fff;border-radius:34px;padding:14px;min-height:640px;position:relative;overflow:hidden}
+  .cap{font-size:10px;color:#9A9DB3;margin-bottom:8px}
+  .dim{position:absolute;inset:0;background:rgba(20,16,40,.4);z-index:1;border-radius:34px}
+  .dlg{position:absolute;left:18px;right:18px;top:70px;background:#fff;border-radius:20px;padding:14px 13px;z-index:2;box-shadow:0 20px 50px rgba(10,8,40,.42)}
+  .dlg h4{font-size:15px;font-weight:800;margin-bottom:8px}
+  .calhead{display:flex;justify-content:flex-end;align-items:center;margin:-30px 0 10px;gap:8px}
+  .calhead .arr{color:#8B7CF6;font-size:20px;font-weight:700;line-height:1}
+  .calhead .mm{font-size:12.5px;font-weight:800;color:#3F4257}
+  .lab{font-size:11px;color:#9A9DB3;margin:8px 0 4px}
+  .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .chip{font-size:11.5px;padding:6px 10px;border-radius:9px;background:#F1EEF8;color:#3F4257;font-weight:600}
+  .chip.on{background:linear-gradient(135deg,#8B7CF6,#5FB4FF);color:#fff}
+  .field{background:#F4F1FA;border-radius:9px;padding:9px 11px;font-size:12.5px;color:#9A9DB3;margin:6px 0}
+  .btns{display:flex;justify-content:space-between;margin-top:12px}
+  .btn{font-size:13px;font-weight:800}
+  .btn.ok{color:#8B7CF6}
+  .btn.del{color:#E5484D}
+  .cal{width:100%;border-collapse:collapse}
+  .cal th{font-size:10px;color:#9A9DB3;font-weight:600;padding:3px 0 8px;border-bottom:1px solid #EFE9FF;width:14.28%}
+  .cal td{text-align:center;vertical-align:top}
+  .daycell{display:block;min-height:38px;padding:5px 1px 3px}
+  .daynum{display:block;font-size:11px;font-weight:700;color:#3F4257;line-height:1.1}
+  .amt{display:block;font-size:8px;line-height:1.2;margin-top:4px;color:#FF7D9C;font-variant-numeric:tabular-nums}
+  .tot{text-align:center;font-size:12px;font-weight:800;color:#3F4257;border-top:1px solid #EFE9FF;margin-top:6px;padding-top:8px}
+  .mb{display:flex;justify-content:space-between;align-items:center;background:#F4F0FF;border-radius:10px;
+      padding:7px 10px;margin-bottom:6px}
+  .mb .l{font-size:12.5px;font-weight:700;color:#6C5CE7}
+  .mb .v{font-size:15px;font-weight:800;color:#2FC98A;font-variant-numeric:tabular-nums}
+  .row{display:flex;align-items:center;padding:6px 0;font-size:12.5px}
+  .dot{width:11px;height:11px;border-radius:50%;flex:none}
+  .nm{flex:1;padding-left:9px;font-weight:600}
+  .am{font-weight:800;font-variant-numeric:tabular-nums;font-size:12.5px}
+  .line{height:1px;background:#EFE9FF;margin:4px 0}
+  .cum{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;font-weight:800}
+  .aside{max-width:400px;background:rgba(255,255,255,.75);border:1px solid #fff;border-radius:18px;padding:14px 16px;
+         font-size:12.5px;line-height:2;color:#4a5060;box-shadow:0 8px 20px rgba(110,100,170,.12)}
+  .aside b{color:#3F4257}
+</style>
+</head>
+<body>
+<h1>Accounts · 本轮优化 Demo v3</h1>
+<p class="sub">① 明细编辑改钱包（标签简化）　② 支出日历（金额带 −、可切月、整月完整）　③ 钱包结余（顶部本月结余，无多余脚注）</p>
+<div class="wrap">
+
+<!-- ① 编辑记录 -->
+<div class="ph"><div class="sc">
+  <div class="cap">明细 → 编辑记录</div>
+  <div class="dim"></div>
+  <div class="dlg">
+    <h4>编辑记录</h4>
+    <div class="lab">分类（支出）</div>
+    <div class="chips"><span class="chip">餐饮</span><span class="chip on">交通</span><span class="chip">购物</span><span class="chip">居住</span></div>
+    <div class="lab">钱包</div>
+    <div class="chips"><span class="chip on">现金</span><span class="chip">储蓄卡</span><span class="chip">支付宝</span><span class="chip">微信零钱</span></div>
+    <div class="field">6.00</div>
+    <div class="field">地铁</div>
+    <div class="btns"><span class="btn del">删除</span><span class="btn ok">保存</span></div>
+  </div>
+</div></div>
+
+<!-- ② 支出日历 -->
+<div class="ph"><div class="sc">
+  <div class="cap">统计 → 点「支出」卡</div>
+  <div class="dim"></div>
+  <div class="dlg">
+    <h4>支出日历</h4>
+    <div class="calhead"><span class="arr">‹</span><span class="mm">2025年8月</span><span class="arr">›</span></div>
+    <table class="cal">
+      <tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr>
+      <tr>
+        <td></td><td></td><td></td><td></td>
+        <td><span class="daycell"><span class="daynum">1</span></span></td>
+        <td><span class="daycell"><span class="daynum">2</span><span class="amt">−18</span></span></td>
+        <td><span class="daycell"><span class="daynum">3</span></span></td>
+      </tr>
+      <tr>
+        <td><span class="daycell"><span class="daynum">4</span><span class="amt">−23.5</span></span></td>
+        <td><span class="daycell"><span class="daynum">5</span></span></td>
+        <td><span class="daycell"><span class="daynum">6</span><span class="amt">−6</span></span></td>
+        <td><span class="daycell"><span class="daynum">7</span></span></td>
+        <td><span class="daycell"><span class="daynum">8</span><span class="amt">−32</span></span></td>
+        <td><span class="daycell"><span class="daynum">9</span></span></td>
+        <td><span class="daycell"><span class="daynum">10</span></span></td>
+      </tr>
+      <tr>
+        <td><span class="daycell"><span class="daynum">11</span><span class="amt">−1200</span></span></td>
+        <td><span class="daycell"><span class="daynum">12</span><span class="amt">−47.5</span></span></td>
+        <td><span class="daycell"><span class="daynum">13</span></span></td>
+        <td><span class="daycell"><span class="daynum">14</span></span></td>
+        <td><span class="daycell"><span class="daynum">15</span><span class="amt">−66</span></span></td>
+        <td><span class="daycell"><span class="daynum">16</span></span></td>
+        <td><span class="daycell"><span class="daynum">17</span></span></td>
+      </tr>
+      <tr>
+        <td><span class="daycell"><span class="daynum">18</span><span class="amt">−90</span></span></td>
+        <td><span class="daycell"><span class="daynum">19</span></span></td>
+        <td><span class="daycell"><span class="daynum">20</span></span></td>
+        <td><span class="daycell"><span class="daynum">21</span></span></td>
+        <td><span class="daycell"><span class="daynum">22</span></span></td>
+        <td><span class="daycell"><span class="daynum">23</span><span class="amt">−88</span></span></td>
+        <td><span class="daycell"><span class="daynum">24</span></span></td>
+      </tr>
+      <tr>
+        <td><span class="daycell"><span class="daynum">25</span></span></td>
+        <td><span class="daycell"><span class="daynum">26</span><span class="amt">−21</span></span></td>
+        <td><span class="daycell"><span class="daynum">27</span></span></td>
+        <td><span class="daycell"><span class="daynum">28</span></span></td>
+        <td><span class="daycell"><span class="daynum">29</span><span class="amt">−44.5</span></span></td>
+        <td><span class="daycell"><span class="daynum">30</span></span></td>
+        <td><span class="daycell"><span class="daynum">31</span></span></td>
+      </tr>
+    </table>
+    <div class="tot">该月支出总额 ¥2,345.00</div>
+    <div style="text-align:right;margin-top:6px"><span class="btn ok">关闭</span></div>
+  </div>
+</div></div>
+
+<!-- ③ 钱包结余 -->
+<div class="ph"><div class="sc">
+  <div class="cap">统计 → 点「结余」卡</div>
+  <div class="dim"></div>
+  <div class="dlg">
+    <h4>钱包结余</h4>
+    <div class="mb"><span class="l">本月结余</span><span class="v">¥12,155.00</span></div>
+    <div class="row"><span class="dot" style="background:#FFB15F"></span><span class="nm">现金</span><span class="am">¥1,250.00</span></div>
+    <div class="row"><span class="dot" style="background:#8B7CF6"></span><span class="nm">储蓄卡</span><span class="am">¥8,000.00</span></div>
+    <div class="row"><span class="dot" style="background:#63A9FF"></span><span class="nm">支付宝</span><span class="am">¥2,518.80</span></div>
+    <div class="row"><span class="dot" style="background:#2FC98A"></span><span class="nm">微信零钱</span><span class="am">¥386.20</span></div>
+    <div class="line"></div>
+    <div class="cum"><span>累计合计</span><span style="color:#2FC98A">¥12,155.00</span></div>
+    <div style="text-align:right;margin-top:6px"><span class="btn ok">知道了</span></div>
+  </div>
+</div></div>
+
+<div class="aside">
+  <b>本版修改</b><br>
+  ① 编辑记录：钱包标签简化为「钱包」<br>
+  ② 支出日历：红色金额前加「−」号；标题右侧可切月（‹ 2025年8月 ›）；整月 31 天完整展示、日期与金额分行留白<br>
+  ③ 钱包结余：仅顶部「本月结余」+ 各钱包列表 + 累计合计，<b>无多余脚注文字</b>
+</div>
+</div>
+</body>
+</html>

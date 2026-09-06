@@ -54,10 +54,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.deleteTransaction(transaction) }
     }
 
-    fun updateRecord(transaction: Transaction, amountCents: Long, note: String, categoryId: Long) {
+    fun updateRecord(transaction: Transaction, amountCents: Long, note: String,
+                     categoryId: Long, accountId: Long) {
         viewModelScope.launch {
             repo.updateTransaction(
-                transaction.copy(amountCents = amountCents, note = note.trim(), categoryId = categoryId)
+                transaction.copy(
+                    amountCents = amountCents,
+                    note = note.trim(),
+                    categoryId = categoryId,
+                    accountId = accountId
+                )
             )
         }
     }

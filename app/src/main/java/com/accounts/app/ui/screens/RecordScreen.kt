@@ -2,6 +2,7 @@
 
 package com.accounts.app.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -102,6 +104,13 @@ fun RecordScreen(vm: AppViewModel) {
                 ?: accounts.firstOrNull()?.id
                 ?: 0L
         }
+    }
+    // 记完一笔后：钱包回到默认账户、时间回到"现在"
+    val resetToDefaults = {
+        accountId = accounts.firstOrNull { it.id == defaultAccountId }?.id
+            ?: accounts.firstOrNull()?.id
+            ?: 0L
+        occurredAt = Days.nowMillis()
     }
 
     val cats = homeCategories(categories, kind)
@@ -250,15 +259,7 @@ fun RecordScreen(vm: AppViewModel) {
                             .padding(horizontal = 14.dp, vertical = 7.dp),
                         fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
                     if (recentDeleteMode) {
-                        Box(
-                            Modifier
-                                .align(Alignment.TopEnd)
-                                .size(16.dp)
-                                .background(MaterialTheme.colorScheme.error, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("✕", fontSize = 9.sp, color = Color.White)
-                        }
+                        CrossBadge(Modifier.align(Alignment.TopEnd))
                     }
                 }
             }
@@ -291,6 +292,7 @@ fun RecordScreen(vm: AppViewModel) {
                                         vm.addRecord(kind, t.amountCents, t.categoryId,
                                             accountId, occurredAt, "")
                                         amountText = ""
+                                        resetToDefaults()
                                     }
                                 },
                                 onLongClick = { templateDeleteMode = true }
@@ -300,15 +302,7 @@ fun RecordScreen(vm: AppViewModel) {
                         color = if (cat != null) Color(cat.color) else MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold)
                     if (templateDeleteMode) {
-                        Box(
-                            Modifier
-                                .align(Alignment.TopEnd)
-                                .size(16.dp)
-                                .background(MaterialTheme.colorScheme.error, CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("✕", fontSize = 9.sp, color = Color.White)
-                        }
+                        CrossBadge(Modifier.align(Alignment.TopEnd))
                     }
                 }
             }
@@ -331,6 +325,7 @@ fun RecordScreen(vm: AppViewModel) {
                 vm.addRecord(kind, cents, cid, accountId, occurredAt, note)
                 amountText = ""
                 note = ""   // 备注随金额一起重置，便于连续录入
+                resetToDefaults()  // 钱包与时间回到默认
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -380,6 +375,24 @@ private fun SectionLabel2(text: String) {
     Text(text, style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 2.dp))
+}
+
+/** 红底白色 ×（Canvas 画线，保证严格居中） */
+@Composable
+private fun CrossBadge(modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .size(16.dp)
+            .background(MaterialTheme.colorScheme.error, CircleShape)
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val s = size.width * 0.3f
+            val e = size.width * 0.7f
+            val w = size.width * 0.16f
+            drawLine(Color.White, Offset(s, s), Offset(e, e), strokeWidth = w)
+            drawLine(Color.White, Offset(s, e), Offset(e, s), strokeWidth = w)
+        }
+    }
 }
 
 // ===== 时间选择：先选日期，再选时间（补记用）=====

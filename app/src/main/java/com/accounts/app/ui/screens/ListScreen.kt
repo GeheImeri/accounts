@@ -227,10 +227,11 @@ fun ListScreen(vm: AppViewModel) {
         EditRecordDialog(
             transaction = t,
             categories = categories,
+            accounts = accounts,
             onDismiss = { editing = null },
             onDelete = { vm.deleteRecord(t); editing = null },
-            onSave = { cents, noteText, catId ->
-                vm.updateRecord(t, cents, noteText, catId)
+            onSave = { cents, noteText, catId, accId ->
+                vm.updateRecord(t, cents, noteText, catId, accId)
                 editing = null
             }
         )
@@ -497,15 +498,20 @@ private fun ChipItem(label: String, selected: Boolean, onClick: () -> Unit) {
 private fun EditRecordDialog(
     transaction: Transaction,
     categories: List<Category>,
+    accounts: List<com.accounts.app.data.Account>,
     onDismiss: () -> Unit,
     onDelete: () -> Unit,
-    onSave: (Long, String, Long) -> Unit
+    onSave: (Long, String, Long, Long) -> Unit
 ) {
     var amountText by remember { mutableStateOf(Money.formatPlain(transaction.amountCents)) }
     var note by remember { mutableStateOf(transaction.note) }
     var catId by remember { mutableStateOf(transaction.categoryId) }
+    var accId by remember { mutableStateOf(transaction.accountId) }
     val options = remember(transaction, categories) {
         categories.filter { it.enabled && it.kind == transaction.type }.sortedBy { it.sortOrder }
+    }
+    val accOptions = remember(accounts) {
+        accounts.filter { it.enabled }.sortedBy { it.sortOrder }
     }
 
     AlertDialog(
@@ -538,6 +544,32 @@ private fun EditRecordDialog(
                         repeat(4 - rowCats.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
+                Spacer(Modifier.height(8.dp))
+                Text("钱包", fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                accOptions.chunked(4).forEach { rowAccs ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        rowAccs.forEach { a ->
+                            Box(
+                                Modifier.weight(1f)
+                                    .background(
+                                        if (accId == a.id) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceVariant,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .noRippleClickable { accId = a.id }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(a.name, fontSize = 12.sp,
+                                    color = if (accId == a.id) Color.White
+                                    else MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                        repeat(4 - rowAccs.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
                 Spacer(Modifier.height(10.dp))
                 BasicTextField(
                     value = amountText,
@@ -568,7 +600,7 @@ private fun EditRecordDialog(
         confirmButton = {
             TextButton(onClick = {
                 val c = Money.parse(amountText)
-                if (c > 0) onSave(c, note, catId)
+                if (c > 0) onSave(c, note, catId, accId)
             }) { Text("保存") }
         },
         dismissButton = {

@@ -3,6 +3,7 @@ package com.accounts.app.ui.screens
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,11 +32,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -80,8 +83,8 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     var menuOpen by remember { mutableStateOf(false) }
     var showAll by remember { mutableStateOf(false) }
     var selectedCatId by remember { mutableStateOf<Long?>(null) }
-    var incomeSelectedCatId by remember { mutableStateOf<Long?>(null) }
-    var showAllIncome by remember { mutableStateOf(false) }
+    var accountSelectedId by remember { mutableStateOf<Long?>(null) }
+    var showAllAccounts by remember { mutableStateOf(false) }
     var balanceDialog by remember { mutableStateOf(false) }
 
     val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
@@ -121,27 +124,27 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     }
     val shown = if (showAll) ranks else ranks.take(4)
 
-    // ===== 收入构成 / 收入排行 =====
-    val totalIncome = cur.income
-    val incomeRanks = remember(monthTx, catMap) {
-        monthTx.filter { it.type == "income" }
-            .groupBy { it.categoryId }
-            .map { (cid, list) ->
-                val cat = catMap[cid]
+    // ===== 当月各账户支出构成 / 排行 =====
+    val accMap = remember(accounts) { accounts.associateBy { it.id } }
+    val accountRanks = remember(monthTx, accMap) {
+        monthTx.filter { it.type == "expense" }
+            .groupBy { it.accountId }
+            .map { (aid, list) ->
+                val acc = accMap[aid]
                 Rank(
-                    categoryId = cid,
-                    name = cat?.name ?: "未分类",
-                    color = if (cat != null) Color(cat.color) else fallbackColor,
+                    categoryId = aid,
+                    name = acc?.name ?: "未分类",
+                    color = if (acc != null) Color(acc.color) else fallbackColor,
                     amount = list.sumOf { it.amountCents },
                     pct = 0f
                 )
             }
             .sortedByDescending { it.amount }
             .map { r ->
-                r.copy(pct = if (totalIncome > 0) r.amount * 100f / totalIncome else 0f)
+                r.copy(pct = if (totalExpense > 0) r.amount * 100f / totalExpense else 0f)
             }
     }
-    val shownIncome = if (showAllIncome) incomeRanks else incomeRanks.take(4)
+    val shownAccounts = if (showAllAccounts) accountRanks else accountRanks.take(4)
 
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)
@@ -172,7 +175,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     DropdownMenuItem(text = { Text("本月") }, onClick = {
                         monthOffset = 0; showAll = false; selectedCatId = null
-                        showAllIncome = false; incomeSelectedCatId = null
+                        showAllAccounts = false; accountSelectedId = null
                         menuOpen = false
                     })
                     (1..11).forEach { back ->
@@ -183,8 +186,8 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                                 monthOffset = -back
                                 showAll = false
                                 selectedCatId = null
-                                showAllIncome = false
-                                incomeSelectedCatId = null
+                                showAllAccounts = false
+                                accountSelectedId = null
                                 menuOpen = false
                             }
                         )
@@ -265,18 +268,18 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         TrendBars(transactions, type = "expense",
             color = MaterialTheme.colorScheme.primary)
 
-        // ===== 收入构成（与支出构成同款）=====
+        // ===== 当月各账户支出构成（环形）=====
         Spacer(Modifier.height(18.dp))
         GlassCard(Modifier.fillMaxWidth()) {
             Row(verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 12.dp)) {
-                DonutChart(incomeRanks, incomeSelectedCatId)
+                DonutChart(accountRanks, accountSelectedId)
                 Column(Modifier.padding(start = 10.dp)) {
-                    Text("收入构成", fontSize = 12.sp,
+                    Text("本月各账户支出", fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(4.dp))
-                    incomeRanks.forEach { r ->
-                        val sel = incomeSelectedCatId == r.categoryId
+                    accountRanks.forEach { r ->
+                        val sel = accountSelectedId == r.categoryId
                         Row(verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(vertical = 3.dp)) {
                             Box(Modifier.size(9.dp).background(r.color, CircleShape))
@@ -293,19 +296,19 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
             }
         }
 
-        // ===== 分类排行（收入）· 点击可突出环形 =====
+        // ===== 各账户支出排行 · 点击可突出环形 =====
         Spacer(Modifier.height(14.dp))
         GlassCard(Modifier.fillMaxWidth()) {
-            shownIncome.forEach { r ->
-                RankRow(r, selected = incomeSelectedCatId == r.categoryId, onClick = {
-                    incomeSelectedCatId =
-                        if (incomeSelectedCatId == r.categoryId) null else r.categoryId
+            shownAccounts.forEach { r ->
+                RankRow(r, selected = accountSelectedId == r.categoryId, onClick = {
+                    accountSelectedId =
+                        if (accountSelectedId == r.categoryId) null else r.categoryId
                 })
             }
-            if (incomeRanks.size > 4) {
+            if (accountRanks.size > 4) {
                 Text(
-                    if (showAllIncome) "收起 ▴" else "展开全部 ${incomeRanks.size} 个分类 ▾",
-                    Modifier.fillMaxWidth().noRippleClickable { showAllIncome = !showAllIncome }
+                    if (showAllAccounts) "收起 ▴" else "展开全部 ${accountRanks.size} 个账户 ▾",
+                    Modifier.fillMaxWidth().noRippleClickable { showAllAccounts = !showAllAccounts }
                         .padding(vertical = 10.dp),
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.primary,
@@ -313,6 +316,10 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                 )
             }
         }
+
+        // ===== 近 12 个月各账户余额变化（折线）=====
+        Spacer(Modifier.height(14.dp))
+        AccountBalanceSection(accounts, transactions, transfers)
 
         Spacer(Modifier.height(18.dp))
         Text("近 12 个月收入趋势", style = MaterialTheme.typography.labelMedium,
@@ -354,6 +361,127 @@ private fun accountBalance(
 
 private fun balanceText(cents: Long): String =
     if (cents < 0) "-¥${Money.format(-cents)}" else "¥${Money.format(cents)}"
+
+/** 账户在某时间点(不包含)前的余额 = 期初 + 之前所有收支/转账 */
+private fun accountBalanceUpTo(
+    account: Account,
+    transactions: List<Transaction>,
+    transfers: List<com.accounts.app.data.Transfer>,
+    endExclusive: Long
+): Long {
+    var bal = account.initialBalanceCents
+    transactions.forEach { t ->
+        if (t.accountId == account.id && t.occurredAtMillis < endExclusive) {
+            if (t.type == "income") bal += t.amountCents else bal -= t.amountCents
+        }
+    }
+    transfers.forEach { tr ->
+        if (tr.occurredAtMillis < endExclusive) {
+            if (tr.fromAccountId == account.id) bal -= tr.amountCents
+            if (tr.toAccountId == account.id) bal += tr.amountCents
+        }
+    }
+    return bal
+}
+
+/** 近 12 个月各账户余额变化 · 折线图（图例可隐藏/显示） */
+@Composable
+private fun AccountBalanceSection(
+    accounts: List<Account>,
+    transactions: List<Transaction>,
+    transfers: List<com.accounts.app.data.Transfer>
+) {
+    val enabled = remember(accounts) {
+        accounts.filter { it.enabled }.sortedBy { it.sortOrder }
+    }
+    val months = remember { (11 downTo 0).map { YearMonth.now().minusMonths(it.toLong()) } }
+    val boundaries = remember(months) {
+        months.map { m -> Days.monthRange(m.plusMonths(1))[0] }
+    }
+    val hidden = remember { mutableStateListOf<Long>() }
+    val allSeries = remember(enabled, transactions, transfers, boundaries) {
+        enabled.map { acc ->
+            acc to boundaries.map { end -> accountBalanceUpTo(acc, transactions, transfers, end) }
+        }
+    }
+    val maxV = allSeries.flatMap { it.second }.maxOrNull() ?: 1L
+    val minV = allSeries.flatMap { it.second }.minOrNull() ?: 0L
+    val rangeV = (maxV - minV).coerceAtLeast(1L)
+    val visible = allSeries.filter { it.first.id !in hidden }
+    val gridColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+    val dimColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    GlassCard(Modifier.fillMaxWidth()) {
+        // 图例（点选隐藏/显示）
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(bottom = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("近 12 个月各账户余额", fontSize = 12.sp, color = dimColor)
+            enabled.forEach { acc ->
+                val on = acc.id !in hidden
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.noRippleClickable {
+                        if (on) hidden.add(acc.id) else hidden.remove(acc.id)
+                    }) {
+                    Box(Modifier.size(9.dp).background(
+                        if (on) Color(acc.color)
+                        else dimColor.copy(alpha = 0.3f), CircleShape))
+                    Text(acc.name, Modifier.padding(start = 4.dp), fontSize = 11.sp,
+                        color = if (on) MaterialTheme.colorScheme.onSurface else dimColor,
+                        fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal)
+                }
+            }
+        }
+        if (visible.isEmpty()) {
+            Text("点击上方图例可显示账户曲线", fontSize = 11.sp, color = dimColor,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                textAlign = TextAlign.Center)
+        } else {
+            Canvas(Modifier.fillMaxWidth().height(150.dp)) {
+                val top = 10.dp.toPx()
+                val bottom = 12.dp.toPx()
+                val padX = 8.dp.toPx()
+                val n = months.size
+                val stepX = if (n > 1) (size.width - 2 * padX) / (n - 1) else 0f
+                fun xOf(i: Int): Float = padX + i * stepX
+                fun yOf(v: Long): Float =
+                    top + (1f - (v - minV).toFloat() / rangeV.toFloat()) * (size.height - top - bottom)
+
+                listOf(0.2f, 0.5f, 0.8f).forEach { f ->
+                    val yy = top + f * (size.height - top - bottom)
+                    drawLine(color = gridColor,
+                        start = Offset(padX, yy), end = Offset(size.width - padX, yy),
+                        strokeWidth = 1.dp.toPx())
+                }
+                visible.forEach { (acc, series) ->
+                    val color = Color(acc.color)
+                    for (i in 1 until n) {
+                        drawLine(color = color,
+                            start = Offset(xOf(i - 1), yOf(series[i - 1])),
+                            end = Offset(xOf(i), yOf(series[i])),
+                            strokeWidth = 2.dp.toPx())
+                    }
+                    series.forEachIndexed { i, v ->
+                        drawCircle(color = color, radius = 3.dp.toPx(),
+                            center = Offset(xOf(i), yOf(v)))
+                    }
+                }
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                months.forEach { m ->
+                    Text("${m.monthValue}月", Modifier.weight(1f),
+                        fontSize = 8.sp, textAlign = TextAlign.Center, color = dimColor)
+                }
+            }
+            Text("余额 = 期初 + 各月累计收支/转账 · 点图例可隐藏", fontSize = 9.sp,
+                color = dimColor,
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                textAlign = TextAlign.Center)
+        }
+    }
+}
 
 /** 点击「结余」后的弹窗：各钱包当前余额 */
 @Composable

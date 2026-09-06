@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accounts · 统计页「近12个月账户余额变化」折线图 Demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+       background:linear-gradient(180deg,#F3EFFB 0%,#EAF2FE 45%,#FCEFF4 100%);color:#3F4257;
+       padding:26px 16px 60px}
+  h1{text-align:center;font-size:21px;letter-spacing:.5px}
+  .sub{text-align:center;color:#8A8F98;font-size:13px;margin:8px auto 24px;max-width:800px;line-height:1.9}
+  .wrap{display:flex;justify-content:center;gap:28px;align-items:flex-start;flex-wrap:wrap}
+  .ph{width:368px;background:#fff;border-radius:46px;padding:11px;box-shadow:0 18px 44px rgba(90,80,150,.30)}
+  .sc{background:#fff;border-radius:36px;height:760px;display:flex;flex-direction:column}
+  .body{flex:1;overflow-y:auto;padding:14px 16px 84px;display:flex;flex-direction:column;gap:12px}
+  .body::-webkit-scrollbar{width:0}
+  .row{display:flex;align-items:center;justify-content:space-between}
+  h3{font-size:19px;letter-spacing:.3px}
+  .pill{font-size:12px;color:#8B7CF6;border:1px solid #DCCFF9;background:#fff;border-radius:999px;padding:5px 13px;font-weight:700}
+  .card{border:1px solid #EFE9FF;border-radius:20px;background:#FDFCFF;padding:13px 12px 8px}
+  .cap{font-size:11.5px;color:#9A9DB3;letter-spacing:.3px;margin:2px 2px 0;display:flex;align-items:center;gap:6px}
+  .tag{display:inline-block;background:#EFE9FB;color:#6C5CE7;font-size:9.5px;font-weight:800;padding:1px 8px;border-radius:999px}
+  .new{outline:3px solid #8B7CF6;outline-offset:-2px;border-radius:20px}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;margin:2px 2px 6px}
+  .legend .li{display:flex;align-items:center;gap:5px;font-size:11px;color:#5A5F6E}
+  .legend .sw{width:14px;height:3.5px;border-radius:2px}
+  .chart{position:relative}
+  .chart svg{display:block;width:100%;height:auto}
+  .xlab{font-size:8.5px;fill:#9A9DB3}
+  .bars{display:flex;align-items:flex-end;gap:3px;height:80px;margin-top:10px;opacity:.9}
+  .bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end}
+  .bars .v{width:100%;flex:none;min-height:3px;border-radius:3px 3px 0 0;background:#C9E8F6}
+  .bars .m{font-size:8px;color:#9A9DB3}
+  .aside{max-width:360px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);border-radius:20px;
+         padding:16px 18px;font-size:13px;line-height:2.05;color:#4a5060;box-shadow:0 10px 26px rgba(110,100,170,.14)}
+  .aside b{color:#3F4257}
+  .aside .k{color:#6C5CE7;font-weight:800}
+</style>
+</head>
+<body>
+<h1>Accounts · 统计页效果图 · 账户余额变化折线图</h1>
+<p class="sub">在「近 12 个月收入趋势」<b>上方</b>新增<span style="color:#6C5CE7;font-weight:800">「近 12 个月各资金账户余额变化」</span>折线图卡片（多账户多线 + 图例，可下滑查看）。</p>
+<div class="wrap">
+
+<div class="ph"><div class="sc">
+  <div class="body">
+
+    <!-- 上一位：本月各账户支出排行（示意缩略） -->
+    <div class="cap">本月各账户支出构成</div>
+    <div class="card" style="opacity:.55">
+      <div style="font-size:12px;color:#9A9DB3">（已在上方区域展示 · 此图略）</div>
+    </div>
+
+    <!-- ===== 新增：余额变化折线图 ===== -->
+    <div class="cap"><span class="tag">新增</span>近 12 个月各资金账户余额变化</div>
+    <div class="card new">
+      <div class="legend">
+        <span class="li"><span class="sw" style="background:#FFB15F"></span>现金</span>
+        <span class="li"><span class="sw" style="background:#8B7CF6"></span>储蓄卡</span>
+        <span class="li"><span class="sw" style="background:#63A9FF"></span>支付宝</span>
+        <span class="li"><span class="sw" style="background:#2FC98A"></span>微信零钱</span>
+      </div>
+      <svg viewBox="0 0 320 168" xmlns="http://www.w3.org/2000/svg">
+        <!-- 横向参考线 -->
+        <g stroke="#EFE9FF" stroke-width="1">
+          <line x1="16" y1="30" x2="306" y2="30"/>
+          <line x1="16" y1="80" x2="306" y2="80"/>
+          <line x1="16" y1="130" x2="306" y2="130"/>
+        </g>
+        <!-- 现金（黄橙，低位） -->
+        <polyline fill="none" stroke="#FFB15F" stroke-width="2" stroke-linejoin="round" points="25,143 51,140 77,142 103,137 129,140 155,135 181,138 207,133 233,137 259,131 285,133 306,132"/>
+        <!-- 储蓄卡（紫，高位为主，年末下滑） -->
+        <polyline fill="none" stroke="#8B7CF6" stroke-width="2" stroke-linejoin="round" points="25,42 51,36 77,41 103,33 129,39 155,29 181,35 207,25 233,32 259,22 285,31 306,41"/>
+        <!-- 支付宝（蓝，中位上行后回落） -->
+        <polyline fill="none" stroke="#63A9FF" stroke-width="2" stroke-linejoin="round" points="25,125 51,122 77,114 103,117 129,108 155,110 181,102 207,97 233,101 259,92 285,95 306,104"/>
+        <!-- 微信零钱（绿，低位缓升） -->
+        <polyline fill="none" stroke="#2FC98A" stroke-width="2" stroke-linejoin="round" points="25,147 51,146 77,148 103,144 129,146 155,142 181,145 207,141 233,143 259,139 285,141 306,146"/>
+        <!-- 末端数据点 -->
+        <g fill="#fff" stroke-width="2">
+          <circle cx="306" cy="132" r="3.4" stroke="#FFB15F" fill="#fff"/>
+          <circle cx="306" cy="41" r="3.4" stroke="#8B7CF6" fill="#fff"/>
+          <circle cx="306" cy="104" r="3.4" stroke="#63A9FF" fill="#fff"/>
+          <circle cx="306" cy="146" r="3.4" stroke="#2FC98A" fill="#fff"/>
+        </g>
+        <!-- X 轴月份 -->
+        <g class="xlab" text-anchor="middle">
+          <text x="25" y="162">2月</text><text x="51" y="162">3月</text><text x="77" y="162">4月</text>
+          <text x="103" y="162">5月</text><text x="129" y="162">6月</text><text x="155" y="162">7月</text>
+          <text x="181" y="162">8月</text><text x="207" y="162">9月</text><text x="233" y="162">10月</text>
+          <text x="259" y="162">11月</text><text x="285" y="162">12月</text><text x="306" y="162">1月</text>
+        </g>
+      </svg>
+      <div style="font-size:9.5px;color:#B9B2C4;text-align:center;padding:2px 0 6px">余额 = 期初 + 各月累计收支/转账 · 点图例可隐藏/显示某账户</div>
+    </div>
+
+    <!-- 近 12 个月收入趋势（保留，位于其下方） -->
+    <div class="cap">近 12 个月收入趋势</div>
+    <div class="card" style="padding:8px 12px 6px">
+      <div class="bars">
+        <div class="b"><div class="v" style="height:22px"></div><div class="m">2月</div></div>
+        <div class="b"><div class="v" style="height:30px"></div><div class="m">3月</div></div>
+        <div class="b"><div class="v" style="height:26px"></div><div class="m">4月</div></div>
+        <div class="b"><div class="v" style="height:36px"></div><div class="m">5月</div></div>
+        <div class="b"><div class="v" style="height:34px"></div><div class="m">6月</div></div>
+        <div class="b"><div class="v" style="height:44px"></div><div class="m">7月</div></div>
+        <div class="b"><div class="v" style="height:40px"></div><div class="m">8月</div></div>
+        <div class="b"><div class="v" style="height:52px"></div><div class="m">9月</div></div>
+        <div class="b"><div class="v" style="height:56px"></div><div class="m">10月</div></div>
+        <div class="b"><div class="v" style="height:48px"></div><div class="m">11月</div></div>
+        <div class="b"><div class="v" style="height:60px"></div><div class="m">12月</div></div>
+        <div class="b"><div class="v" style="height:55px"></div><div class="m">1月</div></div>
+      </div>
+    </div>
+
+  </div>
+</div></div>
+
+<div class="aside">
+  <b>本版要点（审核）</b><br>
+  ① 位置：<span class="k">各账户支出排行之后、收入趋势之上</span><br>
+  ② 展示形式：<b>多账户多折线</b>，每条线一个账户（颜色与账户色一致），末端带数据圆点<br>
+  ③ X 轴 = 近 12 个月（2月→1月），Y 轴 = 账户余额（自动取各账户区间）<br>
+  ④ 口径：余额 = 期初基数 + 截至该月末的累计 收入−支出+转入−转出<br>
+  ⑤ <b>图例可点选隐藏/显示</b>某账户（账户多时防遮挡，实机实现）<br>
+  ⑥ 下方保留「近 12 个月收入趋势」柱状
+</div>
+</div>
+</body>
+</html>

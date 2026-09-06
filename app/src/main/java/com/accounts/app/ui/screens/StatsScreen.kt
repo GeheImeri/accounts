@@ -80,6 +80,8 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     var menuOpen by remember { mutableStateOf(false) }
     var showAll by remember { mutableStateOf(false) }
     var selectedCatId by remember { mutableStateOf<Long?>(null) }
+    var incomeSelectedCatId by remember { mutableStateOf<Long?>(null) }
+    var showAllIncome by remember { mutableStateOf(false) }
     var balanceDialog by remember { mutableStateOf(false) }
 
     val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
@@ -119,6 +121,28 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     }
     val shown = if (showAll) ranks else ranks.take(4)
 
+    // ===== 收入构成 / 收入排行 =====
+    val totalIncome = cur.income
+    val incomeRanks = remember(monthTx, catMap) {
+        monthTx.filter { it.type == "income" }
+            .groupBy { it.categoryId }
+            .map { (cid, list) ->
+                val cat = catMap[cid]
+                Rank(
+                    categoryId = cid,
+                    name = cat?.name ?: "未分类",
+                    color = if (cat != null) Color(cat.color) else fallbackColor,
+                    amount = list.sumOf { it.amountCents },
+                    pct = 0f
+                )
+            }
+            .sortedByDescending { it.amount }
+            .map { r ->
+                r.copy(pct = if (totalIncome > 0) r.amount * 100f / totalIncome else 0f)
+            }
+    }
+    val shownIncome = if (showAllIncome) incomeRanks else incomeRanks.take(4)
+
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)
     ) {
@@ -147,7 +171,9 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                 )
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     DropdownMenuItem(text = { Text("本月") }, onClick = {
-                        monthOffset = 0; showAll = false; selectedCatId = null; menuOpen = false
+                        monthOffset = 0; showAll = false; selectedCatId = null
+                        showAllIncome = false; incomeSelectedCatId = null
+                        menuOpen = false
                     })
                     (1..11).forEach { back ->
                         val m = YearMonth.now().minusMonths(back.toLong())
@@ -157,6 +183,8 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                                 monthOffset = -back
                                 showAll = false
                                 selectedCatId = null
+                                showAllIncome = false
+                                incomeSelectedCatId = null
                                 menuOpen = false
                             }
                         )
@@ -236,6 +264,55 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         TrendBars(transactions, type = "expense",
             color = MaterialTheme.colorScheme.primary)
+
+        // ===== 收入构成（与支出构成同款）=====
+        Spacer(Modifier.height(18.dp))
+        GlassCard(Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 12.dp)) {
+                DonutChart(incomeRanks, incomeSelectedCatId)
+                Column(Modifier.padding(start = 10.dp)) {
+                    Text("收入构成", fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(4.dp))
+                    incomeRanks.forEach { r ->
+                        val sel = incomeSelectedCatId == r.categoryId
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 3.dp)) {
+                            Box(Modifier.size(9.dp).background(r.color, CircleShape))
+                            Text(r.name, Modifier.padding(start = 6.dp), fontSize = 12.sp,
+                                color = if (sel) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = if (sel) FontWeight.Bold else FontWeight.Normal)
+                            Text("${Math.round(r.pct)}%", Modifier.weight(1f),
+                                textAlign = TextAlign.End, fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+
+        // ===== 分类排行（收入）· 点击可突出环形 =====
+        Spacer(Modifier.height(14.dp))
+        GlassCard(Modifier.fillMaxWidth()) {
+            shownIncome.forEach { r ->
+                RankRow(r, selected = incomeSelectedCatId == r.categoryId, onClick = {
+                    incomeSelectedCatId =
+                        if (incomeSelectedCatId == r.categoryId) null else r.categoryId
+                })
+            }
+            if (incomeRanks.size > 4) {
+                Text(
+                    if (showAllIncome) "收起 ▴" else "展开全部 ${incomeRanks.size} 个分类 ▾",
+                    Modifier.fillMaxWidth().noRippleClickable { showAllIncome = !showAllIncome }
+                        .padding(vertical = 10.dp),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold, fontSize = 12.sp
+                )
+            }
+        }
 
         Spacer(Modifier.height(18.dp))
         Text("近 12 个月收入趋势", style = MaterialTheme.typography.labelMedium,

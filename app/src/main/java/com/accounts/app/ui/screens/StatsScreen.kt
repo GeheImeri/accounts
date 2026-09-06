@@ -526,7 +526,7 @@ private fun MonthAmountsDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("$typeLabel日历", fontWeight = FontWeight.Bold)
+                Text("${typeLabel}日历", fontWeight = FontWeight.Bold)
                 Spacer(Modifier.weight(1f))
                 Text("‹", fontSize = 22.sp,
                     color = MaterialTheme.colorScheme.primary,
@@ -585,7 +585,7 @@ private fun MonthAmountsDialog(
                         }
                     }
                 }
-                Text("该月$typeLabel总额：¥${Money.format(total)}",
+                Text("该月${typeLabel}总额：¥${Money.format(total)}",
                     modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
                     fontSize = 12.sp, textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,

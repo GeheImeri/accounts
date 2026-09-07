@@ -82,8 +82,22 @@ class Repository(private val db: AppDatabase) {
         db.categoryDao().update(c.copy(pinned = pinned))
     }
 
-    suspend fun addAccount(name: String, color: Long, kind: String = "other"): Long =
-        db.accountDao().insert(Account(name = name, color = color, kind = kind))
+    suspend fun addAccount(name: String, icon: String, color: Long, kind: String = "other"): Long =
+        db.accountDao().insert(
+            Account(
+                name = name.trim(),
+                icon = icon.trim(),
+                color = color,
+                kind = kind,
+                sortOrder = db.accountDao().maxSortOrder() + 1
+            )
+        )
+
+    suspend fun updateAccount(account: Account, name: String, icon: String, color: Long, kind: String) {
+        db.accountDao().update(
+            account.copy(name = name.trim(), icon = icon.trim(), color = color, kind = kind)
+        )
+    }
 
     suspend fun addTransfer(fromId: Long, toId: Long, amountCents: Long, note: String) {
         db.transferDao().insert(

@@ -75,6 +75,7 @@ private fun JianjiRoot(vm: AppViewModel) {
     var tab by rememberSaveable { mutableStateOf(TAB_RECORD) }
     var page by rememberSaveable { mutableStateOf(PAGE_NONE) }
     var categoriesOpenedFromHome by rememberSaveable { mutableStateOf(false) }
+    var accountsOpenedFromHome by rememberSaveable { mutableStateOf(false) }
 
     val themeLabel = when (themeMode) {
         1 -> "云轨亮色"
@@ -85,7 +86,8 @@ private fun JianjiRoot(vm: AppViewModel) {
     BackHandler(page != PAGE_NONE) {
         page = when (page) {
             PAGE_CATEGORIES -> if (categoriesOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
-            PAGE_ACCOUNTS, PAGE_THEME -> PAGE_SETTINGS
+            PAGE_ACCOUNTS -> if (accountsOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
+            PAGE_THEME -> PAGE_SETTINGS
             else -> PAGE_NONE
         }
     }
@@ -109,10 +111,17 @@ private fun JianjiRoot(vm: AppViewModel) {
                 PAGE_NONE -> Column(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f)) {
                         when (tab) {
-                            TAB_RECORD -> RecordScreen(vm, onOpenCategories = {
-                                categoriesOpenedFromHome = true
-                                page = PAGE_CATEGORIES
-                            })
+                            TAB_RECORD -> RecordScreen(
+                                vm,
+                                onOpenCategories = {
+                                    categoriesOpenedFromHome = true
+                                    page = PAGE_CATEGORIES
+                                },
+                                onOpenAccounts = {
+                                    accountsOpenedFromHome = true
+                                    page = PAGE_ACCOUNTS
+                                }
+                            )
                             TAB_LIST -> ListScreen(vm)
                             else -> StatsScreen(vm, onOpenSettings = { page = PAGE_SETTINGS })
                         }
@@ -128,14 +137,19 @@ private fun JianjiRoot(vm: AppViewModel) {
                         categoriesOpenedFromHome = false
                         page = PAGE_CATEGORIES
                     },
-                    onOpenAccounts = { page = PAGE_ACCOUNTS },
+                    onOpenAccounts = {
+                        accountsOpenedFromHome = false
+                        page = PAGE_ACCOUNTS
+                    },
                     onOpenTheme = { page = PAGE_THEME }
                 )
 
                 PAGE_CATEGORIES -> CategoryManageScreen(vm) {
                     page = if (categoriesOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
                 }
-                PAGE_ACCOUNTS -> AccountManageScreen(vm) { page = PAGE_SETTINGS }
+                PAGE_ACCOUNTS -> AccountManageScreen(vm) {
+                    page = if (accountsOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
+                }
                 PAGE_THEME -> ThemeSelectScreen(
                     themeMode = themeMode,
                     onSelect = { themeMode = it; page = PAGE_SETTINGS },

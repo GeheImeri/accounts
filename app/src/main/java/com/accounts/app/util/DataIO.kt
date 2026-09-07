@@ -74,7 +74,8 @@ object DataIO {
                 a.put(JSONObject()
                     .put("id", acc.id).put("name", acc.name).put("kind", acc.kind)
                     .put("color", acc.color).put("initialBalanceCents", acc.initialBalanceCents)
-                    .put("sortOrder", acc.sortOrder).put("enabled", acc.enabled))
+                    .put("sortOrder", acc.sortOrder).put("enabled", acc.enabled)
+                    .put("icon", acc.icon))
             }
         })
         root.put("transactions", JSONArray().also { a ->
@@ -158,7 +159,7 @@ object DataIO {
             listLong("accounts") { o ->
                 accs.add(Account(o.getLong("id"), o.getString("name"), o.getString("kind"),
                     o.getLong("color"), o.getLong("initialBalanceCents"), o.getInt("sortOrder"),
-                    o.getBoolean("enabled")))
+                    o.getBoolean("enabled"), o.optString("icon")))
             }
             val txns = mutableListOf<Transaction>()
             listLong("transactions") { o ->

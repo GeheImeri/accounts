@@ -50,6 +50,9 @@ interface AccountDao {
     @Insert
     suspend fun insert(account: Account): Long
 
+    @Query("SELECT COALESCE(MAX(sortOrder), 0) FROM accounts")
+    suspend fun maxSortOrder(): Int
+
     @Update
     suspend fun update(account: Account)
 

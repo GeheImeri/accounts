@@ -58,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.accounts.app.data.Budget
+import com.accounts.app.data.Account
 import com.accounts.app.data.Category
 import com.accounts.app.data.Transaction
 import com.accounts.app.ui.AppViewModel
@@ -82,11 +83,14 @@ fun homeCategories(all: List<Category>, kind: String): List<Category> =
         .sortedWith(compareBy({ !it.pinned }, { it.sortOrder }))
 
 @Composable
-fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
+fun RecordScreen(
+    vm: AppViewModel,
+    onOpenCategories: () -> Unit,
+    onOpenAccounts: () -> Unit
+) {
     val categories by vm.categories.collectAsState()
     val accounts by vm.accounts.collectAsState()
     val transactions by vm.transactions.collectAsState()
-    val templates by vm.templates.collectAsState()
 
     var kind by remember { mutableStateOf("expense") }
     var amountText by remember { mutableStateOf("") }
@@ -94,13 +98,13 @@ fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
     var selectedCatId by remember { mutableStateOf<Long?>(null) }
     var accountId by remember { mutableStateOf(0L) }
     var occurredAt by remember { mutableStateOf(Days.nowMillis()) }
-    var accountMenu by remember { mutableStateOf(false) }
     var timePickerOpen by remember { mutableStateOf(false) }
-    var templateDeleteMode by remember { mutableStateOf(false) }
-    var addTemplateOpen by remember { mutableStateOf(false) }
 
     val defaultAccountId by vm.defaultAccountId.collectAsState()
     LaunchedEffect(accounts, defaultAccountId) {
+        if (defaultAccountId == 0L && accounts.isNotEmpty()) {
+            vm.setDefaultAccount(accounts.first().id)
+        }
         if (accountId == 0L) {
             accountId = accounts.firstOrNull { it.id == defaultAccountId }?.id
                 ?: accounts.firstOrNull()?.id
@@ -116,11 +120,6 @@ fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
     }
 
     val cats = homeCategories(categories, kind)
-    val enabledCategoryIds = categories.asSequence().filter { it.enabled }.map { it.id }.toSet()
-    val kindTemplates = templates.filter {
-        it.kind == kind && it.categoryId in enabledCategoryIds
-    }
-
     val budgets by vm.budgets.collectAsState()
     var editingBudget by remember { mutableStateOf<Budget?>(null) }
     var addBudgetOpen by remember { mutableStateOf(false) }
@@ -230,87 +229,39 @@ fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
             }
         }
 
-        // ===== 出发账户 / 最近模板概览 =====
+        // ===== 账户航线：支出为出发账户，收入为入账账户；末尾直达账户管理 =====
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 4.dp, top = 2.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                if (kind == "income") "入账账户" else "出发账户",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                "默认账户 · ${accountName(accounts, defaultAccountId)}",
+                fontSize = 9.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            RouteInfo(
-                label = "出发账户",
-                value = "${accountName(accounts, accountId)}⌄",
-                modifier = Modifier.weight(1f),
-                onClick = { accountMenu = true }
-            )
-            RouteInfo(
-                label = "最近模板",
-                value = kindTemplates.take(2).joinToString(" · ") { "${it.name} ¥${Money.formatPlain(it.amountCents)}" }
-                    .ifBlank { "点击下方新增" },
-                modifier = Modifier.weight(1f),
-                onClick = { addTemplateOpen = true }
-            )
-        }
-        DropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
-            accounts.forEach { a ->
-                DropdownMenuItem(
-                    text = { Text(a.name) },
-                    onClick = { accountId = a.id; accountMenu = false }
+            items(accounts, key = { it.id }) { account ->
+                AccountTile(
+                    account = account,
+                    selected = accountId == account.id,
+                    isDefault = account.id == defaultAccountId,
+                    modifier = Modifier.width(70.dp),
+                    onClick = { accountId = account.id }
                 )
             }
-        }
-
-        // ===== 最近模板（长按删除 / ＋新增）=====
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel2("最近模板")
-            Spacer(Modifier.weight(1f))
-            if (templateDeleteMode) {
-                Text("✕ 完成", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.noRippleClickable { templateDeleteMode = false })
-            }
-        }
-        LazyRow(verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(kindTemplates, key = { it.id }) { t ->
-                val tsrc = remember(t.id) { MutableInteractionSource() }
-                val cat = categories.firstOrNull { it.id == t.categoryId }
-                Box {
-                    Text("${t.name} ¥${Money.formatPlain(t.amountCents)}",
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                                RoundedCornerShape(999.dp))
-                            .combinedClickable(
-                                interactionSource = tsrc,
-                                indication = null,
-                                onClick = {
-                                    if (templateDeleteMode) vm.deleteTemplate(t)
-                                    else {
-                                        vm.addRecord(kind, t.amountCents, t.categoryId,
-                                            accountId, occurredAt, "")
-                                        amountText = ""
-                                        resetToDefaults()
-                                    }
-                                },
-                                onLongClick = { templateDeleteMode = true }
-                            )
-                            .padding(horizontal = 14.dp, vertical = 7.dp),
-                        fontSize = 12.sp,
-                        color = if (cat != null) Color(cat.color) else MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold)
-                    if (templateDeleteMode) {
-                        CrossBadge(Modifier.align(Alignment.TopEnd))
-                    }
-                }
-            }
             item {
-                Box(
-                    Modifier
-                        .size(32.dp)
-                        .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), CircleShape)
-                        .noRippleClickable { addTemplateOpen = true },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("＋", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 1.dp))
-                }
+                ManageAccountTile(Modifier.width(70.dp), onOpenAccounts)
             }
         }
 
@@ -381,21 +332,87 @@ fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
             }
         )
     }
-    if (addTemplateOpen) {
-        AddTemplateDialog(
-            categories = categories,
-            kind = kind,
-            onDismiss = { addTemplateOpen = false },
-            onAdd = { name, cents, catId, k ->
-                vm.addTemplate(name, cents, catId, k)
-                addTemplateOpen = false
-            }
-        )
-    }
 }
 
 private fun accountName(accounts: List<com.accounts.app.data.Account>, id: Long): String =
     accounts.firstOrNull { it.id == id }?.name ?: "—"
+
+private fun accountIcon(account: Account): String = account.icon.ifBlank {
+    when (account.kind) {
+        "cash" -> "💵"
+        "card" -> "💳"
+        "ewallet" -> "◉"
+        else -> "◈"
+    }
+}
+
+@Composable
+private fun AccountTile(
+    account: Account,
+    selected: Boolean,
+    isDefault: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier.noRippleClickable(onClick = onClick).padding(vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box {
+            Box(
+                Modifier.size(46.dp)
+                    .background(
+                        if (selected) chipColor(account.color) else MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomEnd = 16.dp, bottomStart = 7.dp)
+                    )
+                    .border(
+                        if (selected) 1.5.dp else 1.dp,
+                        if (selected) Color(account.color) else MaterialTheme.colorScheme.outlineVariant,
+                        RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomEnd = 16.dp, bottomStart = 7.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(accountIcon(account), fontSize = 19.sp)
+            }
+            if (isDefault) {
+                Text(
+                    "默认",
+                    fontSize = 7.sp,
+                    color = IncomeGreen,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                        .background(IncomeGreen.copy(alpha = 0.12f), RoundedCornerShape(999.dp))
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                )
+            }
+        }
+        Spacer(Modifier.height(5.dp))
+        Text(account.name, fontSize = 10.sp, maxLines = 1,
+            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold)
+    }
+}
+
+@Composable
+private fun ManageAccountTile(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        modifier.noRippleClickable(onClick = onClick).padding(vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            Modifier.size(46.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("＋", color = MaterialTheme.colorScheme.primary, fontSize = 21.sp,
+                fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.height(5.dp))
+        Text("管理", color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold, fontSize = 10.sp)
+    }
+}
 
 @Composable
 private fun RouteInfo(

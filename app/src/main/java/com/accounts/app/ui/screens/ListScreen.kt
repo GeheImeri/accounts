@@ -271,7 +271,7 @@ private fun TransactionRow(
     accountName: String?,
     onClick: () -> Unit
 ) {
-    val meta = listOfNotNull(cat?.name, accountName, t.note.ifBlank { null }).joinToString(" · ")
+    val meta = accountName ?: "未指定账户"
     Row(
         Modifier.fillMaxWidth().height(60.dp),
         verticalAlignment = Alignment.CenterVertically

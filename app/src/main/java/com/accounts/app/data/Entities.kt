@@ -33,7 +33,8 @@ data class Account(
     val color: Long,
     val initialBalanceCents: Long = 0,
     val sortOrder: Int = 0,
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    val icon: String = ""
 )
 
 /**

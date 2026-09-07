@@ -14,11 +14,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * v3：新增 budgets 表（单行预算配置，默认未启用）。
  * v4：budgets 升级为多行（含 name/自动主键/排序），支持多预算卡片。
  * v5：categories 新增 icon 列（首页瓦片 emoji 图标），并按默认分类名回填图标。
+ * v6：accounts 新增 icon 列，支持账户图标自定义。
  */
 @Database(
     entities = [Category::class, Account::class, Transaction::class, Transfer::class,
         Template::class, Budget::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,7 +41,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "jianji.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .addCallback(SeedCallback)
                     .build()
                     .also { INSTANCE = it }
@@ -55,6 +56,10 @@ abstract class AppDatabase : RoomDatabase() {
             "旅行" to "🧳", "学习" to "📚",
             "工资" to "💰", "奖金" to "🏆", "理财" to "📈", "退款" to "💸",
             "红包" to "🧧", "其他" to "📦"
+        )
+
+        private val defaultAccountIcons = mapOf(
+            "现金" to "💵", "储蓄卡" to "💳", "支付宝" to "🟦", "微信零钱" to "🟢"
         )
 
         private val SeedCallback = object : Callback() {
@@ -96,8 +101,8 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 accounts.forEachIndexed { i, (name, kind, hex) ->
                     db.execSQL(
-                        "INSERT INTO accounts(name,kind,color,initialBalanceCents,sortOrder,enabled) VALUES(?,?,?,0,?,1)",
-                        arrayOf(name, kind, argb(hex), i)
+                        "INSERT INTO accounts(name,kind,color,initialBalanceCents,sortOrder,enabled,icon) VALUES(?,?,?,0,?,1,?)",
+                        arrayOf(name, kind, argb(hex), i, defaultAccountIcons[name] ?: "")
                     )
                 }
                 seedTemplates(db)
@@ -167,6 +172,19 @@ abstract class AppDatabase : RoomDatabase() {
                 defaultIcons.forEach { (name, emoji) ->
                     db.execSQL(
                         "UPDATE categories SET icon = ? WHERE name = ? AND icon = ''",
+                        arrayOf(emoji, name)
+                    )
+                }
+            }
+        }
+
+        /** v6：账户增加可自定义图标，并为内置账户回填默认图标。 */
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE accounts ADD COLUMN icon TEXT NOT NULL DEFAULT ''")
+                defaultAccountIcons.forEach { (name, emoji) ->
+                    db.execSQL(
+                        "UPDATE accounts SET icon = ? WHERE name = ? AND icon = ''",
                         arrayOf(emoji, name)
                     )
                 }

@@ -23,9 +23,10 @@ import kotlinx.coroutines.launch
 class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo = Repository.build(app)
+    private val prefs = app.getSharedPreferences("accounts_prefs", 0)
 
-    /** 默认支出账户（设置页可改，记一笔首页默认使用） */
-    val defaultAccountId = MutableStateFlow(0L)
+    /** 默认账户（设置页可改，支出与收入记账均优先使用，并持久化到本机）。 */
+    val defaultAccountId = MutableStateFlow(prefs.getLong("default_account_id", 0L))
 
     val categories: StateFlow<List<Category>> =
         repo.categories.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -115,8 +116,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // ===== 账户管理 =====
-    fun addAccount(name: String, color: Long, kind: String) {
-        viewModelScope.launch { repo.addAccount(name, color, kind) }
+    fun addAccount(name: String, icon: String, color: Long, kind: String) {
+        viewModelScope.launch { repo.addAccount(name, icon, color, kind) }
+    }
+
+    fun updateAccount(account: Account, name: String, icon: String, color: Long, kind: String) {
+        viewModelScope.launch { repo.updateAccount(account, name, icon, color, kind) }
     }
 
     fun addTransfer(fromId: Long, toId: Long, amountCents: Long, note: String) {
@@ -125,6 +130,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setDefaultAccount(id: Long) {
         defaultAccountId.value = id
+        prefs.edit().putLong("default_account_id", id).apply()
     }
 
     // ===== 数据导出 / 备份 / 恢复 =====

@@ -92,7 +92,7 @@ fun SettingsScreen(
         GlassCard(Modifier.fillMaxWidth()) {
             SetRow("分类管理", desc = "新增、停用、排序", icon = "✦",
                 right = "图标/颜色/名称", chevron = true, onClick = onOpenCategories)
-            SetRow("账户管理", desc = "现金、储蓄卡、支付账户", icon = "◎",
+            SetRow("账户管理", desc = "图标、颜色、名称和类型", icon = "◎",
                 chevron = true, onClick = onOpenAccounts)
         }
         GlassCard(Modifier.fillMaxWidth()) {
@@ -104,7 +104,7 @@ fun SettingsScreen(
                         .noRippleClickable { accountMenu = true },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("默认支出账户", fontSize = 14.sp,
+                    Text("默认记账账户", fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.weight(1f))
@@ -145,7 +145,7 @@ fun SettingsScreen(
             })
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("关于 · 版本 v0.2.0", desc = "数据仅存本机", icon = "i")
+            SetRow("关于 · 版本 v0.3.0", desc = "数据仅存本机", icon = "i")
         }
         Footnote("云轨 · 漫游", Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(20.dp))
@@ -287,7 +287,9 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     val accounts by vm.accounts.collectAsState()
     val transactions by vm.transactions.collectAsState()
     val transfers by vm.transfers.collectAsState()
+    val defaultAccountId by vm.defaultAccountId.collectAsState()
     var addOpen by remember { mutableStateOf(false) }
+    var editingAccount by remember { mutableStateOf<Account?>(null) }
     var transferOpen by remember { mutableStateOf(false) }
 
     Column(
@@ -298,11 +300,21 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
 
         GlassCard(Modifier.fillMaxWidth()) {
             accounts.forEach { a ->
-                Row(Modifier.fillMaxWidth().padding(vertical = 11.dp),
+                Row(Modifier.fillMaxWidth().noRippleClickable { editingAccount = a }
+                    .padding(vertical = 11.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(20.dp).background(chip(a.color), RoundedCornerShape(8.dp)))
+                    Box(
+                        Modifier.size(36.dp).background(chip(a.color), RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(accountIcon(a), fontSize = 17.sp)
+                    }
                     Text(a.name, Modifier.padding(start = 10.dp).weight(1f),
                         fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+                    if (a.id == defaultAccountId) {
+                        Text("默认", fontSize = 9.sp, color = IncomeGreen,
+                            modifier = Modifier.padding(end = 8.dp))
+                    }
                     Text("¥${Money.format(balanceOf(a, transactions, transfers))}",
                         fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
@@ -317,13 +329,24 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
                 Text("转账不计收支", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Footnote("余额 = 初始 + 收入 − 支出 + 转入 − 转出", Modifier.padding(top = 6.dp))
+        Footnote("点击账户可修改图标、颜色、名称和类型", Modifier.padding(top = 6.dp))
+        Footnote("余额 = 初始 + 收入 − 支出 + 转入 − 转出")
         Spacer(Modifier.height(20.dp))
     }
 
     if (addOpen) {
-        AddAccountDialog(onDismiss = { addOpen = false },
-            onAdd = { name, color, kind -> vm.addAccount(name, color, kind); addOpen = false })
+        AccountEditorDialog(account = null, onDismiss = { addOpen = false },
+            onSave = { name, icon, color, kind ->
+                vm.addAccount(name, icon, color, kind)
+                addOpen = false
+            })
+    }
+    editingAccount?.let { account ->
+        AccountEditorDialog(account = account, onDismiss = { editingAccount = null },
+            onSave = { name, icon, color, kind ->
+                vm.updateAccount(account, name, icon, color, kind)
+                editingAccount = null
+            })
     }
     if (transferOpen) {
         TransferDialog(accounts, onDismiss = { transferOpen = false },
@@ -609,6 +632,15 @@ private fun AddCategoryDialog(
     )
 }
 
+private fun accountIcon(account: Account): String = account.icon.ifBlank {
+    when (account.kind) {
+        "cash" -> "💵"
+        "card" -> "💳"
+        "ewallet" -> "◉"
+        else -> "◈"
+    }
+}
+
 @Composable
 private fun EditCategoryDialog(
     category: Category,
@@ -724,17 +756,47 @@ private fun EditCategoryDialog(
 }
 
 @Composable
-private fun AddAccountDialog(onDismiss: () -> Unit, onAdd: (String, Long, String) -> Unit) {
-    var name by remember { mutableStateOf("") }
-    var color by remember { mutableStateOf(colorFromHex("#63A9FF")) }
-    var kind by remember { mutableStateOf("ewallet") }
+private fun AccountEditorDialog(
+    account: Account?,
+    onDismiss: () -> Unit,
+    onSave: (String, String, Long, String) -> Unit
+) {
+    var name by remember(account?.id) { mutableStateOf(account?.name ?: "") }
+    var icon by remember(account?.id) { mutableStateOf(account?.icon ?: "") }
+    var color by remember(account?.id) {
+        mutableStateOf(account?.color ?: colorFromHex("#63A9FF"))
+    }
+    var kind by remember(account?.id) { mutableStateOf(account?.kind ?: "ewallet") }
     val palette = listOf("#FFB15F", "#8B7CF6", "#63A9FF", "#2FC98A", "#FF8FA3", "#F07BAF")
     val kindOptions = listOf("现金" to "cash", "卡" to "card", "电子钱包" to "ewallet")
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("新增账户", fontWeight = FontWeight.Bold) },
+        title = { Text(if (account == null) "新增账户" else "修改账户", fontWeight = FontWeight.Bold) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                BasicTextField(
+                    value = icon,
+                    onValueChange = { icon = it.take(4) },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    ),
+                    singleLine = true,
+                    decorationBox = { inner ->
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (icon.isEmpty()) Text("图标（输入 emoji，可留空）",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                            inner()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(10.dp))
                 BasicTextField(
                     value = name,
                     onValueChange = { name = it.take(8) },
@@ -778,10 +840,17 @@ private fun AddAccountDialog(onDismiss: () -> Unit, onAdd: (String, Long, String
                         )
                     }
                 }
+                Text("图标、颜色、名称和账户类型均可随时修改。",
+                    fontSize = 10.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 9.dp))
             }
         },
         confirmButton = {
-            TextButton(enabled = name.isNotBlank(), onClick = { onAdd(name.trim(), color, kind) }) { Text("新增") }
+            TextButton(
+                enabled = name.isNotBlank(),
+                onClick = { onSave(name.trim(), icon.trim(), color, kind) }
+            ) { Text(if (account == null) "新增" else "保存") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
     )

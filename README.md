@@ -1,27 +1,27 @@
 # Accounts — 个人离线记账 App（Android · 全本地 · 零联网）
 
 > 为自己做的记账工具：记账快、统计顺、界面干净、数据全在本地、永远免费。
-> 设计风格：**E · 晨雾（浅色玻璃拟态）** —— 已定稿，见 `docs/03-晨雾视觉规范与设计定稿.md`
+> 当前设计：**云轨 · 漫游** —— 云白、浅蓝、雾青与航线式交互；预览见 `mockups/themes-light/c-cloud.html`
 
 ## 当前状态
 
 - [x] 需求文档：`docs/01-需求文档.md`（功能/数据模型/统计口径/里程碑）
 - [x] UI 草图：`docs/02-UI草图.md` + `mockups/`（7 屏可视化 Demo，双击 HTML 即看）
-- [x] **视觉定稿**：`docs/03-晨雾视觉规范与设计定稿.md`
+- [x] **视觉定稿并落地**：云轨 · 漫游（原生 Compose v0.2.0）
 - [x] **Android 项目骨架**（本目录即 Gradle 工程根）：
-  Kotlin + Jetpack Compose（Material3）+ Room；晨雾双模式主题；
+  Kotlin + Jetpack Compose（Material3）+ Room；云轨亮色 / 夜雾蓝双模式主题；
   记一笔 / 明细 / 统计 / 设置 / 分类管理 / 账户管理 / 主题 已搭通；
   无 INTERNET 权限
 - [x] GitHub Actions 云构建配置：`.github/workflows/build-apk.yml`
 - [ ] 首次 CI 编译跑通（推送到 GitHub 后按 `docs/04-构建与签名指南.md` 操作）
-- [ ] v0.2：导出 CSV/JSON、备份恢复、编辑分类图标/名称、深色模式打磨
+- [x] v0.2：云轨主题、分类自定义、模板/预算、CSV/JSON 备份恢复、完整统计
 
 ## 目录结构
 
 | 路径 | 内容 |
 |---|---|
-| `docs/` | 需求 / UI草图 / 晨雾视觉规范(定稿) / 构建与签名指南 |
-| `mockups/styles/` | 风格 Demo（E 晨雾 7 屏为主，A/B/C/D/F 对比） |
+| `docs/` | 需求 / UI 草图 / 历史视觉规范 / 构建与签名指南 |
+| `mockups/themes-light/` | 五版浅色主题预览（云轨方案已落地） |
 | `app/src/main/java/com/accounts/app/` | Kotlin 源码（data / ui / util） |
 | `.github/workflows/build-apk.yml` | push 到 main 自动出 APK |
 | `scripts/push-to-github.ps1` | 一键初始化并推送 GitHub |

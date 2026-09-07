@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -129,7 +130,7 @@ fun ListScreen(vm: AppViewModel) {
                 Column {
                     Text("本月支出", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("¥${Money.format(totals.first)}", fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                        fontSize = 15.sp, color = ExpenseRose)
                 }
                 Column {
                     Text("本月收入", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -248,10 +249,16 @@ private fun DayHeader(date: LocalDate, rows: List<Transaction>) {
     }
     Row(
         Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Box(Modifier.width(18.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary, CircleShape)
+                .border(3.dp, MaterialTheme.colorScheme.background, CircleShape))
+        }
         Text(Days.dayLabel(Days.ofDay(date)),
+            modifier = Modifier.padding(start = 6.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+        Spacer(Modifier.weight(1f))
         Text(parts.joinToString(" · "),
             color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
     }
@@ -266,18 +273,35 @@ private fun TransactionRow(
 ) {
     val meta = listOfNotNull(cat?.name, accountName, t.note.ifBlank { null }).joinToString(" · ")
     Row(
-        Modifier.fillMaxWidth().noRippleClickable(onClick = onClick).padding(vertical = 9.dp),
+        Modifier.fillMaxWidth().height(60.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(cat?.name ?: "未分类", color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-            Text(meta, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1)
+        Box(Modifier.width(18.dp).height(60.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.width(2.dp).height(60.dp)
+                .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(999.dp)))
         }
-        val sign = if (t.type == "income") "＋" else "−"
-        val color = if (t.type == "income") IncomeGreen else ExpenseRose
-        Text("$sign¥${Money.format(t.amountCents)}", color = color,
-            fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        Row(
+            Modifier.padding(start = 6.dp, bottom = 6.dp).weight(1f)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(
+                    topStart = 8.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f),
+                    RoundedCornerShape(topStart = 8.dp, topEnd = 20.dp,
+                        bottomEnd = 20.dp, bottomStart = 20.dp))
+                .noRippleClickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(cat?.name ?: "未分类", color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(meta, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 10.sp, maxLines = 1)
+            }
+            val sign = if (t.type == "income") "＋" else "−"
+            val color = if (t.type == "income") IncomeGreen else ExpenseRose
+            Text("$sign¥${Money.format(t.amountCents)}", color = color,
+                fontWeight = FontWeight.Bold, fontSize = 13.sp)
+        }
     }
 }
 

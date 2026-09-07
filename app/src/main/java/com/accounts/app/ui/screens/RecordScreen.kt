@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,7 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,7 +66,6 @@ import com.accounts.app.ui.comps.Segment
 import com.accounts.app.ui.comps.noRippleClickable
 import com.accounts.app.ui.theme.ExpenseRose
 import com.accounts.app.ui.theme.IncomeGreen
-import com.accounts.app.ui.theme.Ink
 import com.accounts.app.ui.theme.chipColor
 import com.accounts.app.util.Days
 import com.accounts.app.util.Money
@@ -76,14 +76,13 @@ import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneOffset
 
-/** 首页可见分类：启用 + 该类型，pinned 优先，最多 8 个（首页固定 8 格） */
+/** 首页可见分类：启用 + 该类型，pinned 优先；云轨支持横向滑动，不再限制 8 格。 */
 fun homeCategories(all: List<Category>, kind: String): List<Category> =
     all.filter { it.enabled && it.kind == kind }
         .sortedWith(compareBy({ !it.pinned }, { it.sortOrder }))
-        .take(8)
 
 @Composable
-fun RecordScreen(vm: AppViewModel) {
+fun RecordScreen(vm: AppViewModel, onOpenCategories: () -> Unit) {
     val categories by vm.categories.collectAsState()
     val accounts by vm.accounts.collectAsState()
     val transactions by vm.transactions.collectAsState()
@@ -97,10 +96,8 @@ fun RecordScreen(vm: AppViewModel) {
     var occurredAt by remember { mutableStateOf(Days.nowMillis()) }
     var accountMenu by remember { mutableStateOf(false) }
     var timePickerOpen by remember { mutableStateOf(false) }
-    var recentDeleteMode by remember { mutableStateOf(false) }
     var templateDeleteMode by remember { mutableStateOf(false) }
     var addTemplateOpen by remember { mutableStateOf(false) }
-    val hiddenRecents = remember { mutableStateListOf<Long>() }
 
     val defaultAccountId by vm.defaultAccountId.collectAsState()
     LaunchedEffect(accounts, defaultAccountId) {
@@ -119,8 +116,6 @@ fun RecordScreen(vm: AppViewModel) {
     }
 
     val cats = homeCategories(categories, kind)
-    val baseRecents = remember(transactions) { transactions.map { it.amountCents }.distinct() }
-    val recents = baseRecents.filterNot { it in hiddenRecents }.take(4)
     val enabledCategoryIds = categories.asSequence().filter { it.enabled }.map { it.id }.toSet()
     val kindTemplates = templates.filter {
         it.kind == kind && it.categoryId in enabledCategoryIds
@@ -142,13 +137,13 @@ fun RecordScreen(vm: AppViewModel) {
             selectedIndex = if (kind == "expense") 0 else 1,
             onSelect = { kind = if (it == 0) "expense" else "income" })
 
-        // ===== 金额（空时显示与 ¥ 同色的 0.00）=====
+        // ===== 云轨票价：轻量大数字 =====
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text("¥", fontSize = 26.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Text("¥", fontSize = 26.sp, color = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f),
                 fontWeight = FontWeight.Medium)
             BasicTextField(
                 value = amountText,
@@ -157,7 +152,7 @@ fun RecordScreen(vm: AppViewModel) {
                     if (f.count { it == '.' } <= 1 && f.length <= 10) amountText = f
                 },
                 textStyle = TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 42.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center
@@ -169,7 +164,7 @@ fun RecordScreen(vm: AppViewModel) {
                     Box(contentAlignment = Alignment.Center) {
                         if (amountText.isEmpty()) {
                             Text("0.00", fontSize = 42.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f),
                                 fontWeight = FontWeight.Bold)
                         }
                         inner()
@@ -178,57 +173,80 @@ fun RecordScreen(vm: AppViewModel) {
             )
         }
 
-        // ===== 备注（居中）=====
-        BasicTextField(
-            value = note,
-            onValueChange = { note = it },
-            textStyle = TextStyle(
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 13.sp,
-                textAlign = TextAlign.Center
-            ),
-            singleLine = true,
-            decorationBox = { inner ->
-                Box(Modifier.fillMaxWidth().height(30.dp), contentAlignment = Alignment.Center) {
-                    if (note.isEmpty()) {
-                        Text("备注（可选）", color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 13.sp)
+        // ===== 备注胶囊 + 补记时间 =====
+        Row(
+            Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(999.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(999.dp))
+                .padding(5.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BasicTextField(
+                value = note,
+                onValueChange = { note = it },
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Start
+                ),
+                singleLine = true,
+                decorationBox = { inner ->
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                        if (note.isEmpty()) {
+                            Text("备注", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                fontSize = 14.sp)
+                        }
+                        inner()
                     }
-                    inner()
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+                },
+                modifier = Modifier.weight(1f).padding(horizontal = 10.dp)
+            )
+            Text(
+                Days.todayTimeLabel(occurredAt),
+                fontSize = 10.sp,
+                color = IncomeGreen,
+                modifier = Modifier
+                    .background(IncomeGreen.copy(alpha = 0.12f), RoundedCornerShape(999.dp))
+                    .noRippleClickable { timePickerOpen = true }
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
+            )
+        }
 
-        // ===== 分类色片（仅选中；保存走下方按钮，不再点分类即存）=====
-        cats.chunked(4).forEach { rowCats ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                rowCats.forEach { cat ->
-                    CategoryTile(
-                        cat = cat,
-                        selected = selectedCatId == cat.id,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedCatId = cat.id }
-                    )
-                }
-                repeat(4 - rowCats.size) { Spacer(Modifier.weight(1f)) }
+        // ===== 分类航线：所有类别都可横向滑动，末尾直达分类管理 =====
+        LazyRow(
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(cats, key = { it.id }) { cat ->
+                CategoryTile(
+                    cat = cat,
+                    selected = selectedCatId == cat.id,
+                    modifier = Modifier.width(70.dp),
+                    onClick = { selectedCatId = cat.id }
+                )
+            }
+            item {
+                ManageCategoryTile(Modifier.width(70.dp), onOpenCategories)
             }
         }
 
-        // ===== 钱包（可切换）/ 时间（可点击选择，补记用）=====
+        // ===== 出发账户 / 最近模板概览 =====
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("钱包：${accountName(accounts, accountId)} ▾", fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.noRippleClickable { accountMenu = true })
-            Text(
-                Days.todayTimeLabel(occurredAt),
-                fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.noRippleClickable { timePickerOpen = true }
+            RouteInfo(
+                label = "出发账户",
+                value = "${accountName(accounts, accountId)}⌄",
+                modifier = Modifier.weight(1f),
+                onClick = { accountMenu = true }
+            )
+            RouteInfo(
+                label = "最近模板",
+                value = kindTemplates.take(2).joinToString(" · ") { "${it.name} ¥${Money.formatPlain(it.amountCents)}" }
+                    .ifBlank { "点击下方新增" },
+                modifier = Modifier.weight(1f),
+                onClick = { addTemplateOpen = true }
             )
         }
         DropdownMenu(expanded = accountMenu, onDismissRequest = { accountMenu = false }) {
@@ -240,54 +258,18 @@ fun RecordScreen(vm: AppViewModel) {
             }
         }
 
-        // ===== 最近金额（长按进入删除）=====
+        // ===== 最近模板（长按删除 / ＋新增）=====
         Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel2("最近金额")
-            Spacer(Modifier.weight(1f))
-            if (recentDeleteMode) {
-                Text("✕ 完成", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.noRippleClickable { recentDeleteMode = false })
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            recents.forEach { cents ->
-                val src = remember(cents) { MutableInteractionSource() }
-                Box {
-                    Text(Money.formatPlain(cents),
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                                RoundedCornerShape(999.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outlineVariant,
-                                RoundedCornerShape(999.dp))
-                            .combinedClickable(
-                                interactionSource = src,
-                                indication = null,
-                                onClick = {
-                                    if (recentDeleteMode) hiddenRecents.add(cents)
-                                    else amountText = Money.formatPlain(cents)
-                                },
-                                onLongClick = { recentDeleteMode = true }
-                            )
-                            .padding(horizontal = 14.dp, vertical = 7.dp),
-                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
-                    if (recentDeleteMode) {
-                        CrossBadge(Modifier.align(Alignment.TopEnd))
-                    }
-                }
-            }
-        }
-
-        // ===== 我的模板（长按删除 / ＋新增）=====
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            SectionLabel2("我的模板")
+            SectionLabel2("最近模板")
             Spacer(Modifier.weight(1f))
             if (templateDeleteMode) {
                 Text("✕ 完成", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.noRippleClickable { templateDeleteMode = false })
             }
         }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            kindTemplates.forEach { t ->
+        LazyRow(verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(kindTemplates, key = { it.id }) { t ->
                 val tsrc = remember(t.id) { MutableInteractionSource() }
                 val cat = categories.firstOrNull { it.id == t.categoryId }
                 Box {
@@ -318,15 +300,17 @@ fun RecordScreen(vm: AppViewModel) {
                     }
                 }
             }
-            Box(
-                Modifier
-                    .size(32.dp)
-                    .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), CircleShape)
-                    .noRippleClickable { addTemplateOpen = true },
-                contentAlignment = Alignment.Center
-            ) {
-                Text("＋", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 1.dp))
+            item {
+                Box(
+                    Modifier
+                        .size(32.dp)
+                        .border(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), CircleShape)
+                        .noRippleClickable { addTemplateOpen = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("＋", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 1.dp))
+                }
             }
         }
 
@@ -414,23 +398,68 @@ private fun accountName(accounts: List<com.accounts.app.data.Account>, id: Long)
     accounts.firstOrNull { it.id == id }?.name ?: "—"
 
 @Composable
+private fun RouteInfo(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f), RoundedCornerShape(18.dp))
+            .noRippleClickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    ) {
+        Text(label, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(value, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface, maxLines = 1)
+    }
+}
+
+@Composable
 private fun CategoryTile(cat: Category, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(20.dp)
     Column(
         modifier = modifier
-            .shadow(if (selected) 6.dp else 2.dp, shape)
-            .background(chipColor(cat.color), shape)
-            .border(if (selected) 2.5.dp else 0.dp, MaterialTheme.colorScheme.primary, shape)
             .noRippleClickable(onClick = onClick)
-            .padding(vertical = 14.dp),
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (cat.icon.isNotEmpty()) {
-            Text(cat.icon, fontSize = 21.sp, lineHeight = 26.sp)
-            Spacer(Modifier.height(3.dp))
+        Box(
+            Modifier
+                .shadow(if (selected) 8.dp else 2.dp, CircleShape)
+                .size(50.dp)
+                .background(if (selected) Color(cat.color).copy(alpha = 0.78f) else chipColor(cat.color), CircleShape)
+                .border(1.dp, Color(cat.color).copy(alpha = if (selected) 0.9f else 0.28f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(cat.icon.ifBlank { "•" }, fontSize = 21.sp, lineHeight = 24.sp)
         }
-        Text(cat.name, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp,
-            maxLines = 1)
+        Spacer(Modifier.height(6.dp))
+        Text(cat.name, color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+            fontSize = 11.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun ManageCategoryTile(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Column(
+        modifier.noRippleClickable(onClick = onClick).padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            Modifier.size(50.dp)
+                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("＋", color = MaterialTheme.colorScheme.primary, fontSize = 22.sp,
+                fontWeight = FontWeight.Bold)
+        }
+        Spacer(Modifier.height(6.dp))
+        Text("管理", color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold, fontSize = 11.sp)
     }
 }
 
@@ -642,8 +671,10 @@ private fun BudgetCard(
 
     Column(
         Modifier.fillMaxWidth()
-            .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(22.dp))
-            .background(scheme.surface, RoundedCornerShape(22.dp))
+            .border(1.dp, scheme.outlineVariant, RoundedCornerShape(topStart = 24.dp,
+                topEnd = 24.dp, bottomEnd = 24.dp, bottomStart = 8.dp))
+            .background(scheme.surface, RoundedCornerShape(topStart = 24.dp,
+                topEnd = 24.dp, bottomEnd = 24.dp, bottomStart = 8.dp))
             .padding(13.dp)
     ) {
         if (amount <= 0) {
@@ -680,11 +711,11 @@ private fun BudgetCard(
         }
         Box(
             Modifier.fillMaxWidth().padding(top = 8.dp).height(10.dp)
-                .background(Color(0xFFF1EEF8), RoundedCornerShape(999.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(999.dp))
         ) {
             Box(
                 Modifier.fillMaxWidth(frac.coerceIn(0f, 1f)).height(10.dp)
-                    .background(if (over) ExpenseRose else scheme.primary,
+                    .background(if (over) ExpenseRose else IncomeGreen,
                         RoundedCornerShape(999.dp))
             )
         }
@@ -701,7 +732,7 @@ private fun BudgetCard(
         Row(Modifier.fillMaxWidth().padding(top = 10.dp)) {
             Column(
                 Modifier.weight(1f)
-                    .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(14.dp))
+                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
                 Text("预算余额", fontSize = 10.sp, color = scheme.onSurfaceVariant)
@@ -711,7 +742,7 @@ private fun BudgetCard(
             Spacer(Modifier.width(10.dp))
             Column(
                 Modifier.weight(1f)
-                    .border(1.dp, Color(0xFFE8E2F4), RoundedCornerShape(14.dp))
+                    .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
                 Text("每日平均", fontSize = 10.sp, color = scheme.onSurfaceVariant)

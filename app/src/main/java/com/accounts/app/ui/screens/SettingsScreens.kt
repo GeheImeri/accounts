@@ -87,14 +87,17 @@ fun SettingsScreen(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SettingsHeader("设置", onBack)
+        SettingsHeader("设置", onBack, badge = "本地模式")
 
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("分类管理", chevron = true, onClick = onOpenCategories)
-            SetRow("账户管理", chevron = true, onClick = onOpenAccounts)
+            SetRow("分类管理", desc = "新增、停用、排序", icon = "✦",
+                right = "图标/颜色/名称", chevron = true, onClick = onOpenCategories)
+            SetRow("账户管理", desc = "现金、储蓄卡、支付账户", icon = "◎",
+                chevron = true, onClick = onOpenAccounts)
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("主题", right = themeLabel, chevron = true, onClick = onOpenTheme)
+            SetRow("主题", desc = "云轨 · 漫游", icon = "☁", right = themeLabel,
+                chevron = true, onClick = onOpenTheme)
             Box {
                 Row(
                     Modifier.fillMaxWidth().padding(vertical = 12.dp)
@@ -132,16 +135,19 @@ fun SettingsScreen(
             }
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("导出 CSV（Excel/WPS 可开）", chevron = true, onClick = { vm.exportCsv() })
-            SetRow("备份到文件（JSON）", chevron = true, onClick = { vm.exportBackup() })
-            SetRow("从备份恢复", chevron = true, onClick = {
+            SetRow("导出 CSV", desc = "兼容 Excel / WPS", icon = "⇩",
+                chevron = true, onClick = { vm.exportCsv() })
+            SetRow("备份到文件", desc = "JSON 本地文件", icon = "◇",
+                chevron = true, onClick = { vm.exportBackup() })
+            SetRow("从备份恢复", desc = "选择已有备份", icon = "↥",
+                chevron = true, onClick = {
                 restoreLauncher.launch(arrayOf("application/json", "text/plain", "*/*"))
             })
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("关于 · 版本 v0.1.0", right = "仅存本机 · 无网络")
+            SetRow("关于 · 版本 v0.2.0", desc = "数据仅存本机", icon = "i")
         }
-        Footnote("数据仅存本机 · App 未申请任何网络权限", Modifier.padding(top = 6.dp))
+        Footnote("云轨 · 漫游", Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(20.dp))
     }
 }
@@ -339,9 +345,9 @@ private data class ThemeOpt(
 @Composable
 fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Unit) {
     val options = listOf(
-        ThemeOpt(0, Icons.Outlined.BrightnessAuto, "跟随系统", "随手机系统自动切换亮暗（推荐）"),
-        ThemeOpt(1, Icons.Outlined.LightMode, "浅色", "始终使用亮色外观"),
-        ThemeOpt(2, Icons.Outlined.DarkMode, "深色", "始终使用暗色 · 夜间护眼")
+        ThemeOpt(0, Icons.Outlined.BrightnessAuto, "跟随系统", "自动切换云轨亮色与夜雾蓝"),
+        ThemeOpt(1, Icons.Outlined.LightMode, "云轨亮色", "云白、浅蓝与雾青色"),
+        ThemeOpt(2, Icons.Outlined.DarkMode, "夜雾蓝", "柔和蓝灰夜间外观")
     )
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp),
@@ -375,13 +381,24 @@ fun ThemeSelectScreen(themeMode: Int, onSelect: (Int) -> Unit, onBack: () -> Uni
 // ================= 通用小组件 =================
 
 @Composable
-private fun SettingsHeader(title: String, onBack: () -> Unit, onAdd: (() -> Unit)? = null) {
+private fun SettingsHeader(
+    title: String,
+    onBack: () -> Unit,
+    onAdd: (() -> Unit)? = null,
+    badge: String? = null
+) {
     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack) {
             Icon(Icons.Outlined.KeyboardArrowLeft, contentDescription = "返回")
         }
         Text(title, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
         Spacer(Modifier.weight(1f))
+        if (badge != null) {
+            Text(badge, fontSize = 10.sp, color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant,
+                    RoundedCornerShape(999.dp)).padding(horizontal = 10.dp, vertical = 6.dp))
+        }
         if (onAdd != null) {
             Box(
                 Modifier.size(34.dp)
@@ -401,6 +418,8 @@ private fun SetRow(
     label: String,
     right: String? = null,
     chevron: Boolean = false,
+    desc: String? = null,
+    icon: String? = null,
     onClick: (() -> Unit)? = null
 ) {
     Row(
@@ -409,7 +428,23 @@ private fun SetRow(
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+        if (icon != null) {
+            Box(Modifier.size(38.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(
+                    topStart = 19.dp, topEnd = 19.dp, bottomEnd = 19.dp, bottomStart = 8.dp)),
+                contentAlignment = Alignment.Center) {
+                Text(icon, color = MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.width(10.dp))
+        }
+        Column {
+            Text(label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold)
+            if (desc != null) {
+                Text(desc, fontSize = 9.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
         Spacer(Modifier.weight(1f))
         if (right != null) Text(right, fontSize = 12.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (chevron) Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp, modifier = Modifier.padding(start = 6.dp))

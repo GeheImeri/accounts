@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,7 +46,7 @@ import com.accounts.app.ui.screens.ThemeSelectScreen
 import com.accounts.app.ui.theme.DarkPage
 import com.accounts.app.ui.theme.JianjiTheme
 import com.accounts.app.ui.theme.LightPage
-import com.accounts.app.ui.theme.MistCta
+import com.accounts.app.ui.theme.CloudSky
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,16 +74,18 @@ private fun JianjiRoot(vm: AppViewModel) {
     var themeMode by rememberSaveable { mutableStateOf(0) }
     var tab by rememberSaveable { mutableStateOf(TAB_RECORD) }
     var page by rememberSaveable { mutableStateOf(PAGE_NONE) }
+    var categoriesOpenedFromHome by rememberSaveable { mutableStateOf(false) }
 
     val themeLabel = when (themeMode) {
-        1 -> "浅色"
-        2 -> "深色"
+        1 -> "云轨亮色"
+        2 -> "夜雾蓝"
         else -> "跟随系统"
     }
 
     BackHandler(page != PAGE_NONE) {
         page = when (page) {
-            PAGE_CATEGORIES, PAGE_ACCOUNTS, PAGE_THEME -> PAGE_SETTINGS
+            PAGE_CATEGORIES -> if (categoriesOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
+            PAGE_ACCOUNTS, PAGE_THEME -> PAGE_SETTINGS
             else -> PAGE_NONE
         }
     }
@@ -107,7 +109,10 @@ private fun JianjiRoot(vm: AppViewModel) {
                 PAGE_NONE -> Column(Modifier.fillMaxSize()) {
                     Box(Modifier.weight(1f)) {
                         when (tab) {
-                            TAB_RECORD -> RecordScreen(vm)
+                            TAB_RECORD -> RecordScreen(vm, onOpenCategories = {
+                                categoriesOpenedFromHome = true
+                                page = PAGE_CATEGORIES
+                            })
                             TAB_LIST -> ListScreen(vm)
                             else -> StatsScreen(vm, onOpenSettings = { page = PAGE_SETTINGS })
                         }
@@ -119,12 +124,17 @@ private fun JianjiRoot(vm: AppViewModel) {
                     vm = vm,
                     themeLabel = themeLabel,
                     onBack = { page = PAGE_NONE },
-                    onOpenCategories = { page = PAGE_CATEGORIES },
+                    onOpenCategories = {
+                        categoriesOpenedFromHome = false
+                        page = PAGE_CATEGORIES
+                    },
                     onOpenAccounts = { page = PAGE_ACCOUNTS },
                     onOpenTheme = { page = PAGE_THEME }
                 )
 
-                PAGE_CATEGORIES -> CategoryManageScreen(vm) { page = PAGE_SETTINGS }
+                PAGE_CATEGORIES -> CategoryManageScreen(vm) {
+                    page = if (categoriesOpenedFromHome) PAGE_NONE else PAGE_SETTINGS
+                }
                 PAGE_ACCOUNTS -> AccountManageScreen(vm) { page = PAGE_SETTINGS }
                 PAGE_THEME -> ThemeSelectScreen(
                     themeMode = themeMode,
@@ -136,7 +146,7 @@ private fun JianjiRoot(vm: AppViewModel) {
     }
 }
 
-/** 底部纯圆导航（缩小、无文字、间距宽松） */
+/** 云轨底部三站导航：选中只改变颜色，图标和圆形尺寸保持不变。 */
 @Composable
 private fun BottomDock(current: String, onSelect: (String) -> Unit) {
     val items = listOf(
@@ -144,36 +154,45 @@ private fun BottomDock(current: String, onSelect: (String) -> Unit) {
         Triple(TAB_LIST, Icons.Outlined.FormatListBulleted, "明细"),
         Triple(TAB_STATS, Icons.Outlined.BarChart, "统计")
     )
-    Row(
+    Box(
         Modifier
             .fillMaxWidth()
-            .height(86.dp)
-            .padding(horizontal = 58.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .height(78.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(Color.Transparent, MaterialTheme.colorScheme.background.copy(alpha = 0.96f))
+                )
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        items.forEach { (id, icon, desc) ->
-            val active = current == id
-            val bg: Brush = if (active) MistCta
-            else Brush.linearGradient(
-                listOf(
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
-                )
-            )
-            Box(
-                Modifier
-                    .size(46.dp)
-                    .background(bg, CircleShape)
-                    .noRippleClickable { onSelect(id) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = desc,
-                    tint = if (active) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(21.dp)
-                )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(38.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEach { (id, icon, desc) ->
+                val active = current == id
+                Box(
+                    Modifier
+                        .size(46.dp)
+                        .background(
+                            if (active) CloudSky else MaterialTheme.colorScheme.surface,
+                            CircleShape
+                        )
+                        .border(
+                            1.dp,
+                            if (active) CloudSky else MaterialTheme.colorScheme.outlineVariant,
+                            CircleShape
+                        )
+                        .noRippleClickable { onSelect(id) },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = desc,
+                        tint = if (active) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(21.dp)
+                    )
+                }
             }
         }
     }

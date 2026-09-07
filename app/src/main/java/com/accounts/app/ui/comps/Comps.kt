@@ -25,19 +25,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.accounts.app.ui.theme.MistCta
 
-/** 磨砂玻璃卡片 */
+/** 云轨白云卡片 */
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
-    shape: Shape = RoundedCornerShape(22.dp),
+    shape: Shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp, bottomEnd = 26.dp, bottomStart = 10.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {
     val c = MaterialTheme.colorScheme
     Column(
         modifier = modifier
-            .background(c.surface.copy(alpha = 0.66f), shape)
-            .border(1.dp, c.surface.copy(alpha = 0.9f), shape)
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .background(c.surface.copy(alpha = 0.92f), shape)
+            .border(1.dp, c.outlineVariant.copy(alpha = 0.72f), shape)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
         content = content
     )
 }
@@ -72,7 +72,7 @@ fun CtaButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = tr
     }
 }
 
-/** 支出/收入 段选择（更方正、贴近预览：容器圆角 14、选中块圆角 8） */
+/** 支出/收入航线切换 */
 @Composable
 fun Segment(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
     val c = MaterialTheme.colorScheme
@@ -80,8 +80,9 @@ fun Segment(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit, 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(c.primaryContainer.copy(alpha = 0.6f), RoundedCornerShape(14.dp))
-            .padding(3.dp)
+            .background(c.surface.copy(alpha = 0.55f), RoundedCornerShape(999.dp))
+            .border(1.dp, c.outlineVariant, RoundedCornerShape(999.dp))
+            .padding(4.dp)
     ) {
         options.forEachIndexed { i, label ->
             Box(
@@ -90,8 +91,8 @@ fun Segment(options: List<String>, selectedIndex: Int, onSelect: (Int) -> Unit, 
                     .then(
                         if (i == selectedIndex) {
                             Modifier
-                                .background(MistCta, RoundedCornerShape(8.dp))
-                                .border(0.5.dp, Color.White.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                                .background(MistCta, RoundedCornerShape(999.dp))
+                                .border(0.5.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(999.dp))
                         } else {
                             Modifier
                         }

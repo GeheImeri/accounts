@@ -201,26 +201,31 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         }
 
         Spacer(Modifier.height(14.dp))
-        // 总览卡
+        // 云轨总览：结余主卡 + 支出/收入两张靠站卡
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             GlassCard(
-                Modifier.weight(1f).noRippleClickable { dailyDialogType = "expense" }
+                Modifier.weight(1.3f).noRippleClickable { balanceDialog = true }
             ) {
-                StatCell("支出", "¥${Money.format(cur.expense)}",
-                    delta(cur.expense, prev.expense), expense = true)
+                Text("本月结余", fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("¥${Money.format(balance)}", fontWeight = FontWeight.Bold,
+                    fontSize = 25.sp, color = MaterialTheme.colorScheme.onSurface)
+                Text("点击查看账户余额", fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.primary)
             }
-            GlassCard(
-                Modifier.weight(1f).noRippleClickable { dailyDialogType = "income" }
-            ) {
-                StatCell("收入", "¥${Money.format(cur.income)}",
-                    delta(cur.income, prev.income), expense = false)
-            }
-            // 结余：点击查看各钱包余额
-            GlassCard(
-                Modifier.weight(1f).noRippleClickable { balanceDialog = true }
-            ) {
-                StatCell("结余", "¥${Money.format(balance)}", "▾", expense = false,
-                    hint = true)
+            Column(Modifier.weight(0.9f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                GlassCard(
+                    Modifier.fillMaxWidth().noRippleClickable { dailyDialogType = "expense" }
+                ) {
+                    StatCell("支出", "¥${Money.format(cur.expense)}",
+                        delta(cur.expense, prev.expense), expense = true)
+                }
+                GlassCard(
+                    Modifier.fillMaxWidth().noRippleClickable { dailyDialogType = "income" }
+                ) {
+                    StatCell("收入", "¥${Money.format(cur.income)}",
+                        delta(cur.income, prev.income), expense = false)
+                }
             }
         }
 
@@ -272,10 +277,12 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         }
 
         Spacer(Modifier.height(18.dp))
-        Text("近 12 个月支出趋势", style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        TrendBars(transactions, type = "expense",
-            color = MaterialTheme.colorScheme.primary)
+        GlassCard(Modifier.fillMaxWidth()) {
+            Text("近 12 个月支出趋势", style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TrendBars(transactions, type = "expense",
+                color = MaterialTheme.colorScheme.primary)
+        }
 
         // ===== 当月各账户支出构成（环形）=====
         Spacer(Modifier.height(18.dp))
@@ -331,9 +338,11 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
         AccountBalanceSection(accounts, transactions, transfers)
 
         Spacer(Modifier.height(18.dp))
-        Text("近 12 个月收入趋势", style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-        TrendBars(transactions, type = "income", color = IncomeGreen)
+        GlassCard(Modifier.fillMaxWidth()) {
+            Text("近 12 个月收入趋势", style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            TrendBars(transactions, type = "income", color = IncomeGreen)
+        }
 
         Spacer(Modifier.height(28.dp))
     }
@@ -787,7 +796,7 @@ private fun StatCell(
 ) {
     Text(label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     Text(value, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-        color = MaterialTheme.colorScheme.onSurface)
+        color = if (expense) ExpenseRose else IncomeGreen)
     if (deltaText != null) {
         Text(deltaText, fontSize = 10.sp,
             color = if (hint) MaterialTheme.colorScheme.onSurfaceVariant
@@ -853,8 +862,9 @@ private fun RankRow(r: Rank, selected: Boolean, onClick: () -> Unit) {
             .noRippleClickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(if (selected) 16.dp else 12.dp)
-            .background(r.color, CircleShape))
+        Box(Modifier.size(12.dp)
+            .background(if (selected) r.color else r.color.copy(alpha = 0.82f), CircleShape)
+            .border(if (selected) 2.dp else 0.dp, MaterialTheme.colorScheme.surface, CircleShape))
         Text(r.name, Modifier.width(52.dp).padding(start = 8.dp), fontSize = 12.sp,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.onSurface)
@@ -867,11 +877,9 @@ private fun RankRow(r: Rank, selected: Boolean, onClick: () -> Unit) {
                     .height(10.dp).background(r.color, RoundedCornerShape(999.dp))
             )
         }
-        Text("¥${Money.format(r.amount)}", Modifier.width(78.dp), textAlign = TextAlign.End,
+        Text("¥${Money.format(r.amount)}", Modifier.width(76.dp), textAlign = TextAlign.End,
             fontSize = 12.sp, fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface)
-        Text("${Math.round(r.pct)}%", Modifier.width(36.dp), textAlign = TextAlign.End,
-            fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

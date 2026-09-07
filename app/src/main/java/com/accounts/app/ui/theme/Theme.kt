@@ -8,60 +8,66 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-// ===== 晨雾 · 颜色令牌（见 docs/03-晨雾视觉规范与设计定稿.md） =====
-val MistViolet = Color(0xFF8B7CF6)
-val MistVioletSoft = Color(0xFFEDE7FB)
-val MistBlue = Color(0xFF5FB4FF)
-val MistBlueSoft = Color(0xFFE4F0FE)
-val IncomeGreen = Color(0xFF2FC98A)
-val ExpenseRose = Color(0xFFFF7D9C)
-val Ink = Color(0xFF3F4257)
-val Ink2 = Color(0xFF9A9DB3)
-val LineMist = Color(0xFFEEEBF6)
-val WhiteGlass = Color(0xFFEFF2FF)
+// ===== 云轨 · 漫游颜色令牌 =====
+val MistViolet = Color(0xFF9C91E8)
+val MistVioletSoft = Color(0xFFF0EDFF)
+val MistBlue = Color(0xFF5BBEDD)
+val MistBlueSoft = Color(0xFFDFF5FF)
+val CloudMint = Color(0xFF70D1B8)
+val CloudSky = Color(0xFF5BBEDD)
+val CloudSurface = Color(0xFFF8FDFF)
+val IncomeGreen = Color(0xFF24A47D)
+val ExpenseRose = Color(0xFFEF718A)
+val Ink = Color(0xFF28445B)
+val Ink2 = Color(0xFF7892A2)
+val LineMist = Color(0xFFD5EBF1)
+val WhiteGlass = Color(0xFFF8FDFF)
 
 val LightPage = Brush.verticalGradient(
-    listOf(Color(0xFFF3EFFB), Color(0xFFE9F1FE), Color(0xFFFCEFF4))
+    listOf(Color(0xFFEDF9FF), Color(0xFFF7FCFF), Color(0xFFEAFBF5))
 )
 val DarkPage = Brush.verticalGradient(
-    listOf(Color(0xFF12111A), Color(0xFF151320), Color(0xFF1B1022))
+    listOf(Color(0xFF173144), Color(0xFF19394A), Color(0xFF173E3B))
 )
 
-/** CTA 渐变：紫 → 蓝 */
-val MistCta = Brush.linearGradient(listOf(MistViolet, MistBlue))
+/** CTA 渐变：薄荷 → 云蓝 */
+val MistCta = Brush.linearGradient(listOf(CloudMint, CloudSky))
 
 /** 分类色片配色：色值与白色按比例混合出柔和浅色 */
 fun chipColor(color: Long): Color =
-    androidx.compose.ui.graphics.lerp(Color(color), Color.White, 0.72f)
+    androidx.compose.ui.graphics.lerp(Color(color), Color.White, 0.82f)
 
 private val LightColors = lightColorScheme(
-    primary = MistViolet,
+    primary = CloudSky,
     onPrimary = Color.White,
-    primaryContainer = MistVioletSoft,
-    onPrimaryContainer = Color(0xFF4C3F8F),
-    secondary = MistBlue,
+    primaryContainer = MistBlueSoft,
+    onPrimaryContainer = Color(0xFF245D73),
+    secondary = CloudMint,
     onSecondary = Color.White,
-    secondaryContainer = MistBlueSoft,
-    background = Color.White,
+    secondaryContainer = Color(0xFFDFF7F0),
+    background = CloudSurface,
     surface = Color.White,
-    surfaceVariant = Color(0xFFF4F1FA),
+    surfaceVariant = Color(0xFFEAF5F8),
     onSurface = Ink,
     onSurfaceVariant = Ink2,
-    error = Color(0xFFE5484D)
+    outline = Color(0xFFB8DCE8),
+    outlineVariant = LineMist,
+    error = ExpenseRose
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF9D8CFF),
-    onPrimary = Color(0xFF171226),
-    primaryContainer = Color(0xFF332A55),
-    onPrimaryContainer = Color(0xFFDDD4FF),
-    secondary = Color(0xFF6FC3FF),
-    background = Color(0xFF12111A),
-    surface = Color(0xFF1B1A26),
-    surfaceVariant = Color(0xFF262436),
-    onSurface = Color(0xFFECEAF6),
-    onSurfaceVariant = Color(0xFF9A97AC),
-    error = Color(0xFFFF8A95)
+    primary = Color(0xFF79D5EF),
+    onPrimary = Color(0xFF123B4B),
+    primaryContainer = Color(0xFF28566A),
+    onPrimaryContainer = Color(0xFFD9F5FF),
+    secondary = Color(0xFF82DEC4),
+    background = Color(0xFF173144),
+    surface = Color(0xFF1E4253),
+    surfaceVariant = Color(0xFF285263),
+    onSurface = Color(0xFFE8F7FC),
+    onSurfaceVariant = Color(0xFFA8C4CF),
+    outline = Color(0xFF467487),
+    error = Color(0xFFFF91A7)
 )
 
 /**

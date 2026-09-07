@@ -231,7 +231,7 @@ fun RecordScreen(
 
         // ===== 账户航线：支出为出发账户，收入为入账账户；末尾直达账户管理 =====
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 4.dp, top = 2.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 4.dp).padding(top = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(

@@ -60,6 +60,7 @@ import com.accounts.app.ui.comps.GlassCard
 import com.accounts.app.ui.comps.Hairline
 import com.accounts.app.ui.comps.Segment
 import com.accounts.app.ui.comps.noRippleClickable
+import com.accounts.app.ui.theme.IncomeGreen
 import com.accounts.app.ui.theme.Ink
 import com.accounts.app.ui.theme.Ink2
 import com.accounts.app.util.Money

@@ -42,12 +42,30 @@ jobs:
           ANDROID_KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
 
       - name: Build release APK
-        run: java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain :app:assembleRelease
+        shell: bash
+        run: |
+          set -o pipefail
+          java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain :app:assembleRelease 2>&1 | tee build-output.log
         env:
           ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/accounts.jks
           ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASS: ${{ secrets.ANDROID_KEY_PASS }}
+
+      - name: Surface build errors
+        if: failure()
+        shell: bash
+        run: |
+          if [ -f build-output.log ]; then
+            grep -E '(^e: | error: |FAILURE:|Execution failed for task|^Caused by:)' build-output.log \
+              | tail -n 40 \
+              | while IFS= read -r line; do
+                  line="${line//'%'/'%25'}"
+                  line="${line//$'\r'/'%0D'}"
+                  line="${line//$'\n'/'%0A'}"
+                  echo "::error::$line"
+                done
+          fi
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

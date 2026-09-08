@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.accounts.app.data.Category
@@ -273,29 +275,30 @@ private fun TransactionRow(
 ) {
     val meta = accountName ?: "未指定账户"
     Row(
-        Modifier.fillMaxWidth().height(60.dp),
+        Modifier.fillMaxWidth().heightIn(min = 68.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.width(18.dp).height(60.dp), contentAlignment = Alignment.Center) {
-            Box(Modifier.width(2.dp).height(60.dp)
+        Box(Modifier.width(18.dp).height(68.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.width(2.dp).height(68.dp)
                 .background(MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(999.dp)))
         }
         Row(
-            Modifier.padding(start = 6.dp, bottom = 6.dp).weight(1f)
+            Modifier.padding(start = 6.dp, bottom = 4.dp).weight(1f)
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(
                     topStart = 8.dp, topEnd = 20.dp, bottomEnd = 20.dp, bottomStart = 20.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f),
                     RoundedCornerShape(topStart = 8.dp, topEnd = 20.dp,
                         bottomEnd = 20.dp, bottomStart = 20.dp))
                 .noRippleClickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 9.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(Modifier.weight(1f)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(cat?.name ?: "未分类", color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    fontSize = 14.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold)
                 Text(meta, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.sp, maxLines = 1)
+                    fontSize = 10.5.sp, lineHeight = 15.sp, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis)
             }
             val sign = if (t.type == "income") "＋" else "−"
             val color = if (t.type == "income") IncomeGreen else ExpenseRose

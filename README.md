@@ -7,14 +7,14 @@
 
 - [x] 需求文档：`docs/01-需求文档.md`（功能/数据模型/统计口径/里程碑）
 - [x] UI 草图：`docs/02-UI草图.md` + `mockups/`（7 屏可视化 Demo，双击 HTML 即看）
-- [x] **视觉定稿并落地**：云轨 · 漫游（原生 Compose v0.3.1）
+- [x] **视觉定稿并落地**：云轨 · 漫游（原生 Compose v0.3.2）
 - [x] **Android 项目骨架**（本目录即 Gradle 工程根）：
   Kotlin + Jetpack Compose（Material3）+ Room；云轨亮色 / 夜雾蓝双模式主题；
   记一笔 / 明细 / 统计 / 设置 / 分类管理 / 账户管理 / 主题 已搭通；
   无 INTERNET 权限
 - [x] GitHub Actions 云构建配置：`.github/workflows/build-apk.yml`
 - [x] GitHub Actions 云端编译已跑通
-- [x] v0.3：首页分类/账户双轨选择，账户图标/颜色/名称/类型可编辑，收入与支出共用默认账户；明细副标题仅显示账户
+- [x] v0.3：首页分类/账户双轨选择，账户图标/颜色/名称/类型可编辑，收入与支出共用默认账户；明细小字并排显示账户与备注
 
 ## 目录结构
 

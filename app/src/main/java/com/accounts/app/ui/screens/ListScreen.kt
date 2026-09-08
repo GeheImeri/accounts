@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -273,7 +274,8 @@ private fun TransactionRow(
     accountName: String?,
     onClick: () -> Unit
 ) {
-    val meta = accountName ?: "未指定账户"
+    val accountLabel = accountName ?: "未指定账户"
+    val noteLabel = t.note.trim()
     Row(
         Modifier.fillMaxWidth().heightIn(min = 68.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -296,9 +298,21 @@ private fun TransactionRow(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(cat?.name ?: "未分类", color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 14.sp, lineHeight = 19.sp, fontWeight = FontWeight.SemiBold)
-                Text(meta, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 10.5.sp, lineHeight = 15.sp, maxLines = 1,
-                    overflow = TextOverflow.Ellipsis)
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(accountLabel,
+                        modifier = Modifier.widthIn(max = 96.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 10.5.sp, lineHeight = 15.sp, maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                    if (noteLabel.isNotEmpty()) {
+                        Spacer(Modifier.width(12.dp))
+                        Text("备注：$noteLabel",
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 10.5.sp, lineHeight = 15.sp, maxLines = 1,
+                            overflow = TextOverflow.Ellipsis)
+                    }
+                }
             }
             val sign = if (t.type == "income") "＋" else "−"
             val color = if (t.type == "income") IncomeGreen else ExpenseRose

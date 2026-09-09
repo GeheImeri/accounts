@@ -77,6 +77,7 @@ fun SettingsScreen(
     onOpenTheme: () -> Unit
 ) {
     val accounts by vm.accounts.collectAsState()
+    val activeAccounts = remember(accounts) { accounts.filter { it.enabled }.sortedBy { it.sortOrder } }
     val defaultAccId by vm.defaultAccountId.collectAsState()
     var continuous by remember { mutableStateOf(true) }
     var accountMenu by remember { mutableStateOf(false) }
@@ -93,7 +94,7 @@ fun SettingsScreen(
         GlassCard(Modifier.fillMaxWidth()) {
             SetRow("分类管理", desc = "新增、停用、排序", icon = "✦",
                 right = "图标/颜色/名称", chevron = true, onClick = onOpenCategories)
-            SetRow("账户管理", desc = "图标、颜色、名称和类型", icon = "◎",
+            SetRow("账户管理", desc = "新增、删除、排序与外观", icon = "◎",
                 chevron = true, onClick = onOpenAccounts)
         }
         GlassCard(Modifier.fillMaxWidth()) {
@@ -109,15 +110,15 @@ fun SettingsScreen(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.weight(1f))
-                    Text(accounts.firstOrNull { it.id == defaultAccId }?.name
-                        ?: accounts.firstOrNull()?.name ?: "—",
+                    Text(activeAccounts.firstOrNull { it.id == defaultAccId }?.name
+                        ?: activeAccounts.firstOrNull()?.name ?: "—",
                         fontSize = 12.5.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("▾", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 DropdownMenu(expanded = accountMenu,
                     onDismissRequest = { accountMenu = false }) {
-                    accounts.forEach { a ->
+                    activeAccounts.forEach { a ->
                         DropdownMenuItem(
                             text = { Text(a.name) },
                             onClick = {
@@ -146,7 +147,7 @@ fun SettingsScreen(
             })
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("关于 · 版本 v0.3.2", desc = "数据仅存本机", icon = "i")
+            SetRow("关于 · 版本 v0.4.0", desc = "数据仅存本机", icon = "i")
         }
         Footnote("云轨 · 漫游", Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(20.dp))
@@ -283,14 +284,23 @@ private fun move(list: List<Category>, from: Int, to: Int, kind: String, vm: App
     vm.reorderCategories(kind, ids)
 }
 
+private fun moveAccounts(list: List<Account>, from: Int, to: Int, vm: AppViewModel) {
+    val ids = list.map { it.id }.toMutableList()
+    val item = ids.removeAt(from)
+    ids.add(to, item)
+    vm.reorderAccounts(ids)
+}
+
 @Composable
 fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
     val accounts by vm.accounts.collectAsState()
+    val activeAccounts = remember(accounts) { accounts.filter { it.enabled }.sortedBy { it.sortOrder } }
     val transactions by vm.transactions.collectAsState()
     val transfers by vm.transfers.collectAsState()
     val defaultAccountId by vm.defaultAccountId.collectAsState()
     var addOpen by remember { mutableStateOf(false) }
     var editingAccount by remember { mutableStateOf<Account?>(null) }
+    var deletingAccount by remember { mutableStateOf<Account?>(null) }
     var transferOpen by remember { mutableStateOf(false) }
 
     Column(
@@ -300,26 +310,56 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
         SettingsHeader("账户管理", onBack, onAdd = { addOpen = true })
 
         GlassCard(Modifier.fillMaxWidth()) {
-            accounts.forEach { a ->
-                Row(Modifier.fillMaxWidth().noRippleClickable { editingAccount = a }
-                    .padding(vertical = 11.dp),
+            activeAccounts.forEachIndexed { index, a ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        Modifier.size(36.dp).background(chip(a.color), RoundedCornerShape(12.dp)),
+                        Modifier.size(36.dp).background(chip(a.color), RoundedCornerShape(12.dp))
+                            .noRippleClickable { editingAccount = a },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(accountIcon(a), fontSize = 17.sp)
                     }
-                    Text(a.name, Modifier.padding(start = 10.dp).weight(1f),
-                        fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
-                    if (a.id == defaultAccountId) {
-                        Text("默认", fontSize = 9.sp, color = IncomeGreen,
-                            modifier = Modifier.padding(end = 8.dp))
+                    Column(Modifier.padding(start = 10.dp).weight(1f)
+                        .noRippleClickable { editingAccount = a }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(a.name, fontSize = 13.5.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold)
+                            if (a.id == defaultAccountId) {
+                                Text("默认", fontSize = 9.sp, color = IncomeGreen,
+                                    modifier = Modifier.padding(start = 6.dp))
+                            }
+                        }
+                        Text("¥${Money.format(balanceOf(a, transactions, transfers))}",
+                            fontSize = 10.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text("¥${Money.format(balanceOf(a, transactions, transfers))}",
-                        fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Box(
+                        Modifier.size(28.dp).noRippleClickable {
+                            if (index > 0) moveAccounts(activeAccounts, index, index - 1, vm)
+                        }, contentAlignment = Alignment.Center
+                    ) {
+                        Text("▲", fontSize = 11.sp,
+                            color = if (index > 0) MaterialTheme.colorScheme.onSurfaceVariant
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f))
+                    }
+                    Box(
+                        Modifier.size(28.dp).noRippleClickable {
+                            if (index < activeAccounts.lastIndex) {
+                                moveAccounts(activeAccounts, index, index + 1, vm)
+                            }
+                        }, contentAlignment = Alignment.Center
+                    ) {
+                        Text("▼", fontSize = 11.sp,
+                            color = if (index < activeAccounts.lastIndex) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f))
+                    }
+                    Text("修改", fontSize = 10.sp, color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(start = 5.dp)
+                            .noRippleClickable { editingAccount = a })
                 }
-                if (a != accounts.last()) Hairline()
+                if (a != activeAccounts.last()) Hairline()
             }
         }
         GlassCard(Modifier.fillMaxWidth().noRippleClickable { transferOpen = true }) {
@@ -330,7 +370,7 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
                 Text("转账不计收支", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Footnote("点击账户可修改图标、颜色、名称和类型", Modifier.padding(top = 6.dp))
+        Footnote("点击账户可修改或删除 · ▲▼ 调整首页顺序", Modifier.padding(top = 6.dp))
         Footnote("余额 = 初始 + 收入 − 支出 + 转入 − 转出")
         Spacer(Modifier.height(20.dp))
     }
@@ -343,14 +383,41 @@ fun AccountManageScreen(vm: AppViewModel, onBack: () -> Unit) {
             })
     }
     editingAccount?.let { account ->
-        AccountEditorDialog(account = account, onDismiss = { editingAccount = null },
+        AccountEditorDialog(
+            account = account,
+            onDismiss = { editingAccount = null },
+            onDelete = if (activeAccounts.size > 1) {
+                {
+                    deletingAccount = account
+                    editingAccount = null
+                }
+            } else null,
             onSave = { name, icon, color, kind ->
                 vm.updateAccount(account, name, icon, color, kind)
                 editingAccount = null
             })
     }
+    deletingAccount?.let { account ->
+        AlertDialog(
+            onDismissRequest = { deletingAccount = null },
+            title = { Text("删除账户？", fontWeight = FontWeight.Bold) },
+            text = { Text("账户将从记账与账户管理中移除，已有账目和转账记录仍会保留。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val replacementId = activeAccounts.firstOrNull { it.id != account.id }?.id
+                    vm.disableAccount(account, replacementId)
+                    deletingAccount = null
+                }) {
+                    Text("确认删除", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deletingAccount = null }) { Text("取消") }
+            }
+        )
+    }
     if (transferOpen) {
-        TransferDialog(accounts, onDismiss = { transferOpen = false },
+        TransferDialog(activeAccounts, onDismiss = { transferOpen = false },
             onTransfer = { from, to, cents, note ->
                 vm.addTransfer(from, to, cents, note); transferOpen = false
             })
@@ -760,6 +827,7 @@ private fun EditCategoryDialog(
 private fun AccountEditorDialog(
     account: Account?,
     onDismiss: () -> Unit,
+    onDelete: (() -> Unit)? = null,
     onSave: (String, String, Long, String) -> Unit
 ) {
     var name by remember(account?.id) { mutableStateOf(account?.name ?: "") }
@@ -841,7 +909,7 @@ private fun AccountEditorDialog(
                         )
                     }
                 }
-                Text("图标、颜色、名称和账户类型均可随时修改。",
+                Text("图标、颜色、名称和账户类型均可随时修改；删除后历史账目仍会保留。",
                     fontSize = 10.5.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 9.dp))
@@ -853,7 +921,16 @@ private fun AccountEditorDialog(
                 onClick = { onSave(name.trim(), icon.trim(), color, kind) }
             ) { Text(if (account == null) "新增" else "保存") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+        dismissButton = {
+            Row {
+                if (onDelete != null) {
+                    TextButton(onClick = onDelete) {
+                        Text("删除账户", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                TextButton(onClick = onDismiss) { Text("取消") }
+            }
+        }
     )
 }
 

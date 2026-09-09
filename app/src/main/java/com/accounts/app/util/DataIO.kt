@@ -107,7 +107,9 @@ object DataIO {
             s.budgets.forEach { b ->
                 a.put(JSONObject()
                     .put("id", b.id).put("name", b.name).put("amountCents", b.amountCents)
-                    .put("period", b.period).put("sortOrder", b.sortOrder))
+                    .put("period", b.period).put("sortOrder", b.sortOrder)
+                    .put("startAtMillis", b.startAtMillis)
+                    .put("endAtMillis", b.endAtMillis))
             }
         })
         return root.toString(2)
@@ -182,9 +184,15 @@ object DataIO {
             }
             val budgets = mutableListOf<Budget>()
             listLong("budgets") { o ->
-                budgets.add(Budget(o.getLong("id"), o.optString("name", "预算"),
-                    o.getLong("amountCents"), o.getString("period"),
-                    o.optInt("sortOrder", 0)))
+                budgets.add(Budget(
+                    id = o.getLong("id"),
+                    name = o.optString("name", "预算"),
+                    amountCents = o.getLong("amountCents"),
+                    period = o.getString("period"),
+                    sortOrder = o.optInt("sortOrder", 0),
+                    startAtMillis = if (o.isNull("startAtMillis")) null else o.optLong("startAtMillis"),
+                    endAtMillis = if (o.isNull("endAtMillis")) null else o.optLong("endAtMillis")
+                ))
             }
             Snapshot(cats, accs, txns, trs, tpls, budgets)
         } catch (e: Exception) {

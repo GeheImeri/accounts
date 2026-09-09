@@ -85,12 +85,14 @@ data class Template(
     val sortOrder: Int = 0
 )
 
-/** 预算（可多条，各自独立命名 + 周期 月/年）。amountCents=0 表示未启用 */
+/** 预算（可多条，各自独立命名 + 周期 月/年/自定义区间）。amountCents=0 表示未启用 */
 @Entity(tableName = "budgets")
 data class Budget(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String = "预算",
     val amountCents: Long = 0,
-    val period: String = "month",   // month / year
-    val sortOrder: Int = 0
+    val period: String = "month",   // month / year / custom
+    val sortOrder: Int = 0,
+    val startAtMillis: Long? = null,
+    val endAtMillis: Long? = null    // exclusive，界面选择的结束日 + 1 天
 )

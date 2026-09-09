@@ -82,8 +82,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.deleteTemplate(template) }
     }
 
-    fun addBudget(name: String, amountCents: Long, period: String) {
-        viewModelScope.launch { repo.addBudget(name, amountCents, period) }
+    fun addBudget(
+        name: String,
+        amountCents: Long,
+        period: String,
+        startAtMillis: Long? = null,
+        endAtMillis: Long? = null
+    ) {
+        viewModelScope.launch {
+            repo.addBudget(name, amountCents, period, startAtMillis, endAtMillis)
+        }
     }
 
     fun updateBudget(budget: Budget) {
@@ -122,6 +130,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun updateAccount(account: Account, name: String, icon: String, color: Long, kind: String) {
         viewModelScope.launch { repo.updateAccount(account, name, icon, color, kind) }
+    }
+
+    fun disableAccount(account: Account, replacementDefaultId: Long?) {
+        if (defaultAccountId.value == account.id && replacementDefaultId != null) {
+            setDefaultAccount(replacementDefaultId)
+        }
+        viewModelScope.launch { repo.disableAccount(account) }
+    }
+
+    fun reorderAccounts(ids: List<Long>) {
+        viewModelScope.launch { repo.reorderAccounts(ids) }
     }
 
     fun addTransfer(fromId: Long, toId: Long, amountCents: Long, note: String) {

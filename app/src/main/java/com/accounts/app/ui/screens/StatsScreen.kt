@@ -367,7 +367,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     }
     if (transferOpen) {
         BalanceTransferDialog(
-            accounts = accounts,
+            accounts = accounts.filter { it.enabled }.sortedBy { it.sortOrder },
             onDismiss = { transferOpen = false },
             onTransfer = { from, to, cents, note ->
                 vm.addTransfer(from, to, cents, note)

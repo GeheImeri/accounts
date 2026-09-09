@@ -15,10 +15,17 @@ class Repository(private val db: AppDatabase) {
     val templates: Flow<List<Template>> = db.templateDao().observeAll()
     val budgets: Flow<List<Budget>> = db.budgetDao().observeAll()
 
-    suspend fun addBudget(name: String, cents: Long, period: String) {
+    suspend fun addBudget(
+        name: String,
+        cents: Long,
+        period: String,
+        startAtMillis: Long? = null,
+        endAtMillis: Long? = null
+    ) {
         db.budgetDao().insert(
             Budget(name = name, amountCents = cents, period = period,
-                sortOrder = db.budgetDao().maxSortOrder() + 1)
+                sortOrder = db.budgetDao().maxSortOrder() + 1,
+                startAtMillis = startAtMillis, endAtMillis = endAtMillis)
         )
     }
 
@@ -97,6 +104,19 @@ class Repository(private val db: AppDatabase) {
         db.accountDao().update(
             account.copy(name = name.trim(), icon = icon.trim(), color = color, kind = kind)
         )
+    }
+
+    /** 删除账户采用停用，确保历史流水和转账仍能关联到账户。 */
+    suspend fun disableAccount(account: Account) = db.accountDao().disable(account.id)
+
+    suspend fun reorderAccounts(ids: List<Long>) {
+        val current = db.accountDao().allOnce().associateBy { it.id }
+        ids.forEachIndexed { index, id ->
+            val account = current[id] ?: return@forEachIndexed
+            if (account.sortOrder != index + 1) {
+                db.accountDao().update(account.copy(sortOrder = index + 1))
+            }
+        }
     }
 
     suspend fun addTransfer(fromId: Long, toId: Long, amountCents: Long, note: String) {

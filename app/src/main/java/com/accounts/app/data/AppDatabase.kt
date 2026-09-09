@@ -15,11 +15,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * v4：budgets 升级为多行（含 name/自动主键/排序），支持多预算卡片。
  * v5：categories 新增 icon 列（首页瓦片 emoji 图标），并按默认分类名回填图标。
  * v6：accounts 新增 icon 列，支持账户图标自定义。
+ * v7：budgets 新增自定义时间区间字段。
  */
 @Database(
     entities = [Category::class, Account::class, Transaction::class, Transfer::class,
         Template::class, Budget::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -41,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "jianji.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .addCallback(SeedCallback)
                     .build()
                     .also { INSTANCE = it }
@@ -188,6 +189,14 @@ abstract class AppDatabase : RoomDatabase() {
                         arrayOf(emoji, name)
                     )
                 }
+            }
+        }
+
+        /** v7：预算可选择任意开始日和结束日；旧预算继续按月/年统计。 */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE budgets ADD COLUMN startAtMillis INTEGER")
+                db.execSQL("ALTER TABLE budgets ADD COLUMN endAtMillis INTEGER")
             }
         }
     }

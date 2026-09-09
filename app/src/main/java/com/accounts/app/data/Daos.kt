@@ -44,7 +44,7 @@ interface CategoryDao {
 
 @Dao
 interface AccountDao {
-    @Query("SELECT * FROM accounts WHERE enabled = 1 ORDER BY sortOrder")
+    @Query("SELECT * FROM accounts ORDER BY sortOrder")
     fun observeAll(): Flow<List<Account>>
 
     @Insert

@@ -2,6 +2,7 @@
 
 package com.accounts.app.ui.screens
 
+import android.app.DatePickerDialog as AndroidDatePickerDialog
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -991,23 +993,19 @@ private fun BudgetDatePickerDialog(
     onDismiss: () -> Unit,
     onPick: (LocalDate) -> Unit
 ) {
-    val state = rememberDatePickerState(
-        initialSelectedDateMillis = initialDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-    )
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val millis = state.selectedDateMillis ?: return@TextButton
-                onPick(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())
-            }) { Text("确定") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
-    ) {
-        Column {
-            Text(title, Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            DatePicker(state = state, showModeToggle = false)
+    val context = LocalContext.current
+    // 使用系统日期选择器，避开 Compose Dialog 内嵌日期控件在部分手机上的触控问题。
+    LaunchedEffect(initialDate, title) {
+        AndroidDatePickerDialog(
+            context,
+            { _, year, month, day -> onPick(LocalDate.of(year, month + 1, day)) },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth
+        ).apply {
+            setTitle(title)
+            setOnCancelListener { onDismiss() }
+            show()
         }
     }
 }

@@ -147,7 +147,7 @@ fun SettingsScreen(
             })
         }
         GlassCard(Modifier.fillMaxWidth()) {
-            SetRow("关于 · 版本 v0.4.0", desc = "数据仅存本机", icon = "i")
+            SetRow("关于 · 版本 v0.4.1", desc = "数据仅存本机", icon = "i")
         }
         Footnote("云轨 · 漫游", Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(20.dp))

@@ -834,7 +834,9 @@ private fun BudgetEditDialog(
         mutableStateOf(endAtMillis ?: startOfDate(today.plusMonths(1)))
     }
     var dateTarget by remember { mutableStateOf<String?>(null) }
-    AlertDialog(
+    // 日期选择器不与预算编辑弹窗同时挂载；否则底层 Dialog 可能拦截日期格的触控。
+    if (dateTarget == null) {
+        AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (name.isBlank()) "新增预算" else "编辑预算",
             fontWeight = FontWeight.Bold) },
@@ -954,9 +956,10 @@ private fun BudgetEditDialog(
                 TextButton(onClick = onDismiss) { Text("取消") }
             }
         }
-    )
+        )
+    } else {
+        val target = requireNotNull(dateTarget)
 
-    dateTarget?.let { target ->
         val initialDate = if (target == "start") {
             localDateOf(customStart)
         } else {

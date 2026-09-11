@@ -109,7 +109,8 @@ object DataIO {
                     .put("id", b.id).put("name", b.name).put("amountCents", b.amountCents)
                     .put("period", b.period).put("sortOrder", b.sortOrder)
                     .put("startAtMillis", b.startAtMillis)
-                    .put("endAtMillis", b.endAtMillis))
+                    .put("endAtMillis", b.endAtMillis)
+                    .put("accountId", b.accountId))
             }
         })
         return root.toString(2)
@@ -191,7 +192,8 @@ object DataIO {
                     period = o.getString("period"),
                     sortOrder = o.optInt("sortOrder", 0),
                     startAtMillis = if (o.isNull("startAtMillis")) null else o.optLong("startAtMillis"),
-                    endAtMillis = if (o.isNull("endAtMillis")) null else o.optLong("endAtMillis")
+                    endAtMillis = if (o.isNull("endAtMillis")) null else o.optLong("endAtMillis"),
+                    accountId = if (o.isNull("accountId")) null else o.optLong("accountId")
                 ))
             }
             Snapshot(cats, accs, txns, trs, tpls, budgets)

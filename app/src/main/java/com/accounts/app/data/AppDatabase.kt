@@ -16,11 +16,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * v5：categories 新增 icon 列（首页瓦片 emoji 图标），并按默认分类名回填图标。
  * v6：accounts 新增 icon 列，支持账户图标自定义。
  * v7：budgets 新增自定义时间区间字段。
+ * v8：budgets 新增可选账户范围；null 表示全部账户。
  */
 @Database(
     entities = [Category::class, Account::class, Transaction::class, Transfer::class,
         Template::class, Budget::class],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,7 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "jianji.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .addCallback(SeedCallback)
                     .build()
                     .also { INSTANCE = it }
@@ -197,6 +198,13 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE budgets ADD COLUMN startAtMillis INTEGER")
                 db.execSQL("ALTER TABLE budgets ADD COLUMN endAtMillis INTEGER")
+            }
+        }
+
+        /** v8：预算可限定一个钱包；旧预算保持为全部钱包。 */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE budgets ADD COLUMN accountId INTEGER")
             }
         }
     }

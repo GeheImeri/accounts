@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -284,6 +285,7 @@ fun RecordScreen(
             BudgetCard(
                 budget = b,
                 transactions = transactions,
+                accounts = accounts,
                 onEdit = { editingBudget = b }
             )
         }
@@ -316,11 +318,15 @@ fun RecordScreen(
             period = b.period,
             startAtMillis = b.startAtMillis,
             endAtMillis = b.endAtMillis,
+            accountId = b.accountId,
+            accounts = accounts.filter { it.enabled || it.id == b.accountId }
+                .sortedBy { it.sortOrder },
             onDismiss = { editingBudget = null },
             onDelete = { vm.deleteBudget(b); editingBudget = null },
-            onSave = { nm, cents, p, start, end ->
+            onSave = { nm, cents, p, start, end, budgetAccountId ->
                 vm.updateBudget(b.copy(name = nm, amountCents = cents, period = p,
-                    startAtMillis = start, endAtMillis = end))
+                    startAtMillis = start, endAtMillis = end,
+                    accountId = budgetAccountId))
                 editingBudget = null
             }
         )
@@ -332,15 +338,17 @@ fun RecordScreen(
             period = "month",
             startAtMillis = null,
             endAtMillis = null,
+            accountId = null,
+            accounts = activeAccounts,
             onDismiss = { addBudgetOpen = false },
             onDelete = null,
-            onSave = { nm, cents, p, start, end ->
+            onSave = { nm, cents, p, start, end, budgetAccountId ->
                 val defaultName = when (p) {
                     "year" -> "今年预算"
                     "custom" -> "区间预算"
                     else -> "本月预算"
                 }
-                vm.addBudget(nm.ifBlank { defaultName }, cents, p, start, end)
+                vm.addBudget(nm.ifBlank { defaultName }, cents, p, start, end, budgetAccountId)
                 addBudgetOpen = false
             }
         )
@@ -683,6 +691,7 @@ private fun shortDate(date: LocalDate): String =
 private fun BudgetCard(
     budget: Budget,
     transactions: List<Transaction>,
+    accounts: List<Account>,
     onEdit: () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -721,8 +730,11 @@ private fun BudgetCard(
         }
     }
     val amount = budget.amountCents
+    val accountLabel = budget.accountId?.let { accountName(accounts, it) } ?: "全部钱包"
     val spent = transactions.filter {
-        it.type == "expense" && it.occurredAtMillis in startEnd.first until startEnd.second
+        it.type == "expense" &&
+            it.occurredAtMillis in startEnd.first until startEnd.second &&
+            (budget.accountId == null || it.accountId == budget.accountId)
     }.sumOf { it.amountCents }
     val remaining = amount - spent
     val pctUsed = if (amount > 0) spent * 100 / amount else 0L
@@ -763,6 +775,8 @@ private fun BudgetCard(
                 fontWeight = FontWeight.Bold, color = scheme.primary,
                 modifier = Modifier.noRippleClickable(onClick = onEdit))
         }
+        Text("钱包 · $accountLabel", fontSize = 10.sp,
+            color = scheme.onSurfaceVariant, modifier = Modifier.padding(top = 3.dp))
         Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
             Text(spentLabel, fontSize = 12.sp, color = scheme.onSurfaceVariant)
             Spacer(Modifier.weight(1f))
@@ -821,9 +835,11 @@ private fun BudgetEditDialog(
     period: String,
     startAtMillis: Long?,
     endAtMillis: Long?,
+    accountId: Long?,
+    accounts: List<Account>,
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)?,
-    onSave: (String, Long, String, Long?, Long?) -> Unit
+    onSave: (String, Long, String, Long?, Long?, Long?) -> Unit
 ) {
     var nm by remember { mutableStateOf(name) }
     var amount by remember { mutableStateOf(if (amountCents > 0) Money.formatPlain(amountCents) else "") }
@@ -835,6 +851,7 @@ private fun BudgetEditDialog(
     var customEnd by remember {
         mutableStateOf(endAtMillis ?: startOfDate(today.plusMonths(1)))
     }
+    var selectedAccountId by remember { mutableStateOf(accountId) }
     var dateTarget by remember { mutableStateOf<String?>(null) }
     // 日期选择器不与预算编辑弹窗同时挂载；否则底层 Dialog 可能拦截日期格的触控。
     if (dateTarget == null) {
@@ -843,7 +860,7 @@ private fun BudgetEditDialog(
         title = { Text(if (name.isBlank()) "新增预算" else "编辑预算",
             fontWeight = FontWeight.Bold) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 BasicTextField(
                     value = nm,
                     onValueChange = { nm = it.take(10) },
@@ -911,6 +928,42 @@ private fun BudgetEditDialog(
                         }
                     }
                 }
+                Spacer(Modifier.height(10.dp))
+                Text("预算钱包", fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    val allSelected = selectedAccountId == null
+                    Text("全部钱包", fontSize = 12.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .background(
+                                if (allSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(999.dp)
+                            )
+                            .noRippleClickable { selectedAccountId = null }
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
+                        color = if (allSelected) Color.White
+                        else MaterialTheme.colorScheme.onSurface)
+                    accounts.forEach { account ->
+                        val selected = selectedAccountId == account.id
+                        Text("${accountIcon(account)} ${account.name}", fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .background(
+                                    if (selected) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(999.dp)
+                                )
+                                .noRippleClickable { selectedAccountId = account.id }
+                                .padding(horizontal = 12.dp, vertical = 7.dp),
+                            color = if (selected) Color.White
+                            else MaterialTheme.colorScheme.onSurface)
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
                 BasicTextField(
                     value = amount,
@@ -931,7 +984,7 @@ private fun BudgetEditDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text("月、年或自定义区间独立统计（结束日期当天计入预算）",
+                Text("按所选周期和钱包统计；结束日期当天计入预算。",
                     fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp))
             }
@@ -943,7 +996,8 @@ private fun BudgetEditDialog(
                     onSave(
                         nm.trim(), Money.parse(amount), p,
                         if (p == "custom") customStart else null,
-                        if (p == "custom") customEnd else null
+                        if (p == "custom") customEnd else null,
+                        selectedAccountId
                     )
                 }
             ) { Text("保存") }

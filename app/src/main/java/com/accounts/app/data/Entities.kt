@@ -95,5 +95,7 @@ data class Budget(
     val sortOrder: Int = 0,
     val startAtMillis: Long? = null,
     val endAtMillis: Long? = null,   // exclusive，界面选择的结束日 + 1 天
-    val accountId: Long? = null
+    val accountId: Long? = null,
+    /** 非空时忽略此时间之前的支出；保存“从今天开始”时为当天 00:00。 */
+    val calculationStartAtMillis: Long? = null
 )

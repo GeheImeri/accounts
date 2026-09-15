@@ -319,14 +319,16 @@ fun RecordScreen(
             startAtMillis = b.startAtMillis,
             endAtMillis = b.endAtMillis,
             accountId = b.accountId,
+            calculationStartAtMillis = b.calculationStartAtMillis,
             accounts = accounts.filter { it.enabled || it.id == b.accountId }
                 .sortedBy { it.sortOrder },
             onDismiss = { editingBudget = null },
             onDelete = { vm.deleteBudget(b); editingBudget = null },
-            onSave = { nm, cents, p, start, end, budgetAccountId ->
+            onSave = { nm, cents, p, start, end, budgetAccountId, calculationStart ->
                 vm.updateBudget(b.copy(name = nm, amountCents = cents, period = p,
                     startAtMillis = start, endAtMillis = end,
-                    accountId = budgetAccountId))
+                    accountId = budgetAccountId,
+                    calculationStartAtMillis = calculationStart))
                 editingBudget = null
             }
         )
@@ -339,16 +341,18 @@ fun RecordScreen(
             startAtMillis = null,
             endAtMillis = null,
             accountId = null,
+            calculationStartAtMillis = null,
             accounts = activeAccounts,
             onDismiss = { addBudgetOpen = false },
             onDelete = null,
-            onSave = { nm, cents, p, start, end, budgetAccountId ->
+            onSave = { nm, cents, p, start, end, budgetAccountId, calculationStart ->
                 val defaultName = when (p) {
                     "year" -> "今年预算"
                     "custom" -> "区间预算"
                     else -> "本月预算"
                 }
-                vm.addBudget(nm.ifBlank { defaultName }, cents, p, start, end, budgetAccountId)
+                vm.addBudget(nm.ifBlank { defaultName }, cents, p, start, end,
+                    budgetAccountId, calculationStart)
                 addBudgetOpen = false
             }
         )
@@ -699,14 +703,12 @@ private fun BudgetCard(
     val startEnd: Pair<Long, Long>
     val periodBadge: String
     val spentLabel: String
-    val days: Int
     when (budget.period) {
         "year" -> {
             startEnd = Days.monthRange(YearMonth.of(today.year, 1))[0] to
                 Days.monthRange(YearMonth.of(today.year + 1, 1))[0]
             periodBadge = "按年"
             spentLabel = "今年已支出"
-            days = today.dayOfYear
         }
         "custom" -> {
             val start = budget.startAtMillis ?: startOfDate(today)
@@ -714,10 +716,6 @@ private fun BudgetCard(
             startEnd = start to end
             val startDate = localDateOf(start)
             val endExclusiveDate = localDateOf(end)
-            val elapsedEnd = minOf(today.plusDays(1), endExclusiveDate)
-            days = if (elapsedEnd > startDate) {
-                java.time.temporal.ChronoUnit.DAYS.between(startDate, elapsedEnd).toInt()
-            } else 0
             periodBadge = "自定义"
             spentLabel = "${shortDate(startDate)}–${shortDate(endExclusiveDate.minusDays(1))} 已支出"
         }
@@ -726,20 +724,34 @@ private fun BudgetCard(
             startEnd = r[0] to r[1]
             periodBadge = "按月"
             spentLabel = "本月已支出"
-            days = today.dayOfMonth
         }
     }
     val amount = budget.amountCents
     val accountLabel = budget.accountId?.let { accountName(accounts, it) } ?: "全部钱包"
+    val expenseStart = budget.calculationStartAtMillis
+        ?.coerceAtLeast(startEnd.first) ?: startEnd.first
     val spent = transactions.filter {
         it.type == "expense" &&
-            it.occurredAtMillis in startEnd.first until startEnd.second &&
+            // 只按账目发生时间判断；未来日期的预记账也会落入对应预算周期。
+            it.occurredAtMillis in expenseStart until startEnd.second &&
             (budget.accountId == null || it.accountId == budget.accountId)
     }.sumOf { it.amountCents }
     val remaining = amount - spent
     val pctUsed = if (amount > 0) spent * 100 / amount else 0L
     val frac = if (amount > 0) spent.toFloat() / amount.toFloat() else 0f
     val over = amount > 0 && spent > amount
+    val remainingStartDate = maxOf(today, localDateOf(expenseStart))
+    val periodEndDate = localDateOf(startEnd.second)
+    val remainingDays = if (remainingStartDate < periodEndDate) {
+        java.time.temporal.ChronoUnit.DAYS
+            .between(remainingStartDate, periodEndDate).toInt()
+    } else 0
+    val dailyAvailable = if (remaining > 0 && remainingDays > 0) {
+        remaining / remainingDays
+    } else 0L
+    val calculationLabel = budget.calculationStartAtMillis?.let {
+        " · 从${shortDate(localDateOf(it))}起统计"
+    }.orEmpty()
 
     Column(
         Modifier.fillMaxWidth()
@@ -775,7 +787,7 @@ private fun BudgetCard(
                 fontWeight = FontWeight.Bold, color = scheme.primary,
                 modifier = Modifier.noRippleClickable(onClick = onEdit))
         }
-        Text("钱包 · $accountLabel", fontSize = 10.sp,
+        Text("钱包 · $accountLabel$calculationLabel", fontSize = 10.sp,
             color = scheme.onSurfaceVariant, modifier = Modifier.padding(top = 3.dp))
         Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
             Text(spentLabel, fontSize = 12.sp, color = scheme.onSurfaceVariant)
@@ -819,9 +831,8 @@ private fun BudgetCard(
                     .border(1.dp, scheme.outlineVariant, RoundedCornerShape(14.dp))
                     .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
-                Text("每日平均", fontSize = 10.sp, color = scheme.onSurfaceVariant)
-                val avgCents = if (days > 0) spent / days else 0L
-                Text("¥${Money.format(avgCents)}", fontSize = 15.sp,
+                Text("每日可用预算", fontSize = 10.sp, color = scheme.onSurfaceVariant)
+                Text("¥${Money.format(dailyAvailable)}", fontSize = 15.sp,
                     fontWeight = FontWeight.Bold, color = scheme.primary)
             }
         }
@@ -836,10 +847,11 @@ private fun BudgetEditDialog(
     startAtMillis: Long?,
     endAtMillis: Long?,
     accountId: Long?,
+    calculationStartAtMillis: Long?,
     accounts: List<Account>,
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)?,
-    onSave: (String, Long, String, Long?, Long?, Long?) -> Unit
+    onSave: (String, Long, String, Long?, Long?, Long?, Long?) -> Unit
 ) {
     var nm by remember { mutableStateOf(name) }
     var amount by remember { mutableStateOf(if (amountCents > 0) Money.formatPlain(amountCents) else "") }
@@ -852,6 +864,7 @@ private fun BudgetEditDialog(
         mutableStateOf(endAtMillis ?: startOfDate(today.plusMonths(1)))
     }
     var selectedAccountId by remember { mutableStateOf(accountId) }
+    var calculationStart by remember { mutableStateOf(calculationStartAtMillis) }
     var dateTarget by remember { mutableStateOf<String?>(null) }
     // 日期选择器不与预算编辑弹窗同时挂载；否则底层 Dialog 可能拦截日期格的触控。
     if (dateTarget == null) {
@@ -961,7 +974,45 @@ private fun BudgetEditDialog(
                                 .noRippleClickable { selectedAccountId = account.id }
                                 .padding(horizontal = 12.dp, vertical = 7.dp),
                             color = if (selected) Color.White
-                            else MaterialTheme.colorScheme.onSurface)
+                        else MaterialTheme.colorScheme.onSurface)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                val countFromCurrent = calculationStart != null
+                Row(
+                    Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(12.dp))
+                        .noRippleClickable {
+                            calculationStart = if (countFromCurrent) null else startOfDate(today)
+                        }
+                        .padding(horizontal = 11.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("从当前日期开始统计", fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface)
+                        Text(
+                            calculationStart?.let {
+                                "从 ${localDateOf(it)} 起，不计此前支出"
+                            } ?: "计入所选周期内的全部支出",
+                            fontSize = 9.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Box(
+                        Modifier.width(44.dp).height(24.dp)
+                            .background(
+                                if (countFromCurrent) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outlineVariant,
+                                RoundedCornerShape(999.dp)
+                            )
+                            .padding(2.dp),
+                        contentAlignment = if (countFromCurrent) Alignment.CenterEnd
+                        else Alignment.CenterStart
+                    ) {
+                        Box(Modifier.size(20.dp).background(Color.White, CircleShape))
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -997,7 +1048,8 @@ private fun BudgetEditDialog(
                         nm.trim(), Money.parse(amount), p,
                         if (p == "custom") customStart else null,
                         if (p == "custom") customEnd else null,
-                        selectedAccountId
+                        selectedAccountId,
+                        calculationStart
                     )
                 }
             ) { Text("保存") }

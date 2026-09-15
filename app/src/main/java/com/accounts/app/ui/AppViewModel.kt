@@ -88,10 +88,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         period: String,
         startAtMillis: Long? = null,
         endAtMillis: Long? = null,
-        accountId: Long? = null
+        accountId: Long? = null,
+        calculationStartAtMillis: Long? = null
     ) {
         viewModelScope.launch {
-            repo.addBudget(name, amountCents, period, startAtMillis, endAtMillis, accountId)
+            repo.addBudget(name, amountCents, period, startAtMillis, endAtMillis,
+                accountId, calculationStartAtMillis)
         }
     }
 

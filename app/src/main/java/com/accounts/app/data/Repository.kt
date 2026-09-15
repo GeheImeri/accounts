@@ -21,13 +21,15 @@ class Repository(private val db: AppDatabase) {
         period: String,
         startAtMillis: Long? = null,
         endAtMillis: Long? = null,
-        accountId: Long? = null
+        accountId: Long? = null,
+        calculationStartAtMillis: Long? = null
     ) {
         db.budgetDao().insert(
             Budget(name = name, amountCents = cents, period = period,
                 sortOrder = db.budgetDao().maxSortOrder() + 1,
                 startAtMillis = startAtMillis, endAtMillis = endAtMillis,
-                accountId = accountId)
+                accountId = accountId,
+                calculationStartAtMillis = calculationStartAtMillis)
         )
     }
 

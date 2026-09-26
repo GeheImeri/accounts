@@ -46,6 +46,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,12 +74,15 @@ import com.accounts.app.ui.theme.IncomeGreen
 import com.accounts.app.ui.theme.chipColor
 import com.accounts.app.util.Days
 import com.accounts.app.util.Money
+import kotlinx.coroutines.delay
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.YearMonth
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 /** 首页可见分类：启用 + 该类型，pinned 优先；云轨支持横向滑动，不再限制 8 格。 */
 fun homeCategories(all: List<Category>, kind: String): List<Category> =
@@ -95,6 +99,14 @@ fun RecordScreen(
     val accounts by vm.accounts.collectAsState()
     val activeAccounts = remember(accounts) { accounts.filter { it.enabled }.sortedBy { it.sortOrder } }
     val transactions by vm.transactions.collectAsState()
+    val today by produceState(initialValue = LocalDate.now()) {
+        while (true) {
+            val now = ZonedDateTime.now()
+            val nextDay = now.toLocalDate().plusDays(1).atStartOfDay(now.zone)
+            delay((Duration.between(now, nextDay).toMillis() + 100L).coerceAtLeast(1_000L))
+            value = LocalDate.now()
+        }
+    }
 
     var kind by remember { mutableStateOf("expense") }
     var amountText by remember { mutableStateOf("") }
@@ -286,6 +298,7 @@ fun RecordScreen(
                 budget = b,
                 transactions = transactions,
                 accounts = accounts,
+                today = today,
                 onEdit = { editingBudget = b }
             )
         }
@@ -696,10 +709,10 @@ private fun BudgetCard(
     budget: Budget,
     transactions: List<Transaction>,
     accounts: List<Account>,
+    today: LocalDate,
     onEdit: () -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
-    val today = LocalDate.now()
     val startEnd: Pair<Long, Long>
     val periodBadge: String
     val spentLabel: String
@@ -834,6 +847,8 @@ private fun BudgetCard(
                 Text("每日可用预算", fontSize = 10.sp, color = scheme.onSurfaceVariant)
                 Text("¥${Money.format(dailyAvailable)}", fontSize = 15.sp,
                     fontWeight = FontWeight.Bold, color = scheme.primary)
+                Text("剩余 $remainingDays 天", fontSize = 9.5.sp,
+                    color = scheme.onSurfaceVariant)
             }
         }
     }

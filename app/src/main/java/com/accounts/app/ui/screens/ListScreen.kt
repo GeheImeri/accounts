@@ -1,5 +1,6 @@
 package com.accounts.app.ui.screens
 
+import android.app.DatePickerDialog as AndroidDatePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -32,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +60,9 @@ import com.accounts.app.ui.theme.IncomeGreen
 import com.accounts.app.util.Days
 import com.accounts.app.util.Money
 import java.time.LocalDate
+import java.time.Instant
 import java.time.YearMonth
+import java.time.ZoneId
 
 @Composable
 fun ListScreen(vm: AppViewModel) {
@@ -234,8 +239,8 @@ fun ListScreen(vm: AppViewModel) {
             accounts = accounts,
             onDismiss = { editing = null },
             onDelete = { vm.deleteRecord(t); editing = null },
-            onSave = { cents, noteText, catId, accId ->
-                vm.updateRecord(t, cents, noteText, catId, accId)
+            onSave = { cents, noteText, catId, accId, occurredAt ->
+                vm.updateRecord(t, cents, noteText, catId, accId, occurredAt)
                 editing = null
             }
         )
@@ -533,7 +538,7 @@ private fun ChipItem(label: String, selected: Boolean, onClick: () -> Unit) {
         color = if (selected) Color.White else MaterialTheme.colorScheme.onSurface)
 }
 
-// ===== 编辑记录（含修改分类）=====
+// ===== 编辑记录（含修改分类与发生日期）=====
 
 @Composable
 private fun EditRecordDialog(
@@ -542,12 +547,14 @@ private fun EditRecordDialog(
     accounts: List<com.accounts.app.data.Account>,
     onDismiss: () -> Unit,
     onDelete: () -> Unit,
-    onSave: (Long, String, Long, Long) -> Unit
+    onSave: (Long, String, Long, Long, Long) -> Unit
 ) {
     var amountText by remember { mutableStateOf(Money.formatPlain(transaction.amountCents)) }
     var note by remember { mutableStateOf(transaction.note) }
     var catId by remember { mutableStateOf(transaction.categoryId) }
     var accId by remember { mutableStateOf(transaction.accountId) }
+    var occurredAtMillis by remember(transaction.id) { mutableStateOf(transaction.occurredAtMillis) }
+    var datePickerOpen by remember(transaction.id) { mutableStateOf(false) }
     val options = remember(transaction, categories) {
         categories.filter { it.enabled && it.kind == transaction.type }.sortedBy { it.sortOrder }
     }
@@ -555,11 +562,11 @@ private fun EditRecordDialog(
         accounts.filter { it.enabled }.sortedBy { it.sortOrder }
     }
 
-    AlertDialog(
+    if (!datePickerOpen) AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("编辑记录", fontWeight = FontWeight.Bold) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(if (transaction.type == "expense") "支出 · 修改分类" else "收入 · 修改分类",
                     fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(6.dp))
@@ -612,6 +619,21 @@ private fun EditRecordDialog(
                     }
                 }
                 Spacer(Modifier.height(10.dp))
+                Text("发生日期", fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    "${Days.dayOf(occurredAtMillis)}  ▾",
+                    modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant,
+                            RoundedCornerShape(10.dp))
+                        .noRippleClickable { datePickerOpen = true }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.height(10.dp))
                 BasicTextField(
                     value = amountText,
                     onValueChange = { amountText = it.filter { c -> c.isDigit() || c == '.' } },
@@ -641,11 +663,48 @@ private fun EditRecordDialog(
         confirmButton = {
             TextButton(onClick = {
                 val c = Money.parse(amountText)
-                if (c > 0) onSave(c, note, catId, accId)
+                if (c > 0) onSave(c, note, catId, accId, occurredAtMillis)
             }) { Text("保存") }
         },
         dismissButton = {
             TextButton(onClick = onDelete) { Text("删除", color = MaterialTheme.colorScheme.error) }
         }
+    ) else EditRecordDatePicker(
+        initialDate = Days.dayOf(occurredAtMillis),
+        onPick = { date ->
+            val zone = ZoneId.systemDefault()
+            val originalTime = Instant.ofEpochMilli(occurredAtMillis)
+                .atZone(zone).toLocalTime()
+            occurredAtMillis = date.atTime(originalTime).atZone(zone)
+                .toInstant().toEpochMilli()
+            datePickerOpen = false
+        },
+        onDismiss = { datePickerOpen = false }
     )
+}
+
+@Composable
+private fun EditRecordDatePicker(
+    initialDate: LocalDate,
+    onPick: (LocalDate) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    DisposableEffect(context, initialDate) {
+        val dialog = AndroidDatePickerDialog(
+            context,
+            { _, year, month, day -> onPick(LocalDate.of(year, month + 1, day)) },
+            initialDate.year,
+            initialDate.monthValue - 1,
+            initialDate.dayOfMonth
+        ).apply {
+            setTitle("修改发生日期")
+            setOnDismissListener { onDismiss() }
+            show()
+        }
+        onDispose {
+            dialog.setOnDismissListener(null)
+            dialog.dismiss()
+        }
+    }
 }

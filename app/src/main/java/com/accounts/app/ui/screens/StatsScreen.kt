@@ -35,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +57,10 @@ import com.accounts.app.ui.theme.ExpenseRose
 import com.accounts.app.ui.theme.IncomeGreen
 import com.accounts.app.util.Days
 import com.accounts.app.util.Money
+import kotlinx.coroutines.delay
+import java.time.Duration
 import java.time.YearMonth
+import java.time.ZonedDateTime
 
 private data class Rank(
     val categoryId: Long,
@@ -91,7 +95,17 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     var dailyDialogType by remember { mutableStateOf<String?>(null) }
     var transferOpen by remember { mutableStateOf(false) }
 
-    val month = remember(monthOffset) { YearMonth.now().plusMonths(monthOffset.toLong()) }
+    val currentMonth by produceState(initialValue = YearMonth.now()) {
+        while (true) {
+            val now = ZonedDateTime.now()
+            val nextDay = now.toLocalDate().plusDays(1).atStartOfDay(now.zone)
+            delay((Duration.between(now, nextDay).toMillis() + 100L).coerceAtLeast(1_000L))
+            value = YearMonth.now()
+        }
+    }
+    val month = remember(currentMonth, monthOffset) {
+        currentMonth.plusMonths(monthOffset.toLong())
+    }
     val catMap = remember(categories) { categories.associateBy { it.id } }
 
     val monthTx = remember(transactions, month) {
@@ -104,7 +118,15 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
     }
     val cur = totalsOf(monthTx)
     val prev = totalsOf(prevTx)
-    val balance = cur.income - cur.expense
+    // 月末结余 = 月初账户余额（含历史结转与初始余额）+ 本月净收支。
+    // 转账在全部账户之间相互抵消，不重复计入收入或支出。
+    val openingBalance = remember(accounts, transactions, transfers, month) {
+        val monthStart = Days.monthRange(month)[0]
+        accounts.sumOf { account ->
+            accountBalanceUpTo(account, transactions, transfers, monthStart)
+        }
+    }
+    val balance = openingBalance + cur.income - cur.expense
 
     val totalExpense = cur.expense
     val fallbackColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -183,7 +205,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
                         menuOpen = false
                     })
                     (1..11).forEach { back ->
-                        val m = YearMonth.now().minusMonths(back.toLong())
+                        val m = currentMonth.minusMonths(back.toLong())
                         DropdownMenuItem(
                             text = { Text("${m.year}年${m.monthValue}月") },
                             onClick = {
@@ -208,9 +230,9 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
             ) {
                 Text("本月结余", fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("¥${Money.format(balance)}", fontWeight = FontWeight.Bold,
+                Text(balanceText(balance), fontWeight = FontWeight.Bold,
                     fontSize = 25.sp, color = MaterialTheme.colorScheme.onSurface)
-                Text("点击查看账户余额", fontSize = 9.sp,
+                Text("含月初结转 · 查看钱包", fontSize = 9.sp,
                     color = MaterialTheme.colorScheme.primary)
             }
             Column(Modifier.weight(0.9f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -335,7 +357,7 @@ fun StatsScreen(vm: AppViewModel, onOpenSettings: () -> Unit) {
 
         // ===== 近 12 个月各账户余额变化（折线）=====
         Spacer(Modifier.height(14.dp))
-        AccountBalanceSection(accounts, transactions, transfers)
+        AccountBalanceSection(accounts, transactions, transfers, currentMonth)
 
         Spacer(Modifier.height(18.dp))
         GlassCard(Modifier.fillMaxWidth()) {
@@ -521,12 +543,15 @@ private fun accountBalanceUpTo(
 private fun AccountBalanceSection(
     accounts: List<Account>,
     transactions: List<Transaction>,
-    transfers: List<com.accounts.app.data.Transfer>
+    transfers: List<com.accounts.app.data.Transfer>,
+    currentMonth: YearMonth
 ) {
     val enabled = remember(accounts) {
         accounts.filter { it.enabled }.sortedBy { it.sortOrder }
     }
-    val months = remember { (11 downTo 0).map { YearMonth.now().minusMonths(it.toLong()) } }
+    val months = remember(currentMonth) {
+        (11 downTo 0).map { currentMonth.minusMonths(it.toLong()) }
+    }
     val boundaries = remember(months) {
         months.map { m -> Days.monthRange(m.plusMonths(1))[0] }
     }
